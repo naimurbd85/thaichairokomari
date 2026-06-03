@@ -1,5 +1,6 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/app/utils/supabase' // আপনার প্রজেক্ট অনুযায়ী utils এর পাথ ঠিক রাখুন
