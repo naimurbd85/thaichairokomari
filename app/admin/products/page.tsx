@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '../../utils/supabase'
+import { createServerSupabaseClient } from '@/app/utils/supabaseServer'
 import { revalidatePath } from 'next/cache'
 
 export default async function AdminProductsPage() {
