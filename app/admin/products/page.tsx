@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '../../../utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export default async function AdminProductsPage() {
@@ -39,7 +39,7 @@ export default async function AdminProductsPage() {
     revalidatePath('/admin/products')
   }
 
-  // বিদ্যমান প্রোডাক্টগুলোর লিস্ট নিয়ে আসা
+  // বিদ্যমান প্রোডাক্টগুলোর লিস্ট নিয়ে আসা
   const { data: products } = await supabase.from('products').select('*')
 
   return (
