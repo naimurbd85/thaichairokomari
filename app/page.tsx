@@ -9,6 +9,9 @@ export default function Home() {
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedAudience, setSelectedAudience] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  
+  // এই স্টেটটি মিসিং ছিল, এটি যোগ করা হয়েছে
+  const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -58,6 +61,7 @@ export default function Home() {
             {categories.map((cat) => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
           </select>
         </aside>
+
         {/* Product Grid */}
         <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
           {products.map((product) => (
