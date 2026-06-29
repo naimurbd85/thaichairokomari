@@ -10,19 +10,17 @@ export default function Home() {
   const [selectedAudience, setSelectedAudience] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   
-  // State for the description modal
-  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  // State to track which product's description is expanded
+  const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchInitialData();
   }, [selectedAudience, selectedCategory]);
 
   const fetchInitialData = async () => {
-    // Fetch categories from database
     const { data: catData } = await supabase.from('categories').select('*');
     if (catData) setCategories(catData);
 
-    // Fetch products based on filters
     let query = supabase.from('products').select('*').eq('is_active', true);
     if (selectedAudience && selectedAudience !== 'all') query = query.eq('target_audience', selectedAudience);
     if (selectedCategory) query = query.eq('category_id', selectedCategory);
@@ -80,16 +78,16 @@ export default function Home() {
               
               {/* Description toggle button */}
               <button 
-                onClick={() => setSelectedProduct(selectedProduct?.id === product.id ? null : product)}
+                onClick={() => setExpandedProductId(expandedProductId === product.id ? null : product.id)}
                 className="w-full mb-3 text-sm text-gray-500 underline hover:text-black transition"
               >
-                {selectedProduct?.id === product.id ? "Hide Description" : "View Description"}
+                {expandedProductId === product.id ? "Hide Description" : "View Description"}
               </button>
 
-              {/* Smoothly expanding description area */}
+              {/* Description area with smooth sliding animation */}
               <div 
                 className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  selectedProduct?.id === product.id ? "max-h-40 opacity-100 mb-3" : "max-h-0 opacity-0"
+                  expandedProductId === product.id ? "max-h-40 opacity-100 mb-3" : "max-h-0 opacity-0"
                 }`}
               >
                 <p className="text-sm text-gray-600 border-t pt-2">
@@ -105,22 +103,6 @@ export default function Home() {
           ))}
         </div>
       </main>
-
-      {/* Description Modal */}
-      {selectedProduct && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-6 rounded-xl max-w-lg w-full">
-            <h2 className="text-2xl font-bold mb-2">{selectedProduct.name}</h2>
-            <p className="text-gray-600 mb-6">{selectedProduct.description || "No description available."}</p>
-            <button 
-              onClick={() => setSelectedProduct(null)} 
-              className="w-full bg-gray-200 py-2 rounded-lg font-bold hover:bg-gray-300 transition"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
