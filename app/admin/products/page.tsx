@@ -134,7 +134,7 @@ export default function AdminProductsPage() {
           
           {/* ২/৩ অংশ জুড়ে থাকা মেইন ফর্ম সেকশন */}
           <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border space-y-4">
-            <h2 className="text-md font-bold text-gray-700 flex items-center gap-2 border-b pb-2">📦 Product Core Details</h2>
+            <h2 className="text-md font-bold text-gray-700 flex items-center gap-2 border-b pb-2">📦 Product Details</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -173,7 +173,7 @@ export default function AdminProductsPage() {
             </div>
 
             {/* অ্যাডভান্সড প্রাইসিং গ্রিড */}
-            <h2 className="text-md font-bold text-gray-700 pt-4 border-b pb-2">💰 Advanced Pricing Architecture</h2>
+            <h2 className="text-md font-bold text-gray-700 pt-4 border-b pb-2">💰 Pricing</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-medium mb-1 text-gray-600">Regular Price (৳)</label>
@@ -288,7 +288,7 @@ export default function AdminProductsPage() {
 
         {/* মাল্টিপল ইমেজ আপলোডার সেকশন */}
         <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <h2 className="text-md font-bold text-gray-700 mb-3 border-b pb-2">🖼️ Product Media Gallery</h2>
+          <h2 className="text-md font-bold text-gray-700 mb-3 border-b pb-2">🖼️ Product Photo</h2>
           <ImageUploader onImagesUploaded={(urls) => setUploadedImages(urls)} />
         </div>
 
@@ -298,7 +298,7 @@ export default function AdminProductsPage() {
           disabled={isPending}
           className="w-full bg-blue-600 text-white font-bold px-6 py-3.5 rounded-xl hover:bg-blue-700 transition shadow disabled:bg-gray-400 text-sm tracking-wide"
         >
-          {isPending ? 'Publishing Product System...' : '🚀 Save Product Structure to Cloud'}
+          {isPending ? 'Publishing Product System...' : '🚀 Save Product'}
         </button>
       </form>
 
