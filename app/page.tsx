@@ -73,9 +73,28 @@ export default function Home() {
               
               {/* Product Info */}
               <h3 className="font-bold text-lg leading-tight">{product.name}</h3>
-              <p className="text-orange-600 font-bold text-xl mb-4">{product.regular_price} BDT</p>
+              <p className="text-orange-600 font-bold text-xl mb-3">{product.regular_price} BDT</p>
               
-              {/* Buttons - mt-auto সরিয়ে ফেলা হয়েছে যাতে বাটন সরাসরি ইনফোর নিচে থাকে */}
+              {/* Description Toggle Button */}
+              <button 
+                onClick={() => setExpandedProductId(expandedProductId === product.id ? null : product.id)}
+                className="w-full text-sm text-gray-500 underline hover:text-black transition text-left mb-2"
+              >
+                {expandedProductId === product.id ? "Hide Description" : "View Description"}
+              </button>
+
+              {/* Dynamic Description Area */}
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  expandedProductId === product.id ? "max-h-40 opacity-100 mb-4" : "max-h-0 opacity-0 mb-0"
+                }`}
+              >
+                <p className="text-sm text-gray-600 border-t pt-2">
+                  {product.description || "No description available."}
+                </p>
+              </div>
+
+              {/* Buttons */}
               <div className="flex gap-2">
                 <button className="flex-1 bg-black text-white py-2 rounded-lg font-bold hover:opacity-80 transition">Add to Cart</button>
                 <button className="flex-1 bg-orange-600 text-white py-2 rounded-lg font-bold hover:opacity-80 transition">Buy Now</button>
