@@ -90,7 +90,7 @@ export default function Home() {
               {/* Smoothly sliding description area */}
               <div 
                 className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  expandedProductId === product.id ? "max-h-40 opacity-100 mb-4" : "max-h-0 opacity-0"
+                  expandedProductId === product.id ? "max-h-40 opacity-100 mb-4" : "max-h-0 opacity-0 mb-0"
                 }`}
               >
                 <p className="text-sm text-gray-600 border-t pt-2">
