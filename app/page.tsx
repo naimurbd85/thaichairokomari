@@ -9,9 +9,6 @@ export default function Home() {
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedAudience, setSelectedAudience] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  
-  // State to track which product's description is expanded
-  const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -77,28 +74,9 @@ export default function Home() {
               
               {/* Product Info */}
               <h3 className="font-bold text-lg">{product.name}</h3>
-              <p className="text-orange-600 font-bold text-xl mb-2">{product.regular_price} BDT</p>
+              <p className="text-orange-600 font-bold text-xl mb-4">{product.regular_price} BDT</p>
               
-              {/* Description toggle button */}
-              <button 
-                onClick={() => setExpandedProductId(expandedProductId === product.id ? null : product.id)}
-                className="w-full mb-2 text-sm text-gray-500 underline hover:text-black transition text-left"
-              >
-                {expandedProductId === product.id ? "Hide Description" : "View Description"}
-              </button>
-
-              {/* Smoothly sliding description area */}
-              <div 
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  expandedProductId === product.id ? "max-h-40 opacity-100 mb-4" : "max-h-0 opacity-0 mb-0"
-                }`}
-              >
-                <p className="text-sm text-gray-600 border-t pt-2">
-                  {product.description || "No description available for this product."}
-                </p>
-              </div>
-
-              {/* Buttons at the bottom */}
+              {/* Buttons at the bottom - No Description, No Extra Padding */}
               <div className="flex gap-2 mt-auto">
                 <button className="flex-1 bg-black text-white py-2 rounded-lg font-bold hover:opacity-80 transition">Add to Cart</button>
                 <button className="flex-1 bg-orange-600 text-white py-2 rounded-lg font-bold hover:opacity-80 transition">Buy Now</button>
