@@ -58,11 +58,10 @@ export default function Home() {
             {categories.map((cat) => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
           </select>
         </aside>
-
         {/* Product Grid */}
         <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
           {products.map((product) => (
-            <div key={product.id} className="bg-white p-4 border rounded-xl shadow-sm hover:shadow-md transition flex flex-col">
+            <div key={product.id} className="bg-white p-4 border rounded-xl shadow-sm hover:shadow-md transition flex flex-col h-fit">
               {/* Product Image Area */}
               <div className="w-full h-48 bg-gray-50 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
                 <img 
@@ -73,11 +72,11 @@ export default function Home() {
               </div>
               
               {/* Product Info */}
-              <h3 className="font-bold text-lg">{product.name}</h3>
+              <h3 className="font-bold text-lg leading-tight">{product.name}</h3>
               <p className="text-orange-600 font-bold text-xl mb-4">{product.regular_price} BDT</p>
               
-              {/* Buttons at the bottom - No Description, No Extra Padding */}
-              <div className="flex gap-2 mt-auto">
+              {/* Buttons - mt-auto সরিয়ে ফেলা হয়েছে যাতে বাটন সরাসরি ইনফোর নিচে থাকে */}
+              <div className="flex gap-2">
                 <button className="flex-1 bg-black text-white py-2 rounded-lg font-bold hover:opacity-80 transition">Add to Cart</button>
                 <button className="flex-1 bg-orange-600 text-white py-2 rounded-lg font-bold hover:opacity-80 transition">Buy Now</button>
               </div>
