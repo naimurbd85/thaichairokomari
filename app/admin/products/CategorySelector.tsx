@@ -10,23 +10,18 @@ interface Category {
 
 interface CategorySelectorProps {
   categories: Category[]
+  onCategorySelect: (id: string) => void // টাইপস্ক্রিপ্ট এরর ফিক্স করার জন্য প্রপ্স ডিফাইন
 }
 
-export default function CategorySelector({ categories }: CategorySelectorProps) {
+export default function CategorySelector({ categories, onCategorySelect }: CategorySelectorProps) {
   const [rootId, setRootId] = useState<string>('')
   const [subId, setSubId] = useState<string>('')
   const [subSubId, setSubSubId] = useState<string>('')
 
-  // লেয়ার ১ (Root) ক্যাটাগরি ফিল্টার
   const rootCategories = categories.filter(c => c.parent_id === null)
-
-  // লেয়ার ২ (Sub) ক্যাটাগরি ফিল্টার
   const subCategories = categories.filter(c => c.parent_id === Number(rootId))
-
-  // লেয়ার ৩ (Sub-Sub) ক্যাটাগরি ফিল্টার
   const subSubCategories = categories.filter(c => c.parent_id === Number(subId))
 
-  // প্যারেন্ট ক্যাটাগরি চেঞ্জ হলে চাইল্ড ক্যাটাগরি রিসেট করা
   useEffect(() => {
     setSubId('')
     setSubSubId('')
@@ -36,17 +31,20 @@ export default function CategorySelector({ categories }: CategorySelectorProps) 
     setSubSubId('')
   }, [subId])
 
+  // যখনই কোনো লেয়ার সিলেক্ট হবে, মেইন পেজের স্টেটকে আপডেট করবে
+  useEffect(() => {
+    const finalId = subSubId || subId || rootId
+    onCategorySelect(finalId)
+  }, [rootId, subId, subSubId, onCategorySelect])
+
   return (
-    <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded border">
-      <h3 className="md:col-span-3 text-sm font-semibold text-gray-700">Select Product Category (3-Tier)</h3>
-      
-      {/* লেয়ার ১: মেইন ক্যাটাগরি */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-gray-50 p-3 rounded-lg border">
       <div>
-        <label className="block text-xs font-medium mb-1 text-gray-600">Main Category</label>
+        <label className="block text-[11px] font-medium mb-1 text-gray-500">Main Category</label>
         <select
           value={rootId}
           onChange={(e) => setRootId(e.target.value)}
-          className="w-full p-2 border rounded bg-white"
+          className="w-full p-2 border rounded-md bg-white text-xs outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="">Select Main</option>
           {rootCategories.map(c => (
@@ -55,14 +53,13 @@ export default function CategorySelector({ categories }: CategorySelectorProps) 
         </select>
       </div>
 
-      {/* লেয়ার ২: সাব ক্যাটাগরি */}
       <div>
-        <label className="block text-xs font-medium mb-1 text-gray-600">Sub Category</label>
+        <label className="block text-[11px] font-medium mb-1 text-gray-500">Sub Category</label>
         <select
           value={subId}
           onChange={(e) => setSubId(e.target.value)}
           disabled={!rootId || subCategories.length === 0}
-          className="w-full p-2 border rounded bg-white disabled:bg-gray-100"
+          className="w-full p-2 border rounded-md bg-white text-xs outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
         >
           <option value="">Select Sub</option>
           {subCategories.map(c => (
@@ -71,14 +68,13 @@ export default function CategorySelector({ categories }: CategorySelectorProps) 
         </select>
       </div>
 
-      {/* লেয়ার ৩: সাব-সাব ক্যাটাগরি */}
       <div>
-        <label className="block text-xs font-medium mb-1 text-gray-600">Sub-Sub Category</label>
+        <label className="block text-[11px] font-medium mb-1 text-gray-500">Sub-Sub Category</label>
         <select
           value={subSubId}
           onChange={(e) => setSubSubId(e.target.value)}
           disabled={!subId || subSubCategories.length === 0}
-          className="w-full p-2 border rounded bg-white disabled:bg-gray-100"
+          className="w-full p-2 border rounded-md bg-white text-xs outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
         >
           <option value="">Select Sub-Sub</option>
           {subSubCategories.map(c => (
@@ -86,13 +82,6 @@ export default function CategorySelector({ categories }: CategorySelectorProps) 
           ))}
         </select>
       </div>
-
-      {/* এই হিডেন ইনপুটটি ফর্ম সাবমিট করার সময় ফাইনাল ক্যাটাগরি আইডি ব্যাকএন্ডে পাঠাবে */}
-      <input 
-        type="hidden" 
-        name="category_id" 
-        value={subSubId || subId || rootId} 
-      />
     </div>
   )
 }

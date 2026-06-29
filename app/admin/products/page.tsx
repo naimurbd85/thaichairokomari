@@ -1,166 +1,362 @@
-import { createServerSupabaseClient } from '@/app/utils/supabaseServer'
-import { revalidatePath } from 'next/cache'
+'use client'
+
+import { useState, useEffect, useTransition } from 'react'
+import { createClient } from '@/app/utils/supabase'
 import CategorySelector from './CategorySelector'
 import ImageUploader from './ImageUploader'
 
-export default async function AdminProductsPage() {
-  const supabase = await createServerSupabaseClient()
+interface Category {
+  id: number
+  name: string
+  parent_id: number | null
+}
 
-  // ১. সুপাবেস থেকে ক্যাটাগরি লিস্ট নিয়ে আসা (৩-টায়ার ড্রপডাউনের জন্য)
-  const { data: categoriesData } = await supabase
-    .from('categories')
-    .select('id, name, parent_id')
-    .order('name', { ascending: true })
+export default function AdminProductsPage() {
+  const supabase = createClient()
+  const [isPending, startTransition] = useTransition()
 
-  const categories = categoriesData || []
+  // ডাটা স্টেটস
+  const [categories, setCategories] = useState<Category[]>([])
+  const [products, setProducts] = useState<any[]>([])
 
-  // ২. ফর্ম সাবমিশনের জন্য সার্ভার অ্যাকশন
-  async function addProduct(formData: FormData) {
-    'use server'
+  // ফর্ম ফিল্ড স্টেটস
+  const [name, setName] = useState('')
+  const [sku, setSku] = useState('')
+  const [description, setDescription] = useState('')
+  const [targetAudience, setTargetAudience] = useState('Men Collection')
+  const [categoryId, setCategoryId] = useState<string>('')
+  const [uploadedImages, setUploadedImages] = useState<string[]>([])
+
+  // প্রাইসিং স্টেট
+  const [regularPrice, setRegularPrice] = useState('')
+  const [wholesalePrice, setWholesalePrice] = useState('')
+  const [costPrice, setCostPrice] = useState('')
+  const [discountType, setDiscountType] = useState('Percentage')
+  const [discountAmount, setDiscountAmount] = useState('')
+
+  // ইনভেন্টরি স্টেট
+  const [currentStock, setCurrentStock] = useState('')
+  const [minimumStockAlert, setMinimumStockAlert] = useState('5')
+  const [stockStatus, setStockStatus] = useState('In Stock')
+
+  // ভেরিয়েন্ট স্টেট
+  const [variantAvailable, setVariantAvailable] = useState('No')
+
+  // ১. ডাটাবেজ থেকে ডাটা লোড করা
+  const loadData = async () => {
+    const { data: cats } = await supabase.from('categories').select('id, name, parent_id').order('name', { ascending: true })
+    const { data: prods } = await supabase.from('products').select('*').order('created_at', { ascending: false })
     
-    const supabase = await createServerSupabaseClient()
-    
-    const name = formData.get('name') as string
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-    const price = parseFloat(formData.get('price') as string)
-    const sku = formData.get('sku') as string
-    const stock = parseInt(formData.get('stock') as string)
-    
-    // নতুন ৩টি ফিল্ডের ডেটা ধরা
-    const categoryId = formData.get('category_id') ? parseInt(formData.get('category_id') as string) : null
-    const targetAudience = formData.get('target_audience') as string // men, women, kids, unisex
-    const uploadedImagesJson = formData.get('uploaded_images') as string // JSON string array
-    
-    let imagesArray: string[] = []
-    try {
-      if (uploadedImagesJson) {
-        imagesArray = JSON.parse(uploadedImagesJson)
-      }
-    } catch (e) {
-      console.error('Error parsing uploaded images:', e)
-    }
-
-    // Supabase-এ নতুন প্রডাক্ট ইনসার্ট করা
-    const { error } = await supabase
-      .from('products')
-      .insert([
-        { 
-          name, 
-          slug, 
-          price, 
-          sku, 
-          stock_quantity: stock,
-          low_stock_threshold: 5,
-          category_id: categoryId,      // ৩-টায়ার ক্যাটাগরি আইডি
-          target_audience: targetAudience, // জেন্ডার ইন্ডিকেটর ফিল্টার
-          images: imagesArray          // সুপাবেস স্টোরেজের ইমেজের লিংক অ্যারে
-        }
-      ])
-
-    if (error) {
-      console.error('Error inserting product:', error.message)
-      return
-    }
-
-    revalidatePath('/admin/products')
+    if (cats) setCategories(cats)
+    if (prods) setProducts(prods)
   }
 
-  // ৩. বিদ্যমান প্রডাক্ট লিস্ট নিয়ে আসা (টেবিলে দেখানোর জন্য)
-  const { data: products } = await supabase.from('products').select('*')
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  // ২. অটোমেটিক প্রফেশনাল SKU জেনারেটর (নাম লিখলেই তৈরি হবে)
+  useEffect(() => {
+    if (name.trim()) {
+      const sanitized = name.toUpperCase().replace(/[^A-Z0-9]+/g, '-')
+      const randomNumber = Math.floor(1000 + Math.random() * 9000)
+      setSku(`${sanitized}-${randomNumber}`)
+    } else {
+      setSku('')
+    }
+  }, [name])
+
+  // ৩. ফর্ম সাবমিশন অ্যাকশন
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim()) return
+    
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+
+    startTransition(async () => {
+      const { error } = await supabase
+        .from('products')
+        .insert([
+          {
+            name,
+            slug,
+            sku,
+            description,
+            target_audience: targetAudience,
+            category_id: categoryId ? parseInt(categoryId) : null,
+            images: uploadedImages,
+            
+            // প্রাইসিং ডেটা ম্যাপিং
+            price: parseFloat(regularPrice) || 0,
+            regular_price: parseFloat(regularPrice) || 0,
+            wholesale_price: parseFloat(wholesalePrice) || 0,
+            cost_price: parseFloat(costPrice) || 0,
+            discount_type: discountType,
+            discount_amount: parseFloat(discountAmount) || 0,
+
+            // ইনভেন্টরি ডেটা ম্যাপিং
+            stock_quantity: parseInt(currentStock) || 0,
+            low_stock_threshold: parseInt(minimumStockAlert) || 5,
+            stock_status: stockStatus,
+
+            // ভেরিয়েন্ট ম্যাপিং
+            variant_available: variantAvailable === 'Yes'
+          }
+        ])
+
+      if (error) {
+        alert('ত্রুটি: ' + error.message)
+        return
+      }
+
+      // ফর্ম রিসেট করা
+      setName('')
+      setDescription('')
+      setRegularPrice('')
+      setWholesalePrice('')
+      setCostPrice('')
+      setDiscountAmount('')
+      setCurrentStock('')
+      setUploadedImages([])
+      setVariantAvailable('No')
+      
+      loadData()
+      alert('প্রোডাক্ট এবং সমস্ত বিবরণ সফলভাবে ইআরপিতে সেভ হয়েছে! 🚀')
+    })
+  }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Thaichirokomari ERP - Admin Panel</h1>
+    <div className="p-6 w-full max-w-[97%] mx-auto">
+      <h1 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">Thaichi Rokomari ERP - Premium Product Dashboard</h1>
       
-      {/* নতুন প্রোডাক্ট যোগ করার ফর্ম */}
-      <div className="bg-white p-6 rounded-lg shadow-md border mb-8">
-        <h2 className="text-xl font-semibold mb-4">Add New Product (Advanced)</h2>
-        <form action={addProduct} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          <div>
-            <label className="block text-sm font-medium mb-1">Product Name</label>
-            <input type="text" name="name" required className="w-full p-2 border rounded" placeholder="e.g. Thai Window Frame" />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-1">SKU (Unique Code)</label>
-            <input type="text" name="sku" required className="w-full p-2 border rounded" placeholder="e.g. TH-WD-001" />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-1">Price (৳)</label>
-            <input type="number" name="price" required step="0.01" className="w-full p-2 border rounded" placeholder="0.00" />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-1">Stock Quantity</label>
-            <input type="number" name="stock" required className="w-full p-2 border rounded" placeholder="0" />
+          {/* ২/৩ অংশ জুড়ে থাকা মেইন ফর্ম সেকশন */}
+          <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border space-y-4">
+            <h2 className="text-md font-bold text-gray-700 flex items-center gap-2 border-b pb-2">📦 Product Core Details</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium mb-1 text-gray-600">Product Name</label>
+                <input 
+                  type="text" 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
+                  required 
+                  className="w-full p-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500" 
+                  placeholder="e.g. Premium Thai Silk Attire" 
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-medium mb-1 text-gray-600">SKU (Auto Generated)</label>
+                <input 
+                  type="text" 
+                  value={sku} 
+                  onChange={(e) => setSku(e.target.value)} 
+                  required 
+                  className="w-full p-2 border rounded-lg bg-gray-50 font-mono text-xs text-blue-600 outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium mb-1 text-gray-600">Product Description</label>
+              <textarea 
+                rows={3} 
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full p-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500" 
+                placeholder="প্রোডাক্টের বিবরণ, সাইজ চার্ট বা উপাদানসমূহ এখানে লিখুন..."
+              />
+            </div>
+
+            {/* অ্যাডভান্সড প্রাইসিং গ্রিড */}
+            <h2 className="text-md font-bold text-gray-700 pt-4 border-b pb-2">💰 Advanced Pricing Architecture</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-medium mb-1 text-gray-600">Regular Price (৳)</label>
+                <input type="number" value={regularPrice} onChange={(e) => setRegularPrice(e.target.value)} required className="w-full p-2 border rounded-lg text-sm" placeholder="0.00" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1 text-gray-600">Wholesale Price (৳)</label>
+                <input type="number" value={wholesalePrice} onChange={(e) => setWholesalePrice(e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="0.00" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1 text-gray-600">Cost Price (৳)</label>
+                <input type="number" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="0.00" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium mb-1 text-gray-600">Discount Type</label>
+                <select value={discountType} onChange={(e) => setDiscountType(e.target.value)} className="w-full p-2 border rounded-lg bg-white text-sm">
+                  <option value="Percentage">Percentage (%)</option>
+                  <option value="Fixed">Fixed Amount (৳)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1 text-gray-600">Discount Value</label>
+                <input type="number" value={discountAmount} onChange={(e) => setDiscountAmount(e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="0" />
+              </div>
+            </div>
           </div>
 
-          {/* জেন্ডার / ইন্ডিকেটর ড্রপডাউন (মেল, ফিমেল, বাচ্চা) */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Target Audience (Filter)</label>
-            <select name="target_audience" required className="w-full p-2 border rounded bg-white">
-              <option value="unisex">Unisex (সবার জন্য)</option>
-              <option value="men">Men (পুরুষ)</option>
-              <option value="women">Women (মহিলা)</option>
-              <option value="kids">Kids (বাচ্চা)</option>
-            </select>
+          {/* ডানের সাইডবার কলাম (ইনভেন্টরি, ক্যাটাগরি ও ফিল্টারস) */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border space-y-5">
+            <h2 className="text-md font-bold text-gray-700 border-b pb-2">📊 Catalog Settings</h2>
+            
+            <div>
+              <label className="block text-xs font-medium mb-1 text-gray-600">Target Audience (Collection Filter)</label>
+              <select 
+                value={targetAudience} 
+                onChange={(e) => setTargetAudience(e.target.value)} 
+                required 
+                className="w-full p-2 border rounded-lg bg-white text-xs font-medium text-gray-700"
+              >
+                <option value="Men Collection">Men Collection</option>
+                <option value="Women Collection">Women Collection</option>
+                <option value="Baby Collection">Baby Collection</option>
+                <option value="Home & kitchen">Home & kitchen</option>
+                <option value="Gifts Items">Gifts Items</option>
+                <option value="Gadgets & Mobile Accessories">Gadgets & Mobile Accessories</option>
+              </select>
+            </div>
+
+            {/* ৩-টায়ার ক্যাটাগরি কম্পোনেন্ট */}
+            <div>
+              <label className="block text-xs font-medium mb-1 text-gray-600">Product Category Architecture</label>
+              <CategorySelector categories={categories} onCategorySelect={(id) => setCategoryId(id)} />
+            </div>
+
+            {/* ইনভেন্টরি কন্ট্রোল */}
+            <div className="border-t pt-3 space-y-3">
+              <h3 className="font-bold text-xs text-gray-700 uppercase tracking-wider">Inventory & Warehouse</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] text-gray-500 mb-1">Current Stock</label>
+                  <input type="number" value={currentStock} onChange={(e) => setCurrentStock(e.target.value)} required className="w-full p-2 border rounded-lg text-sm" placeholder="0" />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-gray-500 mb-1">Min Alert Stock</label>
+                  <input type="number" value={minimumStockAlert} onChange={(e) => setMinimumStockAlert(e.target.value)} required className="w-full p-2 border rounded-lg text-sm" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] text-gray-500 mb-1">Stock Status</label>
+                <div className="grid grid-cols-3 gap-1 text-xs">
+                  {['In Stock', 'Out of Stock', 'Pre-order'].map((status) => (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => setStockStatus(status)}
+                      className={`p-2 border rounded-md font-medium transition ${
+                        stockStatus === status ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ভেরিয়েন্ট অপশন */}
+            <div className="border-t pt-3">
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Variant Available?</label>
+              <div className="flex gap-4 mt-1">
+                {['Yes', 'No'].map((opt) => (
+                  <label key={opt} className="flex items-center space-x-2 cursor-pointer text-xs">
+                    <input 
+                      type="radio" 
+                      name="variant_available_radio" 
+                      checked={variantAvailable === opt}
+                      onChange={() => setVariantAvailable(opt)}
+                      className="w-4 h-4 text-blue-600" 
+                    />
+                    <span className={variantAvailable === opt ? 'font-bold text-blue-600' : 'text-gray-600'}>{opt}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
           </div>
+        </div>
 
-          <div className="hidden md:block"></div> {/* গ্রিড ব্যালেন্স করার জন্য খালি ডিভ */}
+        {/* মাল্টিপল ইমেজ আপলোডার সেকশন */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border">
+          <h2 className="text-md font-bold text-gray-700 mb-3 border-b pb-2">🖼️ Product Media Gallery</h2>
+          <ImageUploader onImagesUploaded={(urls) => setUploadedImages(urls)} />
+        </div>
 
-          {/* ডাইনামিক ৩-টায়ার ক্যাটাগরি সিলেক্টর কম্পোনেন্ট */}
-          <CategorySelector categories={categories} />
+        {/* সেভ বাটন */}
+        <button 
+          type="submit" 
+          disabled={isPending}
+          className="w-full bg-blue-600 text-white font-bold px-6 py-3.5 rounded-xl hover:bg-blue-700 transition shadow disabled:bg-gray-400 text-sm tracking-wide"
+        >
+          {isPending ? 'Publishing Product System...' : '🚀 Save Product Structure to Cloud'}
+        </button>
+      </form>
 
-          {/* মাল্টিপল ইমেজ আপলোডার কম্পোনেন্ট */}
-          <ImageUploader />
-
-          <div className="md:col-span-2 mt-2">
-            <button type="submit" className="w-full bg-blue-600 text-white font-semibold px-4 py-3 rounded hover:bg-blue-700 transition shadow">
-              Save Product & Upload Data
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* প্রোডাক্ট লিস্ট টেবিল */}
-      <div className="bg-white p-6 rounded-lg shadow-md border">
-        <h2 className="text-xl font-semibold mb-4">Current Stock & Products</h2>
-        <div className="overflow-x-auto">
+      {/* প্রোডাক্ট লিস্ট টেবিল (ফুল স্ক্রিন উইডথ) */}
+      <div className="bg-white p-6 rounded-xl shadow-sm border mt-8">
+        <h2 className="text-md font-bold mb-4 text-gray-700">Live Inventory Warehouse ({products.length} Products)</h2>
+        <div className="overflow-x-auto rounded-lg border">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b bg-gray-50">
-                <th className="p-2">Image</th>
-                <th className="p-2">Name</th>
-                <th className="p-2">Audience</th>
-                <th className="p-2">SKU</th>
-                <th className="p-2">Price</th>
-                <th className="p-2">Stock</th>
+              <tr className="border-b bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                <th className="p-3 w-24">Media</th>
+                <th className="p-3">Product Name</th>
+                <th className="p-3">Collection</th>
+                <th className="p-3">SKU</th>
+                <th className="p-3 text-right">Price</th>
+                <th className="p-3 text-center">Qty</th>
+                <th className="p-3 text-center">Status</th>
               </tr>
             </thead>
-            <tbody>
-              {products && products.length > 0 ? (
+            <tbody className="text-sm divide-y">
+              {products.length > 0 ? (
                 products.map((product) => (
-                  <tr key={product.id} className="border-b hover:bg-gray-50">
-                    <td className="p-2">
+                  <tr key={product.id} className="hover:bg-gray-50/50 transition">
+                    <td className="p-3">
                       {product.images && product.images.length > 0 ? (
-                        // eslint-disable-next-html-element/allowed-string-attribute
-                        <img src={product.images[0]} alt="thumb" className="w-10 h-10 object-cover rounded border" />
+                        <div className="flex -space-x-2 overflow-hidden">
+                          {product.images.slice(0, 3).map((imgUrl: string, idx: number) => (
+                            <img key={idx} src={imgUrl} alt="thumb" className="w-9 h-9 object-cover rounded-full border-2 border-white bg-white shadow-sm" />
+                          ))}
+                          {product.images.length > 3 && (
+                            <div className="w-9 h-9 bg-gray-800 text-white text-[10px] rounded-full flex items-center justify-center font-bold border-2 border-white shadow-sm">
+                              +{product.images.length - 3}
+                            </div>
+                          )}
+                        </div>
                       ) : (
-                        <div className="w-10 h-10 bg-gray-200 rounded border flex items-center justify-center text-xs text-gray-400">No Img</div>
+                        <div className="w-9 h-9 bg-gray-100 rounded-full border flex items-center justify-center text-[9px] text-gray-400 font-medium">No Img</div>
                       )}
                     </td>
-                    <td className="p-2 font-medium">{product.name}</td>
-                    <td className="p-2 text-sm capitalize"><span className="bg-gray-100 px-2 py-0.5 rounded text-gray-600">{product.target_audience}</span></td>
-                    <td className="p-2 font-mono text-sm">{product.sku}</td>
-                    <td className="p-2">৳{product.price}</td>
-                    <td className="p-2">{product.stock_quantity}</td>
+                    <td className="p-3 font-semibold text-gray-800">{product.name}</td>
+                    <td className="p-3"><span className="bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded text-xs font-medium border border-blue-100">{product.target_audience}</span></td>
+                    <td className="p-3 font-mono text-xs text-gray-400">{product.sku}</td>
+                    <td className="p-3 text-right font-medium text-gray-900">৳{product.price}</td>
+                    <td className="p-3 text-center font-mono font-bold">{product.stock_quantity}</td>
+                    <td className="p-3 text-center">
+                      <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold ${
+                        product.stock_status === 'In Stock' ? 'bg-green-100 text-green-800' :
+                        product.stock_status === 'Pre-order' ? 'bg-amber-100 text-amber-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {product.stock_status || 'In Stock'}
+                      </span>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="p-4 text-center text-gray-500">No products added yet.</td>
+                  <td colSpan={7} className="p-8 text-center text-gray-400">No products added yet. Start adding above!</td>
                 </tr>
               )}
             </tbody>
