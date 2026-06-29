@@ -121,7 +121,7 @@ export default function AdminProductsPage() {
       setVariantAvailable('No')
       
       loadData()
-      alert('প্রোডাক্ট এবং সমস্ত বিবরণ সফলভাবে ইআরপিতে সেভ হয়েছে! 🚀')
+      alert('Saved Successfully! 🚀')
     })
   }
 
@@ -168,7 +168,7 @@ export default function AdminProductsPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full p-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500" 
-                placeholder="প্রোডাক্টের বিবরণ, সাইজ চার্ট বা উপাদানসমূহ এখানে লিখুন..."
+                placeholder=""
               />
             </div>
 
