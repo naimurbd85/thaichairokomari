@@ -1,8 +1,38 @@
 'use client';
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createClient } from '@/app/utils/supabase';
 import Navbar from "../components/Navbar";
 
 export default function Home() {
+  const supabase = createClient();
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedAudience, setSelectedAudience] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [selectedAudience, selectedCategory]);
+
+  const fetchInitialData = async () => {
+    // ক্যাটাগরি লোড
+    const { data: catData } = await supabase.from('categories').select('*');
+    if (catData) setCategories(catData);
+
+    // প্রোডাক্ট লোড (ফিল্টারসহ)
+    let query = supabase.from('products').select('*').eq('is_active', true);
+    
+    if (selectedAudience && selectedAudience !== 'all') {
+      query = query.eq('target_audience', selectedAudience);
+    }
+    if (selectedCategory) {
+      query = query.eq('category_id', selectedCategory);
+    }
+
+    const { data: prodData } = await query;
+    if (prodData) setProducts(prodData);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
@@ -11,42 +41,53 @@ export default function Home() {
         {/* ফিল্টার সাইডবার */}
         <aside className="w-64 bg-gray-100 p-6 rounded-xl self-start">
           <h3 className="font-bold mb-4 text-gray-700">Filters</h3>
+          
           <label className="block text-sm font-semibold mb-2">Target Audience</label>
-          <select className="w-full p-2 mb-6 border rounded cursor-pointer">
-            <option>All Collection</option>
-            <option>Men Collection</option>
-            <option>Women Collection</option>
-            <option>Kids Collection</option>
+          <select 
+            className="w-full p-2 mb-6 border rounded cursor-pointer"
+            onChange={(e) => setSelectedAudience(e.target.value)}
+          >
+            <option value="all">All Collections</option>
+            <option value="men">Men Collection</option>
+            <option value="women">Women Collection</option>
+            <option value="kids">Kids Collection</option>
+            <option value="unisex">Unisex</option>
+            <option value="home_kitchen">Home & Kitchen</option>
+            <option value="gadgets_accessories">Gadgets</option>
           </select>
+
           <label className="block text-sm font-semibold mb-2">Categories</label>
-          <select className="w-full p-2 border rounded cursor-pointer">
-            <option>All Categories</option>
-            <option>Home & Kitchen</option>
-            <option>Gadgets</option>
+          <select 
+            className="w-full p-2 border rounded cursor-pointer"
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            <option value="">All Categories</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
           </select>
         </aside>
 
         {/* প্রোডাক্ট গ্রিড */}
         <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-4 border rounded-xl shadow-sm hover:shadow-md transition">
-            <div className="w-full h-48 bg-gray-200 rounded-lg mb-3"></div> {/* ইমেজ প্লেসহোল্ডার */}
-            <h3 className="font-bold text-lg">Premium Product</h3>
-            <p className="text-orange-600 font-bold text-xl">৳১,৫০০</p>
-            <div className="flex gap-2 mt-4">
-              <button className="flex-1 bg-black text-white py-3 rounded-xl font-bold hover:opacity-80 transition cursor-pointer">Add to Cart</button>
-              <button className="flex-1 bg-orange-600 text-white py-3 rounded-xl font-bold hover:opacity-80 transition cursor-pointer">Buy Now</button>
+          {products.map((product) => (
+            <div key={product.id} className="bg-white p-4 border rounded-xl shadow-sm hover:shadow-md transition">
+              {/* ইমেজ হ্যান্ডলিং: প্রথম ছবিটি দেখাবে */}
+              <img 
+                src={product.images && product.images.length > 0 ? product.images[0] : '/placeholder.png'} 
+                alt={product.name}
+                className="w-full h-48 object-cover rounded-lg mb-3"
+              />
+              <h3 className="font-bold text-lg">{product.name}</h3>
+              <p className="text-orange-600 font-bold text-xl">৳{product.regular_price}</p>
+              <div className="flex gap-2 mt-4">
+                <button className="flex-1 bg-black text-white py-3 rounded-xl font-bold hover:opacity-80 transition cursor-pointer">Add to Cart</button>
+                <button className="flex-1 bg-orange-600 text-white py-3 rounded-xl font-bold hover:opacity-80 transition cursor-pointer">Buy Now</button>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       </main>
-
-      {/* ফুটার */}
-      <footer className="bg-gray-900 text-white p-10 text-center mt-10">
-        <div className="flex justify-center gap-6 mb-4 underline text-sm">
-          <a href="#">About Us</a> <a href="#">Refund Policy</a> <a href="#">Contact</a>
-        </div>
-        <p className="text-xs text-gray-400">&copy; 2026 Thaichi Rokomari. All Rights Reserved.</p>
-      </footer>
     </div>
   );
 }
