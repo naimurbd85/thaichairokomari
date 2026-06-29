@@ -209,21 +209,22 @@ export default function AdminProductsPage() {
             <h2 className="text-md font-bold text-gray-700 border-b pb-2">📊 Catalog Settings</h2>
             
             <div>
-              <label className="block text-xs font-medium mb-1 text-gray-600">Target Audience (Collection Filter)</label>
+              <label className="block text-xs font-medium mb-1 text-gray-600">Target Audience / Collection</label>
               <select 
                 value={targetAudience} 
                 onChange={(e) => setTargetAudience(e.target.value)} 
                 required 
                 className="w-full p-2 border rounded-lg bg-white text-xs font-medium text-gray-700"
               >
-                <option value="ALL">All Collection</option>
-                <option value="Men Collection">Men Collection</option>
-                <option value="Women Collection">Women Collection</option>
-                <option value="Baby Collection">Baby Collection</option>
-                <option value="Home & kitchen">Home & kitchen</option>
-                <option value="Gifts Items">Gifts Items</option>
-                <option value="Gadgets & Mobile Accessories">Gadgets & Mobile Accessories</option>
-                <option value="All">Men Collection</option>
+                <option value="">Select a Collection</option>
+                <option value="all">All Collection</option>
+                <option value="men">Men Collection</option>
+                <option value="women">Women Collection</option>
+                <option value="kids">Kids Collection</option>
+                <option value="unisex">Unisex Collection</option>
+                <option value="home_kitchen">Home & Kitchen</option>
+                <option value="gifts">Gifts Items</option>
+                <option value="gadgets_accessories">Gadgets & Mobile Accessories</option>
               </select>
             </div>
 
