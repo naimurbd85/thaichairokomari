@@ -1,66 +1,78 @@
 'use client';
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 import Navbar from "../components/Navbar";
 
 export default function Home() {
-  const [activeCollection, setActiveCollection] = useState("All");
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedAudience, setSelectedAudience] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      // ক্যাটাগরি ফেচ করা
+      const { data: catData } = await supabase.from("categories").select("*");
+      if (catData) setCategories(catData);
+
+      // প্রোডাক্ট ফেচ করা
+      let query = supabase.from("products").select("*").eq("is_active", true);
+      if (selectedAudience !== "All") query = query.eq("target_audience", selectedAudience.toLowerCase());
+      if (selectedCategory) query = query.eq("category_id", selectedCategory);
+      
+      const { data: prodData } = await query;
+      if (prodData) setProducts(prodData);
+    }
+    fetchData();
+  }, [selectedAudience, selectedCategory]);
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <main className="max-w-7xl mx-auto py-10 px-6">
-        
-        {/* Collection / Target Audience Filter */}
-        <section className="mb-10">
-          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Shop By Collection</h3>
-          <div className="flex gap-4">
-            {["All", "Men", "Women", "Kids", "Corporate"].map((coll) => (
-              <button 
-                key={coll}
-                onClick={() => setActiveCollection(coll)}
-                className={`px-8 py-3 rounded-xl font-bold transition ${activeCollection === coll ? 'bg-black text-white' : 'bg-white border text-black'}`}
-              >
-                {coll}
-              </button>
-            ))}
-          </div>
-        </section>
+      {/* সার্চ বার */}
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        <input 
+          type="text" 
+          placeholder="Search for products..." 
+          className="w-full p-4 rounded-xl border border-gray-200 shadow-sm"
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
 
-        {/* Category Filter */}
-        <section className="mb-10">
-          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Product Categories</h3>
-          <div className="flex gap-3">
-            {["All", "Electronics", "Stationery", "Home Decor"].map((cat) => (
-              <button 
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-1.5 rounded-full text-sm ${activeCategory === cat ? 'bg-orange-600 text-white' : 'bg-white border'}`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </section>
+      <div className="max-w-7xl mx-auto px-6 py-6 flex gap-8">
+        {/* বাম পাশের সাইডবার */}
+        <aside className="w-1/4">
+          <h4 className="font-bold mb-4 text-gray-700">Target Audience</h4>
+          {["All", "Unisex", "Men", "Women", "Kids"].map(aud => (
+            <button key={aud} onClick={() => setSelectedAudience(aud)} className="block w-full text-left py-2 hover:text-orange-600">{aud}</button>
+          ))}
+          
+          <h4 className="font-bold mt-8 mb-4 text-gray-700">Categories</h4>
+          <button onClick={() => setSelectedCategory(null)} className="block w-full text-left py-2">All</button>
+          {categories.map(cat => (
+            <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className="block w-full text-left py-2 hover:text-orange-600">{cat.name}</button>
+          ))}
+        </aside>
 
-        {/* Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-           {/* প্রোডাক্ট কার্ড এখন আগের চেয়েও ক্লিন ও প্রফেশনাল */}
-          <div className="bg-white p-4 rounded-2xl border shadow-sm group">
-            <div className="relative overflow-hidden rounded-xl">
-                <img src="/laptop.jpg" className="w-full h-56 object-cover group-hover:scale-105 transition duration-500" />
+        {/* প্রোডাক্ট গ্রিড */}
+        <div className="w-3/4 grid grid-cols-3 gap-6">
+          {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(p => (
+            <div key={p.id} className="bg-white p-4 rounded-xl border shadow-sm">
+              {/* ইমেজ ফিক্স: যদি ছবি না থাকে তবে ডিফল্ট ইমেজ */}
+              <img src={p.images && p.images.length > 0 ? p.images[0] : "/placeholder.png"} 
+                   alt={p.name} className="w-full h-48 object-cover rounded-lg mb-3" />
+              <h3 className="font-bold">{p.name}</h3>
+              <p className="text-orange-600 font-bold">৳{p.price}</p>
+              <div className="flex gap-2 mt-3">
+                <button className="flex-1 border py-2 rounded-lg text-xs">Add to Cart</button>
+                <button className="flex-1 bg-orange-600 text-white py-2 rounded-lg text-xs">Buy Now</button>
+              </div>
             </div>
-            <h3 className="font-bold mt-4 text-gray-900">Asus Premium Laptop</h3>
-            <p className="text-orange-600 font-extrabold text-xl mt-1">৳85,000</p>
-            
-            <div className="flex gap-2 mt-4">
-              <button className="flex-1 border-2 border-black font-bold py-2.5 rounded-xl text-xs hover:bg-black hover:text-white transition">Add to Cart</button>
-              <button className="flex-1 bg-orange-600 text-white font-bold py-2.5 rounded-xl text-xs hover:bg-orange-700 transition">Buy Now</button>
-            </div>
-          </div>
+          ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
