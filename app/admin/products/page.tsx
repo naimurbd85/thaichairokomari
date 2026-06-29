@@ -216,12 +216,14 @@ export default function AdminProductsPage() {
                 required 
                 className="w-full p-2 border rounded-lg bg-white text-xs font-medium text-gray-700"
               >
+                <option value="ALL">All Collection</option>
                 <option value="Men Collection">Men Collection</option>
                 <option value="Women Collection">Women Collection</option>
                 <option value="Baby Collection">Baby Collection</option>
                 <option value="Home & kitchen">Home & kitchen</option>
                 <option value="Gifts Items">Gifts Items</option>
                 <option value="Gadgets & Mobile Accessories">Gadgets & Mobile Accessories</option>
+                <option value="All">Men Collection</option>
               </select>
             </div>
 
