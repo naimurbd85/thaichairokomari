@@ -68,7 +68,6 @@ export default function Home() {
         <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
           {products.map((product) => (
             <div key={product.id} className="bg-white p-4 border rounded-xl shadow-sm hover:shadow-md transition flex flex-col">
-              {/* Product Image with object-contain to prevent cropping */}
               <div className="w-full h-48 bg-gray-50 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
                 <img 
                   src={product.images && product.images.length > 0 ? product.images[0] : '/placeholder.png'} 
@@ -79,13 +78,24 @@ export default function Home() {
               <h3 className="font-bold text-lg">{product.name}</h3>
               <p className="text-orange-600 font-bold text-xl mb-3">{product.regular_price} BDT</p>
               
-              {/* Product Details trigger button */}
+              {/* Description toggle button */}
               <button 
-                onClick={() => setSelectedProduct(product)}
+                onClick={() => setSelectedProduct(selectedProduct?.id === product.id ? null : product)}
                 className="w-full mb-3 text-sm text-gray-500 underline hover:text-black transition"
               >
-                View Description
+                {selectedProduct?.id === product.id ? "Hide Description" : "View Description"}
               </button>
+
+              {/* Smoothly expanding description area */}
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  selectedProduct?.id === product.id ? "max-h-40 opacity-100 mb-3" : "max-h-0 opacity-0"
+                }`}
+              >
+                <p className="text-sm text-gray-600 border-t pt-2">
+                  {product.description || "No description available."}
+                </p>
+              </div>
 
               <div className="flex gap-2 mt-auto">
                 <button className="flex-1 bg-black text-white py-2 rounded-lg font-bold hover:opacity-80 transition">Add to Cart</button>
