@@ -2,299 +2,82 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { createClient } from '@/app/utils/supabase'
-import CategorySelector from './CategorySelector'
-import ImageUploader from './ImageUploader'
-
-interface Category {
-  id: number
-  name: string
-  parent_id: number | null
-}
+import CategorySelector from '@/components/CategorySelector'
+import ImageUploader from '@/components/ImageUploader'
+import ProductForm from '@/components/ProductForm' // আপনি আগের স্ট্রাকচারে এটি তৈরি করেছিলেন
 
 export default function AdminProductsPage() {
   const supabase = createClient()
   const [isPending, startTransition] = useTransition()
-
-  // ডাটা স্টেটস
-  const [categories, setCategories] = useState<Category[]>([])
   const [products, setProducts] = useState<any[]>([])
+  const [editingProduct, setEditingProduct] = useState<any>(null)
+  const [isFormOpen, setIsFormOpen] = useState(false)
 
-  // ফর্ম ফিল্ড স্টেটস
-  const [name, setName] = useState('')
-  const [sku, setSku] = useState('')
-  const [description, setDescription] = useState('')
-  const [targetAudience, setTargetAudience] = useState('Men Collection')
-  const [categoryId, setCategoryId] = useState<string>('')
-  const [uploadedImages, setUploadedImages] = useState<string[]>([])
-
-  // প্রাইসিং স্টেট
-  const [regularPrice, setRegularPrice] = useState('')
-  const [wholesalePrice, setWholesalePrice] = useState('')
-  const [costPrice, setCostPrice] = useState('')
-  const [discountType, setDiscountType] = useState('Percentage')
-  const [discountAmount, setDiscountAmount] = useState('')
-
-  // ইনভেন্টরি স্টেট
-  const [currentStock, setCurrentStock] = useState('')
-  const [minimumStockAlert, setMinimumStockAlert] = useState('5')
-  const [stockStatus, setStockStatus] = useState('In Stock')
-
-  // ভেরিয়েন্ট স্টেট
-  const [variantAvailable, setVariantAvailable] = useState('No')
-
-  // ১. ডাটাবেজ থেকে ডাটা লোড করা
+  // ডাটা লোড
   const loadData = async () => {
-    const { data: cats } = await supabase.from('categories').select('id, name, parent_id').order('name', { ascending: true })
     const { data: prods } = await supabase.from('products').select('*').order('created_at', { ascending: false })
-    
-    if (cats) setCategories(cats)
     if (prods) setProducts(prods)
   }
 
-  useEffect(() => {
-    loadData()
-  }, [])
+  useEffect(() => { loadData() }, [])
 
-  // ২. অটোমেটিক প্রফেশনাল SKU জেনারেটর
-  useEffect(() => {
-    if (name.trim()) {
-      const sanitized = name.toUpperCase().replace(/[^A-Z0-9]+/g, '-')
-      const randomNumber = Math.floor(1000 + Math.random() * 9000)
-      setSku(`${sanitized}-${randomNumber}`)
-    } else {
-      setSku('')
-    }
-  }, [name])
-
-  // ৩. ফর্ম সাবমিশন অ্যাকশন
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim()) return
-    
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-
+  // সেভ বা আপডেট লজিক
+  const handleSave = async (formData: any) => {
     startTransition(async () => {
-      const { error } = await supabase
-        .from('products')
-        .insert([
-          {
-            name,
-            slug,
-            sku,
-            description,
-            target_audience: targetAudience,
-            category_id: categoryId ? parseInt(categoryId) : null,
-            images: uploadedImages,
-            price: parseFloat(regularPrice) || 0,
-            regular_price: parseFloat(regularPrice) || 0,
-            wholesale_price: parseFloat(wholesalePrice) || 0,
-            cost_price: parseFloat(costPrice) || 0,
-            discount_type: discountType,
-            discount_amount: parseFloat(discountAmount) || 0,
-            stock_quantity: parseInt(currentStock) || 0,
-            low_stock_threshold: parseInt(minimumStockAlert) || 5,
-            stock_status: stockStatus,
-            variant_available: variantAvailable === 'Yes'
-          }
-        ])
-
-      if (error) {
-        alert('ত্রুটি: ' + error.message)
-        return
+      if (editingProduct) {
+        // আপডেট মোড
+        await supabase.from('products').update(formData).eq('id', editingProduct.id)
+      } else {
+        // ইনসার্ট মোড
+        await supabase.from('products').insert([formData])
       }
-
-      setName('')
-      setDescription('')
-      setRegularPrice('')
-      setWholesalePrice('')
-      setCostPrice('')
-      setDiscountAmount('')
-      setCurrentStock('')
-      setUploadedImages([])
-      setVariantAvailable('No')
-      
       loadData()
-      alert('Saved Successfully! 🚀')
+      setIsFormOpen(false)
+      setEditingProduct(null)
     })
   }
 
-  // প্রোডাক্ট ডিলিট ফাংশন
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) {
-      alert('Error deleting: ' + error.message);
-    } else {
-      loadData();
-    }
-  }
-
-  // প্রোডাক্ট এডিট ফাংশন
-  const handleEdit = (product: any) => {
-    alert('Edit functionality for ' + product.name + ' is coming soon!');
+    await supabase.from('products').delete().eq('id', id);
+    loadData();
   }
 
   return (
     <div className="p-6 w-full max-w-[97%] mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">Thaichi Rokomari ERP - Premium Product Dashboard</h1>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border space-y-4">
-            <h2 className="text-md font-bold text-gray-700 flex items-center gap-2 border-b pb-2">📦 Product Details</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium mb-1 text-gray-600">Product Name</label>
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className="w-full p-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Premium Thai Silk Attire" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1 text-gray-600">SKU (Auto Generated)</label>
-                <input type="text" value={sku} onChange={(e) => setSku(e.target.value)} required className="w-full p-2 border rounded-lg bg-gray-50 font-mono text-xs text-blue-600 outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1 text-gray-600">Product Description</label>
-              <textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full p-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <h2 className="text-md font-bold text-gray-700 pt-4 border-b pb-2">💰 Pricing</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-medium mb-1 text-gray-600">Regular Price (৳)</label>
-                <input type="number" value={regularPrice} onChange={(e) => setRegularPrice(e.target.value)} required className="w-full p-2 border rounded-lg text-sm" placeholder="0.00" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1 text-gray-600">Wholesale Price (৳)</label>
-                <input type="number" value={wholesalePrice} onChange={(e) => setWholesalePrice(e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="0.00" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1 text-gray-600">Cost Price (৳)</label>
-                <input type="number" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="0.00" />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium mb-1 text-gray-600">Discount Type</label>
-                <select value={discountType} onChange={(e) => setDiscountType(e.target.value)} className="w-full p-2 border rounded-lg bg-white text-sm">
-                  <option value="Percentage">Percentage (%)</option>
-                  <option value="Fixed">Fixed Amount (৳)</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1 text-gray-600">Discount Value</label>
-                <input type="number" value={discountAmount} onChange={(e) => setDiscountAmount(e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="0" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl shadow-sm border space-y-5">
-            <h2 className="text-md font-bold text-gray-700 border-b pb-2">📊 Catalog Settings</h2>
-            <div>
-              <label className="block text-xs font-medium mb-1 text-gray-600">Target Audience / Collection</label>
-              <select value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} required className="w-full p-2 border rounded-lg bg-white text-xs font-medium text-gray-700">
-                <option value="">Select a Collection</option>
-                <option value="all">All Collection</option>
-                <option value="men">Men Collection</option>
-                <option value="women">Women Collection</option>
-                <option value="kids">Kids Collection</option>
-                <option value="unisex">Unisex Collection</option>
-                <option value="home_kitchen">Home & Kitchen</option>
-                <option value="gifts">Gifts Items</option>
-                <option value="gadgets_accessories">Gadgets & Mobile Accessories</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1 text-gray-600">Product Category Architecture</label>
-              <CategorySelector categories={categories} onCategorySelect={(id) => setCategoryId(id)} />
-            </div>
-            <div className="border-t pt-3 space-y-3">
-              <h3 className="font-bold text-xs text-gray-700 uppercase tracking-wider">Inventory & Warehouse</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] text-gray-500 mb-1">Current Stock</label>
-                  <input type="number" value={currentStock} onChange={(e) => setCurrentStock(e.target.value)} required className="w-full p-2 border rounded-lg text-sm" placeholder="0" />
-                </div>
-                <div>
-                  <label className="block text-[11px] text-gray-500 mb-1">Min Alert Stock</label>
-                  <input type="number" value={minimumStockAlert} onChange={(e) => setMinimumStockAlert(e.target.value)} required className="w-full p-2 border rounded-lg text-sm" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-[11px] text-gray-500 mb-1">Stock Status</label>
-                <div className="grid grid-cols-3 gap-1 text-xs">
-                  {['In Stock', 'Out of Stock', 'Pre-order'].map((status) => (
-                    <button key={status} type="button" onClick={() => setStockStatus(status)} className={`p-2 border rounded-md font-medium transition ${stockStatus === status ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
-                      {status}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="border-t pt-3">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Variant Available?</label>
-              <div className="flex gap-4 mt-1">
-                {['Yes', 'No'].map((opt) => (
-                  <label key={opt} className="flex items-center space-x-2 cursor-pointer text-xs">
-                    <input type="radio" name="variant_available_radio" checked={variantAvailable === opt} onChange={() => setVariantAvailable(opt)} className="w-4 h-4 text-blue-600" />
-                    <span className={variantAvailable === opt ? 'font-bold text-blue-600' : 'text-gray-600'}>{opt}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <h2 className="text-md font-bold text-gray-700 mb-3 border-b pb-2">🖼️ Product Photo</h2>
-          <ImageUploader onImagesUploaded={(urls) => setUploadedImages(urls)} />
-        </div>
-
-        <button type="submit" disabled={isPending} className="w-full bg-blue-600 text-white font-bold px-6 py-3.5 rounded-xl hover:bg-blue-700 transition shadow disabled:bg-gray-400 text-sm tracking-wide">
-          {isPending ? 'Publishing Product System...' : '🚀 Save Product'}
-        </button>
-      </form>
-
-      <div className="bg-white p-6 rounded-xl shadow-sm border mt-8">
-        <h2 className="text-md font-bold mb-4 text-gray-700">Live Inventory Warehouse ({products.length} Products)</h2>
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                <th className="p-3 w-24">Media</th>
-                <th className="p-3">Product Name</th>
-                <th className="p-3">Collection</th>
-                <th className="p-3">SKU</th>
-                <th className="p-3 text-right">Price</th>
-                <th className="p-3 text-center">Qty</th>
-                <th className="p-3 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm divide-y">
-              {products.length > 0 ? (
-                products.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50/50 transition">
-                    <td className="p-3">
-                      {product.images?.length > 0 ? (
-                        <img src={product.images[0]} className="w-9 h-9 object-cover rounded-full" />
-                      ) : <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-[9px] text-gray-400">No Img</div>}
-                    </td>
-                    <td className="p-3 font-semibold text-gray-800">{product.name}</td>
-                    <td className="p-3"><span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs font-medium">{product.target_audience}</span></td>
-                    <td className="p-3 font-mono text-xs text-gray-400">{product.sku}</td>
-                    <td className="p-3 text-right font-medium text-gray-900">৳{product.price}</td>
-                    <td className="p-3 text-center font-mono font-bold">{product.stock_quantity}</td>
-                    <td className="p-3 text-center space-x-2">
-                      <button onClick={() => handleEdit(product)} className="text-blue-600 hover:text-blue-800 font-bold text-xs">Edit</button>
-                      <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-800 font-bold text-xs">Delete</button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr><td colSpan={7} className="p-8 text-center text-gray-400">No products found.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      <div className="flex justify-between items-center mb-6 border-b pb-3">
+        <h1 className="text-2xl font-bold text-gray-800">Thaichi Rokomari ERP</h1>
+        <button onClick={() => { setEditingProduct(null); setIsFormOpen(true); }} className="bg-blue-600 text-white px-6 py-2 rounded-lg">+ Add Product</button>
       </div>
+
+      {isFormOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+             <ProductForm 
+                productToEdit={editingProduct} 
+                onSave={handleSave} 
+                onCancel={() => setIsFormOpen(false)} 
+                categories={[]} // এখানে আপনার ক্যাটাগরি ডাটা পাস করুন
+             />
+          </div>
+        </div>
+      )}
+
+      {/* টেবিল লজিক */}
+      <table className="w-full bg-white rounded-xl shadow overflow-hidden">
+        {/* টেবিল হেডার ও বডি */}
+        <tbody>
+          {products.map(product => (
+            <tr key={product.id}>
+              <td>{product.name}</td>
+              <td>
+                <button onClick={() => { setEditingProduct(product); setIsFormOpen(true); }} className="text-blue-600">Edit</button>
+                <button onClick={() => handleDelete(product.id)} className="text-red-600 ml-2">Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
