@@ -1,10 +1,11 @@
 'use client'
-
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useEffect, useTransition } from 'react' // এটি নিশ্চিত করুন যে 'react' থেকে ইমপোর্ট হচ্ছে
 import { createClient } from '@/app/utils/supabase'
-import CategorySelector from './CategorySelector'
-import ImageUploader from './ImageUploader'
 
+// আপনার 'components' ফোল্ডারটি 'app' ফোল্ডারের ভেতরে থাকলে:
+import ProductForm from '@/components/ProductForm'
+import CategorySelector from '@/components/CategorySelector'
+import ImageUploader from '@/components/ImageUploader'
 interface Category {
   id: number
   name: string
