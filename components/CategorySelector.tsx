@@ -1,5 +1,4 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 
 interface Category {
@@ -10,13 +9,37 @@ interface Category {
 
 interface CategorySelectorProps {
   categories: Category[]
-  onCategorySelect: (id: string) => void // টাইপস্ক্রিপ্ট এরর ফিক্স করার জন্য প্রপ্স ডিফাইন
+  onCategorySelect: (id: string) => void
+  value?: string | number // এডিট মোডের জন্য ভ্যালু রিসিভ করবে
 }
 
-export default function CategorySelector({ categories, onCategorySelect }: CategorySelectorProps) {
+export default function CategorySelector({ categories, onCategorySelect, value }: CategorySelectorProps) {
   const [rootId, setRootId] = useState<string>('')
   const [subId, setSubId] = useState<string>('')
   const [subSubId, setSubSubId] = useState<string>('')
+
+  // এডিট মোডে থাকলে ক্যাটাগরি ট্রি খুঁজে বের করার লজিক
+  useEffect(() => {
+    if (value) {
+      const selected = categories.find(c => c.id === Number(value))
+      if (!selected) return
+
+      if (selected.parent_id === null) {
+        setRootId(String(selected.id))
+      } else {
+        const parent = categories.find(c => c.id === selected.parent_id)
+        if (parent?.parent_id === null) {
+          setRootId(String(parent.id))
+          setSubId(String(selected.id))
+        } else if (parent) {
+          const grandParent = categories.find(c => c.id === parent.parent_id)
+          setRootId(String(grandParent?.id))
+          setSubId(String(parent.id))
+          setSubSubId(String(selected.id))
+        }
+      }
+    }
+  }, [value, categories])
 
   const rootCategories = categories.filter(c => c.parent_id === null)
   const subCategories = categories.filter(c => c.parent_id === Number(rootId))
@@ -31,7 +54,6 @@ export default function CategorySelector({ categories, onCategorySelect }: Categ
     setSubSubId('')
   }, [subId])
 
-  // যখনই কোনো লেয়ার সিলেক্ট হবে, মেইন পেজের স্টেটকে আপডেট করবে
   useEffect(() => {
     const finalId = subSubId || subId || rootId
     onCategorySelect(finalId)
