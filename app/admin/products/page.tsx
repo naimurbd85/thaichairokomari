@@ -3,6 +3,7 @@ import { useState, useEffect, useTransition } from 'react'
 import { createClient } from '@/app/utils/supabase'
 import CategorySelector from '@/components/CategorySelector'
 import ImageUploader from '@/components/ImageUploader'
+import VariationManager from '@/components/VariationManager'
 
 interface Category {
   id: number
@@ -13,10 +14,12 @@ interface Category {
 export default function AdminProductsPage() {
   const supabase = createClient()
   const [isLoading, setIsLoading] = useState(false);
-
   const [categories, setCategories] = useState<Category[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [editingProduct, setEditingProduct] = useState<any>(null)
+  
+  // ভেরিয়েশন স্টেট যোগ করা হলো
+  const [variations, setVariations] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     name: '', sku: '', description: '', target_audience: 'men',
@@ -54,6 +57,7 @@ export default function AdminProductsPage() {
       variant_available: product.variant_available ? 'Yes' : 'No'
     });
     setUploadedImages(product.images || []);
+    setVariations(product.variations || []); // এডিট মোডে ভেরিয়েশন লোড
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -69,71 +73,59 @@ export default function AdminProductsPage() {
     }
   }
 
-  // *** এইখানে নতুন 'resetForm' ফাংশনটি বসান ***
-    const resetForm = () => {
-      setEditingProduct(null);
-      setFormData({
-        name: '', sku: '', description: '', target_audience: 'men',
-        category_id: '', regular_price: '', wholesale_price: '', cost_price: '',
-        discount_type: 'Percentage', discount_amount: '', current_stock: '',
-        minimum_stock_alert: '5', stock_status: 'In Stock', variant_available: 'No'
-      });
-      setUploadedImages([]);
-    };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsLoading(true); // প্রসেসিং শুরু
-
-  const payload = {
-    name: formData.name,
-    slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
-    sku: formData.sku,
-    description: formData.description,
-    target_audience: formData.target_audience,
-    category_id: formData.category_id ? parseInt(formData.category_id) : null,
-    images: uploadedImages,
-    price: parseFloat(formData.regular_price) || 0,
-    // ... অন্যান্য ফিল্ড
+  const resetForm = () => {
+    setEditingProduct(null);
+    setFormData({
+      name: '', sku: '', description: '', target_audience: 'men',
+      category_id: '', regular_price: '', wholesale_price: '', cost_price: '',
+      discount_type: 'Percentage', discount_amount: '', current_stock: '',
+      minimum_stock_alert: '5', stock_status: 'In Stock', variant_available: 'No'
+    });
+    setUploadedImages([]);
+    setVariations([]); // ভেরিয়েশন রিসেট
   };
 
-  try {
-    if (editingProduct) {
-      const { error } = await supabase.from('products').update(payload).eq('id', editingProduct.id);
-      if (error) throw error;
-    } else {
-      const { error } = await supabase.from('products').insert([payload]);
-      if (error) throw error;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const payload = {
+      name: formData.name,
+      slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
+      sku: formData.sku,
+      description: formData.description,
+      target_audience: formData.target_audience,
+      category_id: formData.category_id ? parseInt(formData.category_id) : null,
+      images: uploadedImages,
+      price: parseFloat(formData.regular_price) || 0,
+      wholesale_price: parseFloat(formData.wholesale_price) || 0,
+      cost_price: parseFloat(formData.cost_price) || 0,
+      discount_type: formData.discount_type,
+      discount_amount: parseFloat(formData.discount_amount) || 0,
+      stock_quantity: parseInt(formData.current_stock) || 0,
+      low_stock_threshold: parseInt(formData.minimum_stock_alert) || 5,
+      stock_status: formData.stock_status,
+      variant_available: formData.variant_available === 'Yes',
+      variations: variations // ভেরিয়েশন যুক্ত করা হলো
+    };
+
+    try {
+      if (editingProduct) {
+        const { error } = await supabase.from('products').update(payload).eq('id', editingProduct.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('products').insert([payload]);
+        if (error) throw error;
+      }
+      alert('Action Successful! 🚀');
+      resetForm();
+      loadData();
+    } catch (error: any) {
+      alert('Error: ' + error.message);
+    } finally {
+      setIsLoading(false);
     }
-    alert('Action Successful! 🚀');
-    
-    // সফল হলে ফর্ম রিসেট
-    setEditingProduct(null);
-    setFormData({ 
-      name: '', 
-      sku: '', 
-      description: '', 
-      target_audience: 'men', 
-      category_id: '', 
-      regular_price: '', 
-      wholesale_price: '', 
-      cost_price: '', 
-      discount_type: 'Percentage', 
-      discount_amount: '', 
-      current_stock: '', 
-      minimum_stock_alert: '5', 
-      stock_status: 'In Stock', 
-      variant_available: 'No' 
-    });
-    
-    setUploadedImages([]);
-    loadData();
-  } catch (error: any) {
-    alert('Error: ' + error.message);
-  } finally {
-    setIsLoading(false); // প্রসেসিং শেষ, বাটন আগের অবস্থায় ফিরে আসবে
   }
-}
 
   return (
     <div className="p-6 w-full max-w-[97%] mx-auto">
@@ -194,17 +186,8 @@ export default function AdminProductsPage() {
               </select>
             </div>
             
-            <div className="border-t pt-3">
-              <label className="block text-xs font-semibold mb-2">Variant Available?</label>
-              <div className="flex gap-4">
-                {['Yes', 'No'].map((opt) => (
-                    <label key={opt} className="flex items-center gap-2 text-xs">
-                        <input type="radio" checked={formData.variant_available === opt} onChange={() => setFormData(prev => ({...prev, variant_available: opt}))} />
-                        {opt}
-                    </label>
-                ))}
-              </div>
-            </div>
+            <VariationManager onAddVariation={(v) => setVariations([...variations, v])} />
+
           </div>
         </div>
 
