@@ -114,7 +114,7 @@ export default function AdminProductsPage() {
   return (
     <div className="p-6 w-full max-w-[97%] mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
-        {editingProduct ? `Edit Product: ${editingProduct.name}` : 'Thaichi Rokomari ERP - Premium Product Dashboard'}
+        {editingProduct ? `Edit Product: ${editingProduct.name}` : 'Thaichi Rokomari'}
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -133,18 +133,22 @@ export default function AdminProductsPage() {
             </div>
             
             {/* আরও ইনপুট ফিল্ডগুলো এখানে আপনার আগের ডিজাইনের মতোই বসান */}
+            <label className="block text-xs font-medium mb-1">Description</label>
             <textarea rows={3} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full p-2 border rounded-lg text-sm" placeholder="Description" />
             
             <h2 className="text-md font-bold text-gray-700 pt-4 border-b pb-2">💰 Pricing</h2>
             <div className="grid grid-cols-3 gap-4">
-                <input type="number" value={formData.regular_price} onChange={e => setFormData({...formData, regular_price: e.target.value})} placeholder="Regular Price" className="p-2 border rounded-lg text-sm" />
-                <input type="number" value={formData.wholesale_price} onChange={e => setFormData({...formData, wholesale_price: e.target.value})} placeholder="Wholesale" className="p-2 border rounded-lg text-sm" />
+                <label className="block text-xs font-medium mb-1">Cost Price</label>
                 <input type="number" value={formData.cost_price} onChange={e => setFormData({...formData, cost_price: e.target.value})} placeholder="Cost" className="p-2 border rounded-lg text-sm" />
+                <label className="block text-xs font-medium mb-1">Wholesale Price</label>
+                <input type="number" value={formData.wholesale_price} onChange={e => setFormData({...formData, wholesale_price: e.target.value})} placeholder="Wholesale" className="p-2 border rounded-lg text-sm" />
+                <label className="block text-xs font-medium mb-1">Regular Price</label>
+                <input type="number" value={formData.regular_price} onChange={e => setFormData({...formData, regular_price: e.target.value})} placeholder="Regular Price" className="p-2 border rounded-lg text-sm" />
             </div>
           </div>
 
           <div className="bg-white p-6 rounded-xl shadow-sm border space-y-5">
-            <h2 className="text-md font-bold text-gray-700 border-b pb-2">📊 Catalog Settings</h2>
+            <h2 className="text-md font-bold text-gray-700 border-b pb-2">Filter and Category</h2>
             <CategorySelector categories={categories} onCategorySelect={(id: string) => setFormData({...formData, category_id: id})} />
             
             <div className="border-t pt-3">
