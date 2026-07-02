@@ -140,6 +140,20 @@ export default function AdminProductsPage() {
           <div className="bg-white p-6 rounded-xl shadow-sm border space-y-5">
             <h2 className="text-md font-bold text-gray-700 border-b pb-2">Filter and Category</h2>
             <CategorySelector categories={categories} onCategorySelect={(id: string) => setFormData(prev => ({...prev, category_id: id}))} />
+              <div className="border-t pt-3">
+              <label className="block text-xs font-semibold mb-2">Target Audience</label>
+              <select 
+                value={formData.target_audience} 
+                onChange={(e) => setFormData(prev => ({...prev, target_audience: e.target.value}))} 
+                required 
+                className="w-full p-2 border rounded-lg bg-white text-xs font-medium text-gray-700"
+              >
+                <option value="all">All Collection</option>
+                <option value="men">Men Collection</option>
+                <option value="women">Women Collection</option>
+                <option value="kids">Kids Collection</option>
+              </select>
+            </div>
             
             <div className="border-t pt-3">
               <label className="block text-xs font-semibold mb-2">Variant Available?</label>
