@@ -50,19 +50,26 @@ export default function AdminProductsPage() {
   }, [formData.name, editingProduct])
 
   // এডিট বাটনে ক্লিক করলে ফর্ম ফিল্ড ফিলাপ হবে
-  const handleEdit = (product: any) => {
-    setEditingProduct(product)
+    const handleEdit = (product: any) => {
+    setEditingProduct(product);
     setFormData({
-      name: product.name, sku: product.sku, description: product.description,
-      target_audience: product.target_audience, category_id: String(product.category_id || ''),
-      regular_price: String(product.regular_price || ''), wholesale_price: String(product.wholesale_price || ''),
-      cost_price: String(product.cost_price || ''), discount_type: product.discount_type,
-      discount_amount: String(product.discount_amount || ''), current_stock: String(product.stock_quantity || ''),
-      minimum_stock_alert: String(product.low_stock_threshold || '5'),
-      stock_status: product.stock_status, variant_available: product.variant_available ? 'Yes' : 'No'
-    })
-    setUploadedImages(product.images || [])
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+      name: product.name || '',
+      sku: product.sku || '',
+      description: product.description || '',
+      target_audience: product.target_audience || 'Men Collection',
+      category_id: product.category_id ? String(product.category_id) : '',
+      regular_price: product.regular_price ? String(product.regular_price) : '',
+      wholesale_price: product.wholesale_price ? String(product.wholesale_price) : '',
+      cost_price: product.cost_price ? String(product.cost_price) : '',
+      discount_type: product.discount_type || 'Percentage',
+      discount_amount: product.discount_amount ? String(product.discount_amount) : '',
+      current_stock: product.stock_quantity ? String(product.stock_quantity) : '',
+      minimum_stock_alert: product.low_stock_threshold ? String(product.low_stock_threshold) : '5',
+      stock_status: product.stock_status || 'In Stock',
+      variant_available: product.variant_available ? 'Yes' : 'No'
+    });
+    setUploadedImages(product.images || []);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // ফর্ম সাবমিশন (Update বা Insert)
