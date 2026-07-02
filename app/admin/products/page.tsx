@@ -137,13 +137,42 @@ export default function AdminProductsPage() {
             <textarea rows={3} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full p-2 border rounded-lg text-sm" placeholder="Description" />
             
             <h2 className="text-md font-bold text-gray-700 pt-4 border-b pb-2">💰 Pricing</h2>
-            <div className="grid grid-cols-3 gap-4">
-                <label className="block text-xs font-medium mb-1">Cost Price</label>
-                <input type="number" value={formData.cost_price} onChange={e => setFormData({...formData, cost_price: e.target.value})} placeholder="Cost" className="p-2 border rounded-lg text-sm" />
-                <label className="block text-xs font-medium mb-1">Wholesale Price</label>
-                <input type="number" value={formData.wholesale_price} onChange={e => setFormData({...formData, wholesale_price: e.target.value})} placeholder="Wholesale" className="p-2 border rounded-lg text-sm" />
-                <label className="block text-xs font-medium mb-1">Regular Price</label>
-                <input type="number" value={formData.regular_price} onChange={e => setFormData({...formData, regular_price: e.target.value})} placeholder="Regular Price" className="p-2 border rounded-lg text-sm" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Cost Price */}
+              <div className="flex flex-col">
+                <label className="block text-xs font-medium mb-1 text-gray-600">Cost Price</label>
+                <input 
+                  type="number" 
+                  value={formData.cost_price} 
+                  onChange={e => setFormData({...formData, cost_price: e.target.value})} 
+                  placeholder="0.00" 
+                  className="p-2 border rounded-lg text-sm w-full" 
+                />
+              </div>
+
+              {/* Wholesale Price */}
+              <div className="flex flex-col">
+                <label className="block text-xs font-medium mb-1 text-gray-600">Wholesale Price</label>
+                <input 
+                  type="number" 
+                  value={formData.wholesale_price} 
+                  onChange={e => setFormData({...formData, wholesale_price: e.target.value})} 
+                  placeholder="0.00" 
+                  className="p-2 border rounded-lg text-sm w-full" 
+                />
+              </div>
+
+              {/* Regular Price */}
+              <div className="flex flex-col">
+                <label className="block text-xs font-medium mb-1 text-gray-600">Regular Price</label>
+                <input 
+                  type="number" 
+                  value={formData.regular_price} 
+                  onChange={e => setFormData({...formData, regular_price: e.target.value})} 
+                  placeholder="0.00" 
+                  className="p-2 border rounded-lg text-sm w-full" 
+                />
+              </div>
             </div>
           </div>
 
