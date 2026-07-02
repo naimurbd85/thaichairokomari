@@ -70,11 +70,14 @@ export default function AdminProductsPage() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    startTransition(async () => {
-      const payload = {
+  e.preventDefault();
+  
+  // startTransition এর ভেতর শুধুমাত্র স্টেট আপডেট রাখবেন
+  // ডাটাবেস অপারেশন এর বাইরে করা ভালো
+  startTransition(async () => {
+    const payload = {
         name: formData.name,
-        slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(), // ইউনিক স্ল্যাগ নিশ্চিত করার জন্য
         sku: formData.sku,
         description: formData.description,
         target_audience: formData.target_audience,
@@ -90,22 +93,32 @@ export default function AdminProductsPage() {
         low_stock_threshold: parseInt(formData.minimum_stock_alert) || 5,
         stock_status: formData.stock_status,
         variant_available: formData.variant_available === 'Yes'
-      }
+      };
 
-      if (editingProduct) {
-        const { error } = await supabase.from('products').update(payload).eq('id', editingProduct.id)
-        if (error) alert('Error: ' + error.message)
-      } else {
-        const { error } = await supabase.from('products').insert([payload])
-        if (error) alert('Error: ' + error.message)
+      try {
+        if (editingProduct) {
+          const { error } = await supabase.from('products').update(payload).eq('id', editingProduct.id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('products').insert([payload]);
+          if (error) throw error;
+        }
+        alert('Action Successful! 🚀');
+      } catch (error: any) {
+        alert('Error: ' + error.message);
+      } finally {
+        // এই অংশটি নিশ্চিত করবে যে যাই হোক, বাটন আবার স্বাভাবিক অবস্থায় ফিরে আসবে
+        setEditingProduct(null);
+        setFormData({ 
+          name: '', sku: '', description: '', target_audience: 'men', category_id: '', 
+          regular_price: '', wholesale_price: '', cost_price: '', discount_type: 'Percentage', 
+          discount_amount: '', current_stock: '', minimum_stock_alert: '5', 
+          stock_status: 'In Stock', variant_available: 'No' 
+        });
+        setUploadedImages([]);
+        loadData();
       }
-
-      setEditingProduct(null)
-      setFormData({ name: '', sku: '', description: '', target_audience: 'men', category_id: '', regular_price: '', wholesale_price: '', cost_price: '', discount_type: 'Percentage', discount_amount: '', current_stock: '', minimum_stock_alert: '5', stock_status: 'In Stock', variant_available: 'No' })
-      setUploadedImages([])
-      loadData()
-      alert('Action Successful! 🚀')
-    })
+    });
   }
 
   return (
