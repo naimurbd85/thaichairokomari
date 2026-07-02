@@ -12,7 +12,7 @@ interface Category {
 
 export default function AdminProductsPage() {
   const supabase = createClient()
-  const [isPending, startTransition] = useTransition()
+  const [isLoading, setIsLoading] = useState(false);
 
   const [categories, setCategories] = useState<Category[]>([])
   const [products, setProducts] = useState<any[]>([])
@@ -69,57 +69,71 @@ export default function AdminProductsPage() {
     }
   }
 
+  // *** এইখানে নতুন 'resetForm' ফাংশনটি বসান ***
+    const resetForm = () => {
+      setEditingProduct(null);
+      setFormData({
+        name: '', sku: '', description: '', target_audience: 'men',
+        category_id: '', regular_price: '', wholesale_price: '', cost_price: '',
+        discount_type: 'Percentage', discount_amount: '', current_stock: '',
+        minimum_stock_alert: '5', stock_status: 'In Stock', variant_available: 'No'
+      });
+      setUploadedImages([]);
+    };
+
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
-  
-  // startTransition এর ভেতর শুধুমাত্র স্টেট আপডেট রাখবেন
-  // ডাটাবেস অপারেশন এর বাইরে করা ভালো
-  startTransition(async () => {
-    const payload = {
-        name: formData.name,
-        slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(), // ইউনিক স্ল্যাগ নিশ্চিত করার জন্য
-        sku: formData.sku,
-        description: formData.description,
-        target_audience: formData.target_audience,
-        category_id: formData.category_id ? parseInt(formData.category_id) : null,
-        images: uploadedImages,
-        price: parseFloat(formData.regular_price) || 0,
-        regular_price: parseFloat(formData.regular_price) || 0,
-        wholesale_price: parseFloat(formData.wholesale_price) || 0,
-        cost_price: parseFloat(formData.cost_price) || 0,
-        discount_type: formData.discount_type,
-        discount_amount: parseFloat(formData.discount_amount) || 0,
-        stock_quantity: parseInt(formData.current_stock) || 0,
-        low_stock_threshold: parseInt(formData.minimum_stock_alert) || 5,
-        stock_status: formData.stock_status,
-        variant_available: formData.variant_available === 'Yes'
-      };
+  setIsLoading(true); // প্রসেসিং শুরু
 
-      try {
-        if (editingProduct) {
-          const { error } = await supabase.from('products').update(payload).eq('id', editingProduct.id);
-          if (error) throw error;
-        } else {
-          const { error } = await supabase.from('products').insert([payload]);
-          if (error) throw error;
-        }
-        alert('Action Successful! 🚀');
-      } catch (error: any) {
-        alert('Error: ' + error.message);
-      } finally {
-        // এই অংশটি নিশ্চিত করবে যে যাই হোক, বাটন আবার স্বাভাবিক অবস্থায় ফিরে আসবে
-        setEditingProduct(null);
-        setFormData({ 
-          name: '', sku: '', description: '', target_audience: 'men', category_id: '', 
-          regular_price: '', wholesale_price: '', cost_price: '', discount_type: 'Percentage', 
-          discount_amount: '', current_stock: '', minimum_stock_alert: '5', 
-          stock_status: 'In Stock', variant_available: 'No' 
-        });
-        setUploadedImages([]);
-        loadData();
-      }
+  const payload = {
+    name: formData.name,
+    slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
+    sku: formData.sku,
+    description: formData.description,
+    target_audience: formData.target_audience,
+    category_id: formData.category_id ? parseInt(formData.category_id) : null,
+    images: uploadedImages,
+    price: parseFloat(formData.regular_price) || 0,
+    // ... অন্যান্য ফিল্ড
+  };
+
+  try {
+    if (editingProduct) {
+      const { error } = await supabase.from('products').update(payload).eq('id', editingProduct.id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase.from('products').insert([payload]);
+      if (error) throw error;
+    }
+    alert('Action Successful! 🚀');
+    
+    // সফল হলে ফর্ম রিসেট
+    setEditingProduct(null);
+    setFormData({ 
+      name: '', 
+      sku: '', 
+      description: '', 
+      target_audience: 'men', 
+      category_id: '', 
+      regular_price: '', 
+      wholesale_price: '', 
+      cost_price: '', 
+      discount_type: 'Percentage', 
+      discount_amount: '', 
+      current_stock: '', 
+      minimum_stock_alert: '5', 
+      stock_status: 'In Stock', 
+      variant_available: 'No' 
     });
+    
+    setUploadedImages([]);
+    loadData();
+  } catch (error: any) {
+    alert('Error: ' + error.message);
+  } finally {
+    setIsLoading(false); // প্রসেসিং শেষ, বাটন আগের অবস্থায় ফিরে আসবে
   }
+}
 
   return (
     <div className="p-6 w-full max-w-[97%] mx-auto">
@@ -196,9 +210,13 @@ export default function AdminProductsPage() {
 
         <ImageUploader onImagesUploaded={(urls: string[]) => setUploadedImages(urls)} />
 
-        <button type="submit" disabled={isPending} className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl">
-          {isPending ? 'Processing...' : (editingProduct ? 'Update Product' : '🚀 Save Product')}
-        </button>
+        <button 
+  type="submit" 
+  disabled={isLoading} 
+  className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl"
+>
+  {isLoading ? 'Processing...' : (editingProduct ? 'Update Product' : '🚀 Save Product')}
+</button>
       </form>
 
       <div className="bg-white p-6 rounded-xl shadow-sm border mt-8">
