@@ -19,7 +19,7 @@ export default function AdminProductsPage() {
   const [editingProduct, setEditingProduct] = useState<any>(null)
 
   const [formData, setFormData] = useState({
-    name: '', sku: '', description: '', target_audience: 'Men Collection',
+    name: '', sku: '', description: '', target_audience: 'men',
     category_id: '', regular_price: '', wholesale_price: '', cost_price: '',
     discount_type: 'Percentage', discount_amount: '', current_stock: '',
     minimum_stock_alert: '5', stock_status: 'In Stock', variant_available: 'No'
@@ -41,7 +41,7 @@ export default function AdminProductsPage() {
       name: product.name || '',
       sku: product.sku || '',
       description: product.description || '',
-      target_audience: product.target_audience || 'Men Collection',
+      target_audience: product.target_audience || 'men',
       category_id: product.category_id ? String(product.category_id) : '',
       regular_price: product.regular_price ? String(product.regular_price) : '',
       wholesale_price: product.wholesale_price ? String(product.wholesale_price) : '',
@@ -55,6 +55,18 @@ export default function AdminProductsPage() {
     });
     setUploadedImages(product.images || []);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  const handleDelete = async (id: number) => {
+    if (confirm('Are you sure you want to delete this product?')) {
+      const { error } = await supabase.from('products').delete().eq('id', id);
+      if (error) {
+        alert('Error: ' + error.message);
+      } else {
+        alert('Product deleted successfully!');
+        loadData();
+      }
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,7 +101,7 @@ export default function AdminProductsPage() {
       }
 
       setEditingProduct(null)
-      setFormData({ name: '', sku: '', description: '', target_audience: 'Men Collection', category_id: '', regular_price: '', wholesale_price: '', cost_price: '', discount_type: 'Percentage', discount_amount: '', current_stock: '', minimum_stock_alert: '5', stock_status: 'In Stock', variant_available: 'No' })
+      setFormData({ name: '', sku: '', description: '', target_audience: 'men', category_id: '', regular_price: '', wholesale_price: '', cost_price: '', discount_type: 'Percentage', discount_amount: '', current_stock: '', minimum_stock_alert: '5', stock_status: 'In Stock', variant_available: 'No' })
       setUploadedImages([])
       loadData()
       alert('Action Successful! 🚀')
@@ -175,6 +187,49 @@ export default function AdminProductsPage() {
           {isPending ? 'Processing...' : (editingProduct ? 'Update Product' : '🚀 Save Product')}
         </button>
       </form>
+
+      <div className="bg-white p-6 rounded-xl shadow-sm border mt-8">
+        <h2 className="text-md font-bold mb-4 text-gray-700">Live Inventory Warehouse ({products.length} Products)</h2>
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                <th className="p-3 w-24">Media</th>
+                <th className="p-3">Product Name</th>
+                <th className="p-3">Collection</th>
+                <th className="p-3">SKU</th>
+                <th className="p-3 text-right">Price</th>
+                <th className="p-3 text-center">Qty</th>
+                <th className="p-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm divide-y">
+              {products.length > 0 ? (
+                products.map((product) => (
+                  <tr key={product.id} className="hover:bg-gray-50/50 transition">
+                    <td className="p-3">
+                      {product.images?.length > 0 ? (
+                        <img src={product.images[0]} className="w-9 h-9 object-cover rounded-full" />
+                      ) : <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-[9px] text-gray-400">No Img</div>}
+                    </td>
+                    <td className="p-3 font-semibold text-gray-800">{product.name}</td>
+                    <td className="p-3"><span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs font-medium">{product.target_audience}</span></td>
+                    <td className="p-3 font-mono text-xs text-gray-400">{product.sku}</td>
+                    <td className="p-3 text-right font-medium text-gray-900">৳{product.price}</td>
+                    <td className="p-3 text-center font-mono font-bold">{product.stock_quantity}</td>
+                    <td className="p-3 text-center space-x-2">
+                      <button onClick={() => handleEdit(product)} className="text-blue-600 hover:text-blue-800 font-bold text-xs">Edit</button>
+                      <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-800 font-bold text-xs">Delete</button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr><td colSpan={7} className="p-8 text-center text-gray-400">No products found.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }
