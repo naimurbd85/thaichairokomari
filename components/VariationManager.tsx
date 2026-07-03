@@ -1,7 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
-// কালার এবং সাইজের অপশনগুলো এখানে ডিফাইন করা হলো
 const COLOR_OPTIONS = ['Red', 'Blue', 'Green', 'Black', 'White', 'Yellow'];
 const SIZE_OPTIONS = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
 
@@ -9,6 +8,20 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
   const [variation, setVariation] = useState({
     color: '', size: '', stock: 0, lowStock: 5, purchasePrice: 0, sellingPrice: 0, image: ''
   })
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      // এখানে আপনি Supabase Storage-এ ছবি আপলোড করার লজিক লিখবেন
+      console.log("Selected file:", file.name);
+      
+      // আপাতত ফাইলের নাম স্টেটে সেভ করছি
+      setVariation({...variation, image: file.name});
+      alert('Image selected: ' + file.name);
+    }
+  };
 
   return (
     <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 text-white shadow-lg">
@@ -51,8 +64,21 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
 
         <div>
             <label className="block text-xs font-medium mb-1 text-gray-400">VARIATION IMAGE</label>
-            <div className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-800">
-                <div className="text-gray-400">+ UPLOAD</div>
+            {/* লুকানো ফাইল ইনপুট */}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*" 
+              onChange={handleFileChange} 
+            />
+            
+            {/* ক্লিকযোগ্য আপলোড এরিয়া */}
+            <div 
+              className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-800"
+              onClick={() => fileInputRef.current?.click()}
+            >
+                <div className="text-gray-400">{variation.image ? variation.image : "+ UPLOAD"}</div>
                 <p className="text-[10px] text-gray-500">PNG, JPG, or WEBP up to 2MB</p>
             </div>
         </div>
