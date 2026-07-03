@@ -134,6 +134,7 @@ export default function AdminCategoriesPage() {
                 onCategorySelect={(id) => setParentId(id)} 
                 onRefreshCategories={fetchCategories}
                 value={parentId}
+                label="Parent Category"
               />
             </div>
 
