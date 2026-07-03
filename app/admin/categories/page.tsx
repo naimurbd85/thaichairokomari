@@ -56,41 +56,47 @@ export default function AdminCategoriesPage() {
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <div className="bg-white p-8 border rounded-lg shadow-sm mb-10">
-        <h2 className="text-xl font-bold mb-6">Add Category</h2>
-        {/* Save button removed as per your request */}
-        <CategorySelector categories={categories} onRefresh={fetchCategories} />
+    <div>
+      {/* Sticky Banner */}
+      <div className="sticky top-0 z-50 bg-blue-600 text-white p-4 shadow-md text-center font-bold text-xl">
+        Thaichi Rokomari
       </div>
 
-      <h2 className="text-xl font-bold mb-4">Grid System:</h2>
-      <table className="w-full text-left border-collapse border">
-        <thead>
-          <tr className="bg-gray-100 uppercase text-sm">
-            <th className="border p-3">Cat</th>
-            <th className="border p-3">Sub Cat</th>
-            <th className="border p-3">Sub Sub Cat</th>
-            <th className="border p-3">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {getFlattenedCategories().map((item, index) => (
-            <tr key={index} className="border-b hover:bg-gray-50">
-              <td className="border p-3">{item.main}</td>
-              <td className="border p-3">{item.sub}</td>
-              <td className="border p-3">{item.subSub}</td>
-              <td className="border p-3">
-                <button 
-                  onClick={() => handleDelete(item.id)} 
-                  className="text-red-600 font-medium hover:underline"
-                >
-                  Delete
-                </button>
-              </td>
+      <div className="p-8 max-w-6xl mx-auto">
+        <div className="bg-white p-8 border rounded-lg shadow-sm mb-10">
+          <h2 className="text-xl font-bold mb-6">Add Category</h2>
+          <CategorySelector categories={categories} onRefresh={fetchCategories} />
+        </div>
+
+        <h2 className="text-xl font-bold mb-4">Category Table:</h2>
+        <table className="w-full text-left border-collapse border">
+          <thead>
+            <tr className="bg-gray-100 uppercase text-sm">
+              <th className="border p-3">Cat</th>
+              <th className="border p-3">Sub Cat</th>
+              <th className="border p-3">Sub Sub Cat</th>
+              <th className="border p-3">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {getFlattenedCategories().map((item, index) => (
+              <tr key={index} className="border-b hover:bg-gray-50">
+                <td className="border p-3">{item.main}</td>
+                <td className="border p-3">{item.sub}</td>
+                <td className="border p-3">{item.subSub}</td>
+                <td className="border p-3">
+                  <button 
+                    onClick={() => handleDelete(item.id)} 
+                    className="text-red-600 font-medium hover:underline"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
