@@ -20,9 +20,8 @@ export default function AdminCategoriesPage() {
     setCategories(data || [])
   }
 
-  // ডিলিট ফাংশন
   const handleDelete = async (id: number) => {
-    if (confirm("সত্যিই কি ডিলিট করতে চান?")) {
+    if (confirm("আপনি কি নিশ্চিত এটি ডিলিট করতে চান?")) {
       await supabase.from('categories').delete().eq('id', id)
       fetchCategories()
     }
@@ -32,19 +31,39 @@ export default function AdminCategoriesPage() {
     fetchCategories()
   }, [])
 
-  const handleSave = async (data: { level1: string; level2: string; level3: string }) => {
-    alert("Saved!")
+  // ফ্ল্যাট লিস্ট তৈরি করার লজিক (Model 01 এর জন্য)
+  const getFlattenedCategories = () => {
+    const mainCats = categories.filter(c => !c.parent_id)
+    const list: any[] = []
+
+    mainCats.forEach(main => {
+      const subs = categories.filter(c => c.parent_id === main.id)
+      if (subs.length === 0) {
+        list.push({ main: main.name, sub: '-', subSub: '-', id: main.id })
+      } else {
+        subs.forEach(sub => {
+          const subSubs = categories.filter(c => c.parent_id === sub.id)
+          if (subSubs.length === 0) {
+            list.push({ main: main.name, sub: sub.name, subSub: '-', id: sub.id })
+          } else {
+            subSubs.forEach(ss => {
+              list.push({ main: main.name, sub: sub.name, subSub: ss.name, id: ss.id })
+            })
+          }
+        })
+      }
+    })
+    return list
   }
 
   return (
-    // max-w-4xl থেকে 6xl করে দিয়েছি যেন দুই পাশে জায়গা নেয়
     <div className="p-8 max-w-6xl mx-auto">
       <div className="bg-white p-8 border rounded-lg shadow-sm mb-10">
         <h2 className="text-xl font-bold mb-6">Add Category</h2>
-        <CategorySelector categories={categories} onSave={handleSave} onRefresh={fetchCategories} />
+        <CategorySelector categories={categories} onSave={() => {}} onRefresh={fetchCategories} />
       </div>
 
-      <h2 className="text-xl font-bold mb-4">Grid System:</h2>
+      <h2 className="text-xl font-bold mb-4">Grid System (Model 01):</h2>
       <table className="w-full text-left border-collapse border">
         <thead>
           <tr className="bg-gray-100 uppercase text-sm">
@@ -55,33 +74,17 @@ export default function AdminCategoriesPage() {
           </tr>
         </thead>
         <tbody>
-          {categories.filter(c => !c.parent_id).map((main) => {
-            const subs = categories.filter(c => c.parent_id === main.id)
-            return subs.map((sub, sIdx) => {
-              const subSubs = categories.filter(c => c.parent_id === sub.id)
-              return subSubs.length > 0 ? subSubs.map((ss, ssIdx) => (
-                <tr key={ss.id} className="border-b">
-                  {sIdx === 0 && ssIdx === 0 && <td className="border p-3" rowSpan={subs.length + subSubs.length}>{main.name}</td>}
-                  {ssIdx === 0 && <td className="border p-3">{sub.name}</td>}
-                  <td className="border p-3">{ss.name}</td>
-                  <td className="border p-3 flex gap-2">
-                    <button className="text-blue-500">Edit</button>
-                    <button onClick={() => handleDelete(ss.id)} className="text-red-500">Delete</button>
-                  </td>
-                </tr>
-              )) : (
-                <tr key={sub.id} className="border-b">
-                  {sIdx === 0 && <td className="border p-3">{main.name}</td>}
-                  <td className="border p-3">{sub.name}</td>
-                  <td className="border p-3">-</td>
-                  <td className="border p-3 flex gap-2">
-                    <button className="text-blue-500">Edit</button>
-                    <button onClick={() => handleDelete(sub.id)} className="text-red-500">Delete</button>
-                  </td>
-                </tr>
-              )
-            })
-          })}
+          {getFlattenedCategories().map((item, index) => (
+            <tr key={index} className="border-b hover:bg-gray-50">
+              <td className="border p-3">{item.main}</td>
+              <td className="border p-3">{item.sub}</td>
+              <td className="border p-3">{item.subSub}</td>
+              <td className="border p-3 flex gap-3">
+                <button className="text-blue-600 font-medium hover:underline">Edit</button>
+                <button onClick={() => handleDelete(item.id)} className="text-red-600 font-medium hover:underline">Delete</button>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
