@@ -92,7 +92,7 @@ const addCategory = async (parentId: string | null) => {
         disabled={loading}
         className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded font-bold w-full md:w-auto"
       >
-        Save Button
+        Save
       </button>
     </div>
   )
