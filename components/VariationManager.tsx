@@ -1,6 +1,10 @@
 'use client'
 import { useState } from 'react'
 
+// কালার এবং সাইজের অপশনগুলো এখানে ডিফাইন করা হলো
+const COLOR_OPTIONS = ['Red', 'Blue', 'Green', 'Black', 'White', 'Yellow'];
+const SIZE_OPTIONS = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
+
 export default function VariationManager({ onAddVariation }: { onAddVariation: (variation: any) => void }) {
   const [variation, setVariation] = useState({
     color: '', size: '', stock: 0, lowStock: 5, purchasePrice: 0, sellingPrice: 0, image: ''
@@ -15,14 +19,22 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
         <div className="flex gap-4">
           <div className="w-1/2">
             <label className="block text-xs font-medium mb-1 text-gray-400">COLOR *</label>
-            <select className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" onChange={e => setVariation({...variation, color: e.target.value})}>
-              <option>-- Select Color --</option>
+            <select 
+              className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" 
+              onChange={e => setVariation({...variation, color: e.target.value})}
+            >
+              <option value="">-- Select Color --</option>
+              {COLOR_OPTIONS.map(color => <option key={color} value={color}>{color}</option>)}
             </select>
           </div>
           <div className="w-1/2">
             <label className="block text-xs font-medium mb-1 text-gray-400">SIZE</label>
-            <select className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" onChange={e => setVariation({...variation, size: e.target.value})}>
-              <option>-- Select Size --</option>
+            <select 
+              className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" 
+              onChange={e => setVariation({...variation, size: e.target.value})}
+            >
+              <option value="">-- Select Size --</option>
+              {SIZE_OPTIONS.map(size => <option key={size} value={size}>{size}</option>)}
             </select>
           </div>
         </div>
