@@ -10,19 +10,27 @@ export default function CategorySelector({ categories, onSave, onRefresh }: any)
   const [loading, setLoading] = useState(false)
 
   // নতুন ক্যাটাগরি যোগ করার লজিক (এরর হ্যান্ডলিং সহ)
-  const addCategory = async (parentId: string | null) => {
-    const name = prompt("নতুন ক্যাটাগরির নাম লিখুন:")
-    if (!name || !name.trim()) return
+  // addCategory ফাংশনটি এভাবে আপডেট করো:
+const addCategory = async (parentId: string | null) => {
+  const name = prompt("নতুন ক্যাটাগরির নাম লিখুন:")
+  if (!name || !name.trim()) return
 
-    setLoading(true)
-    const { error } = await supabase
+  // নামের ভিত্তিতে স্লাগ তৈরি (ছোট হাতের এবং স্পেসের জায়গায় হাইফেন)
+  const slug = name.trim().toLowerCase().replace(/\s+/g, '-')
+
+  setLoading(true)
+  const { error } = await supabase
       .from('categories')
-      .insert([{ name: name.trim(), parent_id: parentId || null }])
+      .insert([{ 
+          name: name.trim(), 
+          parent_id: parentId || null,
+          slug: slug // স্লাগ যোগ করা হলো
+      }])
 
     if (error) {
       alert("সেভ করতে সমস্যা হয়েছে: " + error.message)
     } else if (onRefresh) {
-      onRefresh() // সাকসেসফুল হলে গ্রিড রিফ্রেশ হবে
+      onRefresh()
     }
     setLoading(false)
   }
