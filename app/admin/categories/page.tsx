@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/app/utils/supabase'
-import CategorySelector from '@/components/CategorySelector' // তোমার তৈরি করা নতুন কম্পোনেন্ট
+import CategorySelector from '@/components/CategorySelector'
 
 interface Category {
   id: number
@@ -25,10 +25,13 @@ export default function AdminCategoriesPage() {
   }, [])
 
   const handleSave = async (data: { level1: string; level2: string; level3: string }) => {
-    // এখানে তোমার সেভ লজিক হবে
-    console.log("Saving:", data)
-    alert("Category structure saved!")
+    // এখানে তুমি যে স্ট্রাকচারটি সেভ করতে চাও তা হ্যান্ডেল করো
+    console.log("Saving structure:", data)
+    alert("Category structure ready for DB!")
   }
+
+  // গ্রিড সিস্টেমের জন্য ডাটা ম্যাপ করা
+  const mainCategories = categories.filter(c => !c.parent_id)
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
@@ -47,14 +50,35 @@ export default function AdminCategoriesPage() {
           </tr>
         </thead>
         <tbody>
-           {/* এখানে তোর ডাটাগুলো এক্সেলের মতো করে ম্যাপ করবি */}
-           {categories.filter(c => !c.parent_id).map(cat => (
-             <tr key={cat.id} className="border-b">
-               <td className="border p-3">{cat.name}</td>
-               <td className="border p-3">...sub data...</td>
-               <td className="border p-3">...sub sub data...</td>
-             </tr>
-           ))}
+          {mainCategories.map((main) => {
+            const subs = categories.filter(c => c.parent_id === main.id)
+            
+            // যদি কোনো সাব-ক্যাটাগরি না থাকে
+            if (subs.length === 0) {
+              return (
+                <tr key={main.id} className="border-b">
+                  <td className="border p-3 font-semibold">{main.name}</td>
+                  <td className="border p-3 text-gray-400">-</td>
+                  <td className="border p-3 text-gray-400">-</td>
+                </tr>
+              )
+            }
+
+            // সাব-ক্যাটাগরি থাকলে লুপ করা
+            return subs.map((sub, index) => {
+              const subSubs = categories.filter(c => c.parent_id === sub.id)
+              
+              return (
+                <tr key={sub.id} className="border-b">
+                  {index === 0 && <td className="border p-3 font-semibold" rowSpan={subs.length}>{main.name}</td>}
+                  <td className="border p-3">{sub.name}</td>
+                  <td className="border p-3">
+                    {subSubs.length > 0 ? subSubs.map(ss => ss.name).join(', ') : '-'}
+                  </td>
+                </tr>
+              )
+            })
+          })}
         </tbody>
       </table>
     </div>
