@@ -131,7 +131,7 @@ export default function AdminCategoriesPage() {
               <label className="block text-sm font-medium mb-1">Parent Category Selection</label>
               <CategorySelector 
                 categories={categories} 
-                onCategorySelect={(id) => setParentId(id)} 
+                onCategorySelect={(id: string) => setParentId(id)}
                 onRefreshCategories={fetchCategories}
                 value={parentId}
                 label="Parent Category"
