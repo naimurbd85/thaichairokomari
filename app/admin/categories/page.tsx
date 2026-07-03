@@ -32,36 +32,31 @@ export default function AdminCategoriesPage() {
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Thaichi Rokomari ERP - Category Management</h1>
-      
-      {/* ফর্ম উপরে */}
       <div className="bg-white p-6 border rounded-lg shadow-sm mb-10">
-        <h2 className="text-lg font-semibold mb-4">Add Category</h2>
-        <CategorySelector categories={categories} onSave={handleSave} />
+        <h2 className="text-xl font-bold mb-6">Add Category</h2>
+        <CategorySelector categories={categories} onSave={handleSave} onRefresh={fetchCategories} />
       </div>
 
-      {/* গ্রিড সিস্টেম নিচে */}
       <h2 className="text-xl font-bold mb-4">Grid System:</h2>
-      <div className="bg-white p-6 border rounded-lg shadow-sm">
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b uppercase text-sm text-gray-600">
-              <th className="p-2">Cat</th>
-              <th className="p-2">Sub Cat</th>
-              <th className="p-2">Sub Sub Cat</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((cat) => (
-              <tr key={cat.id} className="border-b text-sm">
-                <td className="p-2">{!cat.parent_id ? cat.name : '-'}</td>
-                <td className="p-2">{cat.parent_id ? cat.name : '-'}</td>
-                <td className="p-2">-</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <table className="w-full text-left border-collapse border">
+        <thead>
+          <tr className="bg-gray-100 uppercase text-sm">
+            <th className="border p-3">Cat</th>
+            <th className="border p-3">Sub Cat</th>
+            <th className="border p-3">Sub Sub Cat</th>
+          </tr>
+        </thead>
+        <tbody>
+           {/* এখানে তোর ডাটাগুলো এক্সেলের মতো করে ম্যাপ করবি */}
+           {categories.filter(c => !c.parent_id).map(cat => (
+             <tr key={cat.id} className="border-b">
+               <td className="border p-3">{cat.name}</td>
+               <td className="border p-3">...sub data...</td>
+               <td className="border p-3">...sub sub data...</td>
+             </tr>
+           ))}
+        </tbody>
+      </table>
     </div>
   )
 }
