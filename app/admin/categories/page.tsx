@@ -21,7 +21,7 @@ export default function AdminCategoriesPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (confirm("আপনি কি নিশ্চিত এটি ডিলিট করতে চান?")) {
+    if (confirm("Are you sure you want to delete this category?")) {
       await supabase.from('categories').delete().eq('id', id)
       fetchCategories()
     }
@@ -31,7 +31,6 @@ export default function AdminCategoriesPage() {
     fetchCategories()
   }, [])
 
-  // ফ্ল্যাট লিস্ট তৈরি করার লজিক (Model 01 এর জন্য)
   const getFlattenedCategories = () => {
     const mainCats = categories.filter(c => !c.parent_id)
     const list: any[] = []
@@ -60,10 +59,11 @@ export default function AdminCategoriesPage() {
     <div className="p-8 max-w-6xl mx-auto">
       <div className="bg-white p-8 border rounded-lg shadow-sm mb-10">
         <h2 className="text-xl font-bold mb-6">Add Category</h2>
-        <CategorySelector categories={categories} onSave={() => {}} onRefresh={fetchCategories} />
+        {/* Save button removed as per your request */}
+        <CategorySelector categories={categories} onRefresh={fetchCategories} />
       </div>
 
-      <h2 className="text-xl font-bold mb-4">Grid System (Model 01):</h2>
+      <h2 className="text-xl font-bold mb-4">Grid System:</h2>
       <table className="w-full text-left border-collapse border">
         <thead>
           <tr className="bg-gray-100 uppercase text-sm">
@@ -79,9 +79,13 @@ export default function AdminCategoriesPage() {
               <td className="border p-3">{item.main}</td>
               <td className="border p-3">{item.sub}</td>
               <td className="border p-3">{item.subSub}</td>
-              <td className="border p-3 flex gap-3">
-                <button className="text-blue-600 font-medium hover:underline">Edit</button>
-                <button onClick={() => handleDelete(item.id)} className="text-red-600 font-medium hover:underline">Delete</button>
+              <td className="border p-3">
+                <button 
+                  onClick={() => handleDelete(item.id)} 
+                  className="text-red-600 font-medium hover:underline"
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}

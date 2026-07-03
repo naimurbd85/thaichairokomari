@@ -2,33 +2,31 @@
 import { useState } from 'react'
 import { createClient } from '@/app/utils/supabase'
 
-export default function CategorySelector({ categories, onSave, onRefresh }: any) {
+export default function CategorySelector({ categories, onRefresh }: any) {
   const supabase = createClient()
   const [level1, setLevel1] = useState('')
   const [level2, setLevel2] = useState('')
   const [level3, setLevel3] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // নতুন ক্যাটাগরি যোগ করার লজিক (এরর হ্যান্ডলিং সহ)
-  // addCategory ফাংশনটি এভাবে আপডেট করো:
-const addCategory = async (parentId: string | null) => {
-  const name = prompt("নতুন ক্যাটাগরির নাম লিখুন:")
-  if (!name || !name.trim()) return
+  const addCategory = async (parentId: string | null) => {
+    const name = prompt("Enter new category name:")
+    if (!name || !name.trim()) return
 
-  // নামের ভিত্তিতে স্লাগ তৈরি (ছোট হাতের এবং স্পেসের জায়গায় হাইফেন)
-  const slug = name.trim().toLowerCase().replace(/\s+/g, '-')
+    // Auto-generate slug from name
+    const slug = name.trim().toLowerCase().replace(/\s+/g, '-')
 
-  setLoading(true)
-  const { error } = await supabase
+    setLoading(true)
+    const { error } = await supabase
       .from('categories')
       .insert([{ 
           name: name.trim(), 
           parent_id: parentId || null,
-          slug: slug // স্লাগ যোগ করা হলো
+          slug: slug 
       }])
 
     if (error) {
-      alert("সেভ করতে সমস্যা হয়েছে: " + error.message)
+      alert("Error saving category: " + error.message)
     } else if (onRefresh) {
       onRefresh()
     }
@@ -37,7 +35,7 @@ const addCategory = async (parentId: string | null) => {
 
   return (
     <div className="space-y-4">
-      {/* ক্যাটাগরি লেভেল ১ */}
+      {/* Level 1 Category */}
       <div className="flex gap-2">
         <label className="w-24 self-center font-medium">Main Cat</label>
         <select 
@@ -53,7 +51,7 @@ const addCategory = async (parentId: string | null) => {
         <button onClick={() => addCategory(null)} className="px-4 bg-gray-200 hover:bg-gray-300 rounded font-bold">+</button>
       </div>
 
-      {/* ক্যাটাগরি লেভেল ২ */}
+      {/* Level 2 Category */}
       <div className="flex gap-2">
         <label className="w-24 self-center font-medium">Sub Cat</label>
         <select 
@@ -70,7 +68,7 @@ const addCategory = async (parentId: string | null) => {
         <button onClick={() => addCategory(level1)} className="px-4 bg-gray-200 hover:bg-gray-300 rounded font-bold" disabled={!level1}>+</button>
       </div>
 
-      {/* ক্যাটাগরি লেভেল ৩ */}
+      {/* Level 3 Category */}
       <div className="flex gap-2">
         <label className="w-24 self-center font-medium">Sub Sub Cat</label>
         <select 
@@ -86,14 +84,6 @@ const addCategory = async (parentId: string | null) => {
         </select>
         <button onClick={() => addCategory(level2)} className="px-4 bg-gray-200 hover:bg-gray-300 rounded font-bold" disabled={!level2}>+</button>
       </div>
-
-      <button 
-        onClick={() => onSave({ level1, level2, level3 })} 
-        disabled={loading}
-        className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded font-bold w-full md:w-auto"
-      >
-        Save
-      </button>
     </div>
   )
 }
