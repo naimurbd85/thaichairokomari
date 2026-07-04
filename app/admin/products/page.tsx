@@ -192,7 +192,7 @@ export default function AdminProductsPage() {
             <label className="block text-xs font-medium mb-1">Description</label>
             <textarea rows={3} value={formData.description || ''} onChange={e => setFormData(prev => ({...prev, description: e.target.value}))} className="w-full p-2 border rounded-lg text-sm" />
             
-            <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">💰 Pricing</h2>
+            <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">Pricing</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* ইনপুট ফিল্ডগুলো আগের মতোই থাকবে */}
               <div className="flex flex-col">
@@ -219,20 +219,22 @@ export default function AdminProductsPage() {
   disabled={isLoading} 
   className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl"
 >
-  {isLoading ? 'Processing...' : (editingProduct ? 'Update Product' : '🚀 Save Product')}
+  {isLoading ? 'Processing...' : (editingProduct ? 'Update Product' : 'Save Product')}
 </button>
       </form>
 
       <div className="bg-white p-6 rounded-xl shadow-sm border mt-8">
-        <h2 className="text-md font-bold mb-4 text-gray-700">Live Inventory Warehouse ({products.length} Products)</h2>
+        <h2 className="text-md font-bold mb-4 text-gray-700">Product Management ({products.length} Products)</h2>
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                <th className="p-3 w-24">Media</th>
+                <th className="p-3 w-16">Media</th>
                 <th className="p-3">Product Name</th>
-                <th className="p-3">Collection</th>
+                <th className="p-3">Origin</th>
                 <th className="p-3">SKU</th>
+                <th className="p-3 text-right">Cost</th>      {/* নতুন */}
+                <th className="p-3 text-right">Wholesale</th>  {/* নতুন */}
                 <th className="p-3 text-right">Price</th>
                 <th className="p-3 text-center">Qty</th>
                 <th className="p-3 text-center">Actions</th>
@@ -243,6 +245,7 @@ export default function AdminProductsPage() {
               {products.length > 0 ? (
                 products.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50/50 transition">
+                    {/* মিডিয়া এবং নাম */}
                     <td className="p-3">
                       {product.images?.length > 0 ? (
                         <img src={product.images[0]} className="w-9 h-9 object-cover rounded-full" />
@@ -252,7 +255,7 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="p-3 font-semibold text-gray-800">{product.name}</td>
                     
-                    {/* আপডেট করা অংশ */}
+                    {/* অরিজিন */}
                     <td className="p-3">
                       {product.target_audience ? (
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
@@ -268,17 +271,24 @@ export default function AdminProductsPage() {
                     </td>
 
                     <td className="p-3 font-mono text-xs text-gray-400">{product.sku}</td>
-                    <td className="p-3 text-right font-medium text-gray-900">৳{product.price}</td>
+                    
+                    {/* নতুন কলামগুলো */}
+                    <td className="p-3 text-right font-medium text-gray-600">৳{product.cost_price || 0}</td>
+                    <td className="p-3 text-right font-medium text-gray-600">৳{product.wholesale_price || 0}</td>
+                    
+                    <td className="p-3 text-right font-medium text-gray-900">৳{product.price || 0}</td>
                     <td className="p-3 text-center font-mono font-bold">{product.stock_quantity}</td>
+                    
+                    {/* অ্যাকশন বাটন */}
                     <td className="p-3 text-center space-x-2">
-                      <button onClick={() => openVariantModal(product)} className="text-green-600 hover:text-green-800 font-bold text-xs">Add Variant</button> {/* নতুন বাটন */}
+                      <button onClick={() => openVariantModal(product)} className="text-green-600 hover:text-green-800 font-bold text-xs">Variant</button>
                       <button onClick={() => handleEdit(product)} className="text-blue-600 hover:text-blue-800 font-bold text-xs">Edit</button>
                       <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-800 font-bold text-xs">Delete</button>
                     </td>
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan={7} className="p-8 text-center text-gray-400">No products found.</td></tr>
+                <tr><td colSpan={9} className="p-8 text-center text-gray-400">No products found.</td></tr>
               )}
             </tbody>
 
