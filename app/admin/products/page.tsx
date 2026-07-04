@@ -153,11 +153,10 @@ export default function AdminProductsPage() {
             {/* Product Origin - আপডেট করা হয়েছে */}
             <div>
               <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mb-3">Product Origin</h2>
-              <label className="block text-xs font-semibold mb-2">Product Origin</label>
               <select 
                 value={formData.target_audience} 
                 onChange={(e) => setFormData(prev => ({...prev, target_audience: e.target.value}))} 
-                className="w-full p-2 border rounded-lg bg-white text-xs font-medium text-gray-700"
+                className="w-full p-2.5 border rounded-lg bg-white text-sm font-medium text-gray-700"
               >
                 <option value="">Select Origin</option>
                 <option value="china">China Product</option>
@@ -165,7 +164,6 @@ export default function AdminProductsPage() {
                 <option value="others">Others</option>
               </select>
             </div>
-
             {/* Filter, Category & Origin */}
             <div>
               <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mb-3">Filter, Category & Origin</h2>
