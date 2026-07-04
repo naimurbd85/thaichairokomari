@@ -95,7 +95,7 @@ export default function AdminProductsPage() {
       slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
       sku: formData.sku,
       description: formData.description,
-      target_audience: formData.target_audience,
+      target_audience: formData.target_audience || null,
       category_id: formData.category_id ? parseInt(formData.category_id) : null,
       images: uploadedImages,
       price: parseFloat(formData.regular_price) || 0,
@@ -169,27 +169,21 @@ export default function AdminProductsPage() {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border space-y-5">
-            <h2 className="text-md font-bold text-gray-700 border-b pb-2">Filter and Category</h2>
-            <CategorySelector categories={categories} onCategorySelect={(id: string) => setFormData(prev => ({...prev, category_id: id}))} />
-              <div className="border-t pt-3">
-              <label className="block text-xs font-semibold mb-2">Target Audience</label>
-              <select 
-                value={formData.target_audience} 
-                onChange={(e) => setFormData(prev => ({...prev, target_audience: e.target.value}))} 
-                required 
-                className="w-full p-2 border rounded-lg bg-white text-xs font-medium text-gray-700"
-              >
-                <option value="all">All Collection</option>
-                <option value="men">Men Collection</option>
-                <option value="women">Women Collection</option>
-                <option value="kids">Kids Collection</option>
-              </select>
-            </div>
-            
-            <VariationManager onAddVariation={(v) => setVariations([...variations, v])} />
+          
+          <div className="border-t pt-3">
+          <label className="block text-xs font-semibold mb-2">Product Origin</label>
+          <select 
+            value={formData.target_audience} 
+            onChange={(e) => setFormData(prev => ({...prev, target_audience: e.target.value}))} 
+            className="w-full p-2 border rounded-lg bg-white text-xs font-medium text-gray-700"
+          >
+            <option value="">Select Origin</option>
+            <option value="china">China Product</option>
+            <option value="thai">Thai Product</option>
+            <option value="others">Others</option>
+          </select>
+        </div>
 
-          </div>
         </div>
 
         <ImageUploader onImagesUploaded={(urls: string[]) => setUploadedImages(urls)} />
@@ -218,6 +212,7 @@ export default function AdminProductsPage() {
                 <th className="p-3 text-center">Actions</th>
               </tr>
             </thead>
+
             <tbody className="text-sm divide-y">
               {products.length > 0 ? (
                 products.map((product) => (
@@ -225,10 +220,27 @@ export default function AdminProductsPage() {
                     <td className="p-3">
                       {product.images?.length > 0 ? (
                         <img src={product.images[0]} className="w-9 h-9 object-cover rounded-full" />
-                      ) : <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-[9px] text-gray-400">No Img</div>}
+                      ) : (
+                        <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-[9px] text-gray-400">No Img</div>
+                      )}
                     </td>
                     <td className="p-3 font-semibold text-gray-800">{product.name}</td>
-                    <td className="p-3"><span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs font-medium">{product.target_audience}</span></td>
+                    
+                    {/* আপডেট করা অংশ */}
+                    <td className="p-3">
+                      {product.target_audience ? (
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          product.target_audience === 'china' ? 'bg-red-50 text-red-700' :
+                          product.target_audience === 'thai' ? 'bg-green-50 text-green-700' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {product.target_audience}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs italic">N/A</span>
+                      )}
+                    </td>
+
                     <td className="p-3 font-mono text-xs text-gray-400">{product.sku}</td>
                     <td className="p-3 text-right font-medium text-gray-900">৳{product.price}</td>
                     <td className="p-3 text-center font-mono font-bold">{product.stock_quantity}</td>
@@ -242,6 +254,7 @@ export default function AdminProductsPage() {
                 <tr><td colSpan={7} className="p-8 text-center text-gray-400">No products found.</td></tr>
               )}
             </tbody>
+
           </table>
         </div>
       </div>
