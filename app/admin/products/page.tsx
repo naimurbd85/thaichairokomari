@@ -36,6 +36,17 @@ export default function AdminProductsPage() {
     if (prods) setProducts(prods)
   }
 
+
+  // নতুন স্টেট যোগ করুন
+  const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
+  const [selectedProductForVariant, setSelectedProductForVariant] = useState<any>(null);
+
+  // বাটন ক্লিক হ্যান্ডলার
+  const openVariantModal = (product: any) => {
+    setSelectedProductForVariant(product);
+    setIsVariantModalOpen(true);
+  };
+
   useEffect(() => { loadData() }, [])
 
   const handleEdit = (product: any) => {
@@ -200,6 +211,7 @@ export default function AdminProductsPage() {
                 onAddVariation={(v) => setVariations([...variations, v])} 
               />
             </div>
+
           </div>
 
         </div>
@@ -263,6 +275,7 @@ export default function AdminProductsPage() {
                     <td className="p-3 text-right font-medium text-gray-900">৳{product.price}</td>
                     <td className="p-3 text-center font-mono font-bold">{product.stock_quantity}</td>
                     <td className="p-3 text-center space-x-2">
+                      <button onClick={() => openVariantModal(product)} className="text-green-600 hover:text-green-800 font-bold text-xs">Add Variant</button> {/* নতুন বাটন */}
                       <button onClick={() => handleEdit(product)} className="text-blue-600 hover:text-blue-800 font-bold text-xs">Edit</button>
                       <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-800 font-bold text-xs">Delete</button>
                     </td>
@@ -276,6 +289,57 @@ export default function AdminProductsPage() {
           </table>
         </div>
       </div>
+
+              {isVariantModalOpen && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-xl w-[90%] max-w-lg shadow-2xl">
+      <h2 className="text-lg font-bold mb-4">
+        Add Variant: {selectedProductForVariant?.name}
+      </h2>
+      
+      {/* key ব্যবহার করে কম্পোনেন্টটি রি-রেন্ডার করা হচ্ছে */}
+            <VariationManager 
+              key={selectedProductForVariant?.variations?.length || 0} 
+              onAddVariation={async (v) => {
+                try {
+                  const updatedVariations = [...(selectedProductForVariant.variations || []), v];
+                  
+                  const { error } = await supabase
+                    .from('products')
+                    .update({ variations: updatedVariations })
+                    .eq('id', selectedProductForVariant.id);
+
+                  if (error) throw error;
+
+                  alert("Variant added successfully! 🚀");
+                  
+                  // মেইন টেবিল আপডেট করার জন্য
+                  loadData(); 
+                  
+                  // মডাল স্টেট আপডেট করা যাতে পরের ভেরিয়েন্টটিও সঠিক বিদ্যমান ডেটা পায়
+                  setSelectedProductForVariant((prev: any) => ({
+                    ...prev,
+                    variations: updatedVariations
+                  }));
+                  
+                } catch (err: any) {
+                  console.error("Error saving variant:", err);
+                  alert("Failed to save variant: " + err.message);
+                }
+              }} 
+            />
+            
+            <button 
+              onClick={() => setIsVariantModalOpen(false)} 
+              className="mt-4 w-full bg-gray-200 hover:bg-gray-300 py-2 rounded-lg text-sm font-bold transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
+
   )
 }
