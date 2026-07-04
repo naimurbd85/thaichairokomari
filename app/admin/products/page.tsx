@@ -117,8 +117,6 @@ export default function AdminProductsPage() {
       stock_quantity: parseInt(formData.current_stock) || 0,
       low_stock_threshold: parseInt(formData.minimum_stock_alert) || 5,
       stock_status: formData.stock_status,
-      variant_available: formData.variant_available === 'Yes',
-      variations: variations // ভেরিয়েশন যুক্ত করা হলো
     };
 
     try {
@@ -203,13 +201,6 @@ export default function AdminProductsPage() {
                 <option value="thai">Thai Product</option>
                 <option value="others">Others</option>
               </select>
-            </div>
-
-            {/* Variation Manager */}
-            <div className="border-t pt-3">
-              <VariationManager 
-                onAddVariation={(v) => setVariations([...variations, v])} 
-              />
             </div>
 
           </div>
