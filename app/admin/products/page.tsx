@@ -147,9 +147,12 @@ export default function AdminProductsPage() {
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
+          {/* বাম পাশের কলাম */}
           <div className="bg-white p-6 rounded-xl shadow-sm border space-y-5">
-            {/* Product Origin (নতুন যোগ করা) */}
-            <div className="border-t pt-3">
+            
+            {/* Product Origin - আপডেট করা হয়েছে */}
+            <div>
+              <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mb-3">Product Origin</h2>
               <label className="block text-xs font-semibold mb-2">Product Origin</label>
               <select 
                 value={formData.target_audience} 
@@ -162,20 +165,21 @@ export default function AdminProductsPage() {
                 <option value="others">Others</option>
               </select>
             </div>
-            
-            <h2 className="text-md font-bold text-gray-700 border-b pb-2">Filter, Category & Origin</h2>
-            
-            {/* Category Selector */}
-            <CategorySelector 
-              categories={categories} 
-              onCategorySelect={(id: string) => setFormData(prev => ({...prev, category_id: id}))} 
-            />
 
-            
+            {/* Filter, Category & Origin */}
+            <div>
+              <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mb-3">Filter, Category & Origin</h2>
+              <CategorySelector 
+                categories={categories} 
+                onCategorySelect={(id: string) => setFormData(prev => ({...prev, category_id: id}))} 
+              />
+            </div>
           </div>
 
+          {/* ডান পাশের কলাম */}
           <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border space-y-4">
-            <h2 className="text-md font-bold text-gray-700 border-b pb-2">Add Product</h2>
+            <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mb-4">Add Product</h2>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium mb-1">Product Name</label>
@@ -190,8 +194,9 @@ export default function AdminProductsPage() {
             <label className="block text-xs font-medium mb-1">Description</label>
             <textarea rows={3} value={formData.description || ''} onChange={e => setFormData(prev => ({...prev, description: e.target.value}))} className="w-full p-2 border rounded-lg text-sm" />
             
-            <h2 className="text-md font-bold text-gray-700 pt-4 border-b pb-2">💰 Pricing</h2>
+            <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">💰 Pricing</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* ইনপুট ফিল্ডগুলো আগের মতোই থাকবে */}
               <div className="flex flex-col">
                 <label className="block text-xs font-medium mb-1 text-gray-600">Cost Price</label>
                 <input type="number" value={formData.cost_price || ''} onChange={e => setFormData(prev => ({...prev, cost_price: e.target.value}))} className="p-2 border rounded-lg text-sm w-full" />
@@ -206,8 +211,6 @@ export default function AdminProductsPage() {
               </div>
             </div>
           </div>
-
-          
 
         </div>
 
