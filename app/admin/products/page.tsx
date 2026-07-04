@@ -148,14 +148,6 @@ export default function AdminProductsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           <div className="bg-white p-6 rounded-xl shadow-sm border space-y-5">
-            <h2 className="text-md font-bold text-gray-700 border-b pb-2">Filter, Category & Origin</h2>
-            
-            {/* Category Selector */}
-            <CategorySelector 
-              categories={categories} 
-              onCategorySelect={(id: string) => setFormData(prev => ({...prev, category_id: id}))} 
-            />
-
             {/* Product Origin (নতুন যোগ করা) */}
             <div className="border-t pt-3">
               <label className="block text-xs font-semibold mb-2">Product Origin</label>
@@ -170,6 +162,16 @@ export default function AdminProductsPage() {
                 <option value="others">Others</option>
               </select>
             </div>
+            
+            <h2 className="text-md font-bold text-gray-700 border-b pb-2">Filter, Category & Origin</h2>
+            
+            {/* Category Selector */}
+            <CategorySelector 
+              categories={categories} 
+              onCategorySelect={(id: string) => setFormData(prev => ({...prev, category_id: id}))} 
+            />
+
+            
           </div>
 
           <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border space-y-4">
