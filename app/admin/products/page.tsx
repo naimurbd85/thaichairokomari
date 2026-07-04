@@ -170,19 +170,37 @@ export default function AdminProductsPage() {
           </div>
 
           
-          <div className="border-t pt-3">
-          <label className="block text-xs font-semibold mb-2">Product Origin</label>
-          <select 
-            value={formData.target_audience} 
-            onChange={(e) => setFormData(prev => ({...prev, target_audience: e.target.value}))} 
-            className="w-full p-2 border rounded-lg bg-white text-xs font-medium text-gray-700"
-          >
-            <option value="">Select Origin</option>
-            <option value="china">China Product</option>
-            <option value="thai">Thai Product</option>
-            <option value="others">Others</option>
-          </select>
-        </div>
+          <div className="bg-white p-6 rounded-xl shadow-sm border space-y-5">
+            <h2 className="text-md font-bold text-gray-700 border-b pb-2">Filter, Category & Origin</h2>
+            
+            {/* Category Selector */}
+            <CategorySelector 
+              categories={categories} 
+              onCategorySelect={(id: string) => setFormData(prev => ({...prev, category_id: id}))} 
+            />
+
+            {/* Product Origin (নতুন যোগ করা) */}
+            <div className="border-t pt-3">
+              <label className="block text-xs font-semibold mb-2">Product Origin</label>
+              <select 
+                value={formData.target_audience} 
+                onChange={(e) => setFormData(prev => ({...prev, target_audience: e.target.value}))} 
+                className="w-full p-2 border rounded-lg bg-white text-xs font-medium text-gray-700"
+              >
+                <option value="">Select Origin</option>
+                <option value="china">China Product</option>
+                <option value="thai">Thai Product</option>
+                <option value="others">Others</option>
+              </select>
+            </div>
+
+            {/* Variation Manager */}
+            <div className="border-t pt-3">
+              <VariationManager 
+                onAddVariation={(v) => setVariations([...variations, v])} 
+              />
+            </div>
+          </div>
 
         </div>
 
