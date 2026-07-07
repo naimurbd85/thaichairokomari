@@ -6,7 +6,14 @@ const SIZE_OPTIONS = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
 
 export default function VariationManager({ onAddVariation }: { onAddVariation: (variation: any) => void }) {
   const [variation, setVariation] = useState({
-    color: '', size: '', stock: 0, lowStock: 5, purchasePrice: 0, sellingPrice: 0, image: ''
+    sku: '', // SKU স্টেট যোগ করা হয়েছে
+    color: '', 
+    size: '', 
+    stock: 0, 
+    lowStock: 5, 
+    purchasePrice: 0, 
+    sellingPrice: 0, 
+    image: ''
   })
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -29,6 +36,18 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
         <span className="text-green-500">≡</span> PRODUCT VARIATIONS
       </h2>
       <div className="space-y-4">
+        
+        {/* SKU ফিল্ড */}
+        <div>
+          <label className="block text-xs font-medium mb-1 text-gray-400">SKU *</label>
+          <input 
+            type="text" 
+            placeholder="Enter SKU"
+            className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm uppercase" 
+            onChange={e => setVariation({...variation, sku: e.target.value})} 
+          />
+        </div>
+
         <div className="flex gap-4">
           <div className="w-1/2">
             <label className="block text-xs font-medium mb-1 text-gray-400">COLOR *</label>
@@ -73,13 +92,13 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
               onChange={handleFileChange} 
             />
             
-            {/* ক্লিকযোগ্য আপলোড এরিয়া */}
+            {/* ক্লিকযোগ্য আপলোড এরিয়া */}
             <div 
               className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-800"
               onClick={() => fileInputRef.current?.click()}
             >
-                <div className="text-gray-400">{variation.image ? variation.image : "+ UPLOAD"}</div>
-                <p className="text-[10px] text-gray-500">PNG, JPG, or WEBP up to 2MB</p>
+              <div className="text-gray-400">{variation.image ? variation.image : "+ UPLOAD"}</div>
+              <p className="text-[10px] text-gray-500">PNG, JPG, or WEBP up to 2MB</p>
             </div>
         </div>
 

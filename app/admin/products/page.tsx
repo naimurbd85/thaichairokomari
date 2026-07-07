@@ -216,7 +216,7 @@ export default function AdminProductsPage() {
               <label className="block text-xs font-medium mb-1">Description</label>
               <textarea rows={3} value={formData.description || ''} onChange={e => setFormData(prev => ({...prev, description: e.target.value}))} className="w-full p-2 border rounded-lg text-sm" />
               
-              <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">💰 Pricing</h2>
+              <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">Pricing</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="flex flex-col">
                   <label className="block text-xs font-medium mb-1 text-gray-600">Cost Price</label>
@@ -233,7 +233,7 @@ export default function AdminProductsPage() {
               </div>
 
               {/* নতুন যুক্ত করা অংশ: Quantity ও Low Stock Alert */}
-              <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">📦 Inventory</h2>
+              <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">Inventory</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col">
                   <label className="block text-xs font-medium mb-1 text-gray-600">Stock Quantity</label>
