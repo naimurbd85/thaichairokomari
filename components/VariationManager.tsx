@@ -74,7 +74,6 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
         </div>
 
         <div>
-            <label className="block text-xs font-medium mb-1 text-gray-400">VARIATION IMAGE</label>
             {/* লুকানো ফাইল ইনপুট */}
             <input 
               type="file" 
