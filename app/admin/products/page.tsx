@@ -24,8 +24,12 @@ export default function AdminProductsPage() {
   const [formData, setFormData] = useState({
     name: '', sku: '', description: '', target_audience: 'men',
     category_id: '', regular_price: '', wholesale_price: '', cost_price: '',
-    discount_type: 'Percentage', discount_amount: '', current_stock: '',
-    minimum_stock_alert: '5', stock_status: 'In Stock', variant_available: 'No'
+    discount_type: 'Percentage', discount_amount: '', 
+    // এই নামগুলো আপডেট করুন
+    stock_quantity: '', 
+    low_stock_threshold: '5', 
+    stock_status: 'In Stock', 
+    variant_available: 'No'
   })
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
 
@@ -50,28 +54,28 @@ export default function AdminProductsPage() {
   useEffect(() => { loadData() }, [])
 
   const handleEdit = (product: any) => {
-  setEditingProduct(product);
-  setFormData({
-    name: product.name || '',
-    sku: product.sku || '',
-    description: product.description || '',
-    target_audience: product.target_audience || 'men',
-    category_id: product.category_id ? String(product.category_id) : '',
-    // এখানে product.regular_price এর বদলে product.price ব্যবহার করা হয়েছে
-    regular_price: product.price ? String(product.price) : '', 
-    wholesale_price: product.wholesale_price ? String(product.wholesale_price) : '',
-    cost_price: product.cost_price ? String(product.cost_price) : '',
-    discount_type: product.discount_type || 'Percentage',
-    discount_amount: product.discount_amount ? String(product.discount_amount) : '',
-    current_stock: product.stock_quantity ? String(product.stock_quantity) : '',
-    minimum_stock_alert: product.low_stock_threshold ? String(product.low_stock_threshold) : '5',
-    stock_status: product.stock_status || 'In Stock',
-    variant_available: product.variant_available ? 'Yes' : 'No'
-  });
-  setUploadedImages(product.images || []);
-  setVariations(product.variations || []); 
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+    setEditingProduct(product);
+    setFormData({
+      name: product.name || '',
+      sku: product.sku || '',
+      description: product.description || '',
+      target_audience: product.target_audience || 'men',
+      category_id: product.category_id ? String(product.category_id) : '',
+      regular_price: product.price ? String(product.price) : '', 
+      wholesale_price: product.wholesale_price ? String(product.wholesale_price) : '',
+      cost_price: product.cost_price ? String(product.cost_price) : '',
+      discount_type: product.discount_type || 'Percentage',
+      discount_amount: product.discount_amount ? String(product.discount_amount) : '',
+      // নিচের লাইনগুলো আপডেট করা হয়েছে
+      stock_quantity: product.stock_quantity ? String(product.stock_quantity) : '',
+      low_stock_threshold: product.low_stock_threshold ? String(product.low_stock_threshold) : '5',
+      stock_status: product.stock_status || 'In Stock',
+      variant_available: product.variant_available ? 'Yes' : 'No'
+    });
+    setUploadedImages(product.images || []);
+    setVariations(product.variations || []); 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   const handleDelete = async (id: number) => {
     if (confirm('Are you sure you want to delete this product?')) {
@@ -86,38 +90,58 @@ export default function AdminProductsPage() {
   }
 
   const resetForm = () => {
-    setEditingProduct(null);
-    setFormData({
-      name: '', sku: '', description: '', target_audience: 'men',
-      category_id: '', regular_price: '', wholesale_price: '', cost_price: '',
-      discount_type: 'Percentage', discount_amount: '', current_stock: '',
-      minimum_stock_alert: '5', stock_status: 'In Stock', variant_available: 'No'
-    });
-    setUploadedImages([]);
-    setVariations([]); // ভেরিয়েশন রিসেট
-  };
+      setEditingProduct(null);
+      setFormData({
+        name: '', 
+        sku: '', 
+        description: '', 
+        target_audience: 'men',
+        category_id: '', 
+        regular_price: '', 
+        wholesale_price: '', 
+        cost_price: '',
+        discount_type: 'Percentage', 
+        discount_amount: '', 
+        // নতুন নামগুলো এখানে ব্যবহার করুন
+        stock_quantity: '', 
+        low_stock_threshold: '5', 
+        stock_status: 'In Stock', 
+        variant_available: 'No'
+      });
+      setUploadedImages([]);
+      setVariations([]);
+    };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     const payload = {
-      name: formData.name,
-      slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
-      sku: formData.sku,
-      description: formData.description,
-      target_audience: formData.target_audience || null,
-      category_id: formData.category_id ? parseInt(formData.category_id) : null,
-      images: uploadedImages,
-      price: parseFloat(formData.regular_price) || 0,
-      wholesale_price: parseFloat(formData.wholesale_price) || 0,
-      cost_price: parseFloat(formData.cost_price) || 0,
-      discount_type: formData.discount_type,
-      discount_amount: parseFloat(formData.discount_amount) || 0,
-      stock_quantity: parseInt(formData.current_stock) || 0,
-      low_stock_threshold: parseInt(formData.minimum_stock_alert) || 5,
-      stock_status: formData.stock_status,
-    };
+        name: formData.name,
+        slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
+        sku: formData.sku,
+        description: formData.description,
+        target_audience: formData.target_audience || null,
+        category_id: formData.category_id ? parseInt(formData.category_id) : null,
+        images: uploadedImages,
+        
+        // Pricing
+        price: parseFloat(formData.regular_price) || 0,
+        regular_price: parseFloat(formData.regular_price) || 0,
+        wholesale_price: parseFloat(formData.wholesale_price) || 0,
+        cost_price: parseFloat(formData.cost_price) || 0,
+        
+        // Discount
+        discount_type: formData.discount_type || 'Percentage',
+        discount_amount: parseFloat(formData.discount_amount) || 0,
+        
+        // Inventory: এখানে ensure করা হচ্ছে যেন ভ্যালু না থাকলে 0 বা 5 হয়
+        stock_quantity: formData.stock_quantity !== '' ? parseInt(formData.stock_quantity) : 0,
+        low_stock_threshold: formData.low_stock_threshold !== '' ? parseInt(formData.low_stock_threshold) : 5,
+        
+        stock_status: formData.stock_status || 'In Stock',
+        variant_available: formData.variant_available === 'Yes' // Boolean হিসেবে সেভ করা ভালো
+      };
 
     try {
       if (editingProduct) {
@@ -175,40 +199,64 @@ export default function AdminProductsPage() {
           </div>
 
           {/* ডান পাশের কলাম */}
-          <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border space-y-4">
-            <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mb-4">Add Product</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium mb-1">Product Name</label>
-                <input type="text" value={formData.name || ''} onChange={e => setFormData(prev => ({...prev, name: e.target.value}))} required className="w-full p-2 border rounded-lg text-sm" />
+            <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border space-y-4">
+              <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mb-4">Add Product</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium mb-1">Product Name</label>
+                  <input type="text" value={formData.name || ''} onChange={e => setFormData(prev => ({...prev, name: e.target.value}))} required className="w-full p-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1">SKU</label>
+                  <input type="text" value={formData.sku || ''} onChange={e => setFormData(prev => ({...prev, sku: e.target.value}))} required className="w-full p-2 border rounded-lg bg-gray-50 text-sm font-mono" />
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-medium mb-1">SKU</label>
-                <input type="text" value={formData.sku || ''} onChange={e => setFormData(prev => ({...prev, sku: e.target.value}))} required className="w-full p-2 border rounded-lg bg-gray-50 text-sm font-mono" />
+              
+              <label className="block text-xs font-medium mb-1">Description</label>
+              <textarea rows={3} value={formData.description || ''} onChange={e => setFormData(prev => ({...prev, description: e.target.value}))} className="w-full p-2 border rounded-lg text-sm" />
+              
+              <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">💰 Pricing</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex flex-col">
+                  <label className="block text-xs font-medium mb-1 text-gray-600">Cost Price</label>
+                  <input type="number" value={formData.cost_price || ''} onChange={e => setFormData(prev => ({...prev, cost_price: e.target.value}))} className="p-2 border rounded-lg text-sm w-full" />
+                </div>
+                <div className="flex flex-col">
+                  <label className="block text-xs font-medium mb-1 text-gray-600">Wholesale Price</label>
+                  <input type="number" value={formData.wholesale_price || ''} onChange={e => setFormData(prev => ({...prev, wholesale_price: e.target.value}))} className="p-2 border rounded-lg text-sm w-full" />
+                </div>
+                <div className="flex flex-col">
+                  <label className="block text-xs font-medium mb-1 text-gray-600">Regular Price</label>
+                  <input type="number" value={formData.regular_price || ''} onChange={e => setFormData(prev => ({...prev, regular_price: e.target.value}))} className="p-2 border rounded-lg text-sm w-full" />
+                </div>
+              </div>
+
+              {/* নতুন যুক্ত করা অংশ: Quantity ও Low Stock Alert */}
+              <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">📦 Inventory</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col">
+                  <label className="block text-xs font-medium mb-1 text-gray-600">Stock Quantity</label>
+                  <input 
+                    type="number" 
+                    value={formData.stock_quantity || ''} 
+                    onChange={e => setFormData(prev => ({...prev, stock_quantity: e.target.value}))} 
+                    className="p-2 border rounded-lg text-sm w-full" 
+                    placeholder="0"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="block text-xs font-medium mb-1 text-gray-600">Low Stock Alert Threshold</label>
+                  <input 
+                    type="number" 
+                    value={formData.low_stock_threshold || ''} 
+                    onChange={e => setFormData(prev => ({...prev, low_stock_threshold: e.target.value}))} 
+                    className="p-2 border rounded-lg text-sm w-full" 
+                    placeholder="5"
+                  />
+                </div>
               </div>
             </div>
-            
-            <label className="block text-xs font-medium mb-1">Description</label>
-            <textarea rows={3} value={formData.description || ''} onChange={e => setFormData(prev => ({...prev, description: e.target.value}))} className="w-full p-2 border rounded-lg text-sm" />
-            
-            <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">Pricing</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* ইনপুট ফিল্ডগুলো আগের মতোই থাকবে */}
-              <div className="flex flex-col">
-                <label className="block text-xs font-medium mb-1 text-gray-600">Cost Price</label>
-                <input type="number" value={formData.cost_price || ''} onChange={e => setFormData(prev => ({...prev, cost_price: e.target.value}))} className="p-2 border rounded-lg text-sm w-full" />
-              </div>
-              <div className="flex flex-col">
-                <label className="block text-xs font-medium mb-1 text-gray-600">Wholesale Price</label>
-                <input type="number" value={formData.wholesale_price || ''} onChange={e => setFormData(prev => ({...prev, wholesale_price: e.target.value}))} className="p-2 border rounded-lg text-sm w-full" />
-              </div>
-              <div className="flex flex-col">
-                <label className="block text-xs font-medium mb-1 text-gray-600">Regular Price</label>
-                <input type="number" value={formData.regular_price || ''} onChange={e => setFormData(prev => ({...prev, regular_price: e.target.value}))} className="p-2 border rounded-lg text-sm w-full" />
-              </div>
-            </div>
-          </div>
 
         </div>
 
