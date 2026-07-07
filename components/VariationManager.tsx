@@ -38,15 +38,7 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
       <div className="space-y-4">
         
         {/* SKU ফিল্ড */}
-        <div>
-          <label className="block text-xs font-medium mb-1 text-gray-400">SKU *</label>
-          <input 
-            type="text" 
-            placeholder="Enter SKU"
-            className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm uppercase" 
-            onChange={e => setVariation({...variation, sku: e.target.value})} 
-          />
-        </div>
+        
 
         <div className="flex gap-4">
           <div className="w-1/2">
@@ -100,6 +92,24 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
               <div className="text-gray-400">{variation.image ? variation.image : "+ UPLOAD"}</div>
               <p className="text-[10px] text-gray-500">PNG, JPG, or WEBP up to 2MB</p>
             </div>
+
+            <div>
+              <label className="block text-xs font-medium mb-1 text-gray-400">SKU *</label>
+              <input 
+                type="text" 
+                placeholder="Enter SKU"
+                className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm uppercase" 
+                onChange={e => setVariation({...variation, sku: e.target.value})} 
+              />
+            </div>
+
+
+
+
+
+
+
+
         </div>
 
         <button 
