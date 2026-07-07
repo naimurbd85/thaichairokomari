@@ -37,7 +37,7 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
       </h2>
       <div className="space-y-4">
         
-        {/* SKU ফিল্ড */}
+        
         
 
         <div className="flex gap-4">
@@ -84,15 +84,7 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
               onChange={handleFileChange} 
             />
             
-            {/* ক্লিকযোগ্য আপলোড এরিয়া */}
-            <div 
-              className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-800"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <div className="text-gray-400">{variation.image ? variation.image : "+ UPLOAD"}</div>
-              <p className="text-[10px] text-gray-500">PNG, JPG, or WEBP up to 2MB</p>
-            </div>
-
+            {/* SKU ফিল্ড */}
             <div>
               <label className="block text-xs font-medium mb-1 text-gray-400">SKU *</label>
               <input 
@@ -102,6 +94,18 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
                 onChange={e => setVariation({...variation, sku: e.target.value})} 
               />
             </div>
+
+
+            {/* ক্লিকযোগ্য আপলোড এরিয়া */}
+            <div 
+              className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-800"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <div className="text-gray-400">{variation.image ? variation.image : "+ UPLOAD"}</div>
+              <p className="text-[10px] text-gray-500">PNG, JPG, or WEBP up to 2MB</p>
+            </div>
+
+            
 
 
 
