@@ -85,7 +85,7 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
             />
             
             {/* SKU ফিল্ড */}
-            <div>
+            <div className="mb-6">
               <label className="block text-xs font-medium mb-1 text-gray-400">SKU *</label>
               <input 
                 type="text" 
@@ -95,24 +95,31 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
               />
             </div>
 
-
-            {/* ক্লিকযোগ্য আপলোড এরিয়া */}
-            <div 
-              className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-800"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <div className="text-gray-400">{variation.image ? variation.image : "+ UPLOAD"}</div>
-              <p className="text-[10px] text-gray-500">PNG, JPG, or WEBP up to 2MB</p>
+            {/* VARIATION IMAGE সেকশন */}
+            <div className="mt-6">
+              <label className="block text-xs font-medium mb-1 text-gray-400">VARIATION IMAGE</label>
+              {/* লুকানো ফাইল ইনপুট */}
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept="image/*" 
+                onChange={handleFileChange} 
+              />
+              
+              {/* ক্লিকযোগ্য আপলোড এরিয়া */}
+              <div 
+                className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-800 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <div className="text-gray-400 font-medium">
+                  {variation.image ? variation.image : "Upload Variant Photo"}
+                </div>
+                <p className="text-[10px] text-gray-500 mt-1">PNG, JPG, or WEBP up to 2MB</p>
+              </div>
             </div>
 
             
-
-
-
-
-
-
-
 
         </div>
 
