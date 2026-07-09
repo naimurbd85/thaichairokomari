@@ -10,28 +10,40 @@ export default function CategorySelector({ categories, onRefresh }: any) {
   const [loading, setLoading] = useState(false)
 
   const addCategory = async (parentId: string | null) => {
-    const name = prompt("Enter new category name:")
-    if (!name || !name.trim()) return
+      const name = prompt("Enter new category name:");
+      if (!name || !name.trim()) return;
 
-    // Auto-generate slug from name
-    const slug = name.trim().toLowerCase().replace(/\s+/g, '-')
+      const trimmedName = name.trim();
+      
+      // ১. ইউনিক স্লাগ (slug) তৈরির লজিক
+      // যদি একই নামের কোনো ক্যাটাগরি থাকে, তার সাথে রেন্ডম নাম্বার যোগ করে ইউনিক করা হচ্ছে
+      let slug = trimmedName.toLowerCase().replace(/\s+/g, '-');
+      
+      // চেক করা হচ্ছে স্লাগটি অলরেডি আছে কিনা
+      const isSlugExists = categories.some((c: any) => c.slug === slug);
+      
+      if (isSlugExists) {
+        // যদি থাকে, তাহলে শেষে ৪ ডিজিটের একটি র‍্যান্ডম নাম্বার যোগ করা হচ্ছে
+        slug = `${slug}-${Math.floor(1000 + Math.random() * 9000)}`;
+      }
 
-    setLoading(true)
-    const { error } = await supabase
-      .from('categories')
-      .insert([{ 
-          name: name.trim(), 
-          parent_id: parentId || null,
-          slug: slug 
-      }])
+      setLoading(true);
+      const { error } = await supabase
+        .from('categories')
+        .insert([{ 
+            name: trimmedName, 
+            parent_id: parentId || null,
+            slug: slug 
+        }]);
 
-    if (error) {
-      alert("Error saving category: " + error.message)
-    } else if (onRefresh) {
-      onRefresh()
+      if (error) {
+        // এখানে বিস্তারিত এরর দেখাবে
+        alert("Error saving category: " + error.message);
+      } else if (onRefresh) {
+        onRefresh();
+      }
+      setLoading(false);
     }
-    setLoading(false)
-  }
 
   return (
     <div className="space-y-4">
