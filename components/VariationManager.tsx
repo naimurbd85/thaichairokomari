@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
+import { createClient } from '@/app/utils/supabase'
 
 const COLOR_OPTIONS = ['Red', 'Blue', 'Green', 'Black', 'White', 'Yellow'];
 const SIZE_OPTIONS = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
@@ -16,11 +17,27 @@ export default function VariationManager({ onAddVariation, initialData }: { onAd
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setVariation({...variation, image: e.target.files[0].name});
-    }
-  };
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        const supabase = createClient(); // Supabase ক্লায়েন্ট ইনিশিয়ালাইজ করুন
+
+        // ১. স্টোরেজে ছবি আপলোড করুন
+        const fileName = `${Date.now()}_${file.name}`; // ফাইলের নাম ইউনিক করা
+        const { data, error } = await supabase.storage
+          .from('product-images') // আপনার বাকেটের নাম
+          .upload(fileName, file);
+
+        if (error) {
+          alert("Error uploading image: " + error.message);
+          return;
+        }
+
+        // ২. সাকসেসফুল হলে ফাইলের পাথ স্টেটে সেভ করুন
+        setVariation({...variation, image: data.path});
+        alert('Image uploaded successfully!');
+      }
+    };
 
   return (
     <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 text-white shadow-lg">
