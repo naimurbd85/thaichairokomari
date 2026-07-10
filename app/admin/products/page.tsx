@@ -271,7 +271,7 @@ export default function AdminProductsPage() {
               <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">Dimensions & Weight</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="flex flex-col">
-                  <label className="block text-xs font-medium mb-1 text-gray-600">Weight (kg)</label>
+                  <label className="block text-xs font-medium mb-1 text-gray-600">Weight (g)</label>
                   <input 
                     type="number" 
                     step="0.01"
