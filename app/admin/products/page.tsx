@@ -4,6 +4,7 @@ import { createClient } from '@/app/utils/supabase'
 import CategorySelector from '@/components/CategorySelector'
 import ImageUploader from '@/components/ImageUploader'
 import VariationManager from '@/components/VariationManager'
+import { useRouter } from 'next/navigation'
 
 interface Category {
   id: number
@@ -17,6 +18,7 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [editingProduct, setEditingProduct] = useState<any>(null)
+  const router = useRouter()
   
   // ভেরিয়েশন স্টেট যোগ করা হলো
   const [variations, setVariations] = useState<any[]>([]);
@@ -201,7 +203,7 @@ export default function AdminProductsPage() {
               >
                 <option value="">Select Origin</option>
                 <option value="china">China Product</option>
-                <option value="thai">Thai Product</option>
+                <option value="thai">Thailand Product</option>
                 <option value="others">Others</option>
               </select>
             </div>
@@ -396,9 +398,36 @@ export default function AdminProductsPage() {
                     
                     {/* অ্যাকশন বাটন */}
                     <td className="p-3 text-center space-x-2">
-                      <button onClick={() => openVariantModal(product)} className="text-green-600 hover:text-green-800 font-bold text-xs">Variant</button>
-                      <button onClick={() => handleEdit(product)} className="text-blue-600 hover:text-blue-800 font-bold text-xs">Edit</button>
-                      <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-800 font-bold text-xs">Delete</button>
+                      <button 
+                        onClick={() => openVariantModal(product)} 
+                        className="text-green-600 hover:text-green-800 font-bold text-xs"
+                      >
+                        Add Variant
+                      </button>
+
+                      {/* যদি প্রোডাক্টের ভেরিয়েন্ট থেকে থাকে, তবেই বাটনটি দেখাবে */}
+                      {product.variations && product.variations.length > 0 && (
+                        <button 
+                          onClick={() => router.push(`/admin/products/${product.id}/variations`)} 
+                          className="text-purple-600 hover:text-purple-800 font-bold text-xs"
+                        >
+                          Edit Variant
+                        </button>
+                      )}
+                      
+                      <button 
+                        onClick={() => handleEdit(product)} 
+                        className="text-blue-600 hover:text-blue-800 font-bold text-xs"
+                      >
+                        Edit
+                      </button>
+                      
+                      <button 
+                        onClick={() => handleDelete(product.id)} 
+                        className="text-red-600 hover:text-red-800 font-bold text-xs"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))
