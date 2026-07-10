@@ -89,11 +89,21 @@ export default function ManageVariationsPage() {
                 <div className="flex items-center gap-4">
                   {/* ভেরিয়েন্ট ইমেজ */}
                   <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center border">
-                    {v.image ? (
-                       <div className="text-[8px] text-gray-400">{v.image}</div> 
-                       // যদি ইমেজ ইউআরএল থাকে তবে <img src={v.image} /> ব্যবহার করবেন
-                    ) : <span className="text-[10px] text-gray-400">No Img</span>}
-                  </div>
+                      {v.image ? (
+                        <img 
+                          // এখানে আপনার Supabase Storage-এর Public URL টি বসান
+                          src={`https://আপনার-প্রজেক্ট-আইডি.supabase.co/storage/v1/object/public/আপনার-বাকেটের-নাম/${v.image}`} 
+                          alt="Variant" 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // যদি কোনো কারণে ছবি লোড না হয়, তবে ইমেজটি লুকিয়ে শুধু নাম দেখাবে
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <span className="text-[10px] text-gray-400">No Img</span>
+                      )}
+                    </div>
                   <div>
                     <p className="font-bold">{v.color} - {v.size}</p>
                     <p className="text-xs text-gray-500">SKU: {v.sku} | Cost: ৳{v.purchasePrice} | Sell: ৳{v.sellingPrice}</p>
