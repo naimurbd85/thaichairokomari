@@ -1,5 +1,4 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { createClient } from '@/app/utils/supabase'
 import CategorySelector from '@/components/CategorySelector'
@@ -14,6 +13,7 @@ interface Category {
 export default function AdminCategoriesPage() {
   const supabase = createClient()
   const [categories, setCategories] = useState<Category[]>([])
+  const [tableSearch, setTableSearch] = useState('')
 
   const fetchCategories = async () => {
     const { data } = await supabase.from('categories').select('*')
@@ -52,7 +52,12 @@ export default function AdminCategoriesPage() {
         })
       }
     })
-    return list
+    
+    return list.filter(item => 
+      item.main.toLowerCase().includes(tableSearch.toLowerCase()) ||
+      item.sub.toLowerCase().includes(tableSearch.toLowerCase()) ||
+      item.subSub.toLowerCase().includes(tableSearch.toLowerCase())
+    )
   }
 
   return (
@@ -68,7 +73,18 @@ export default function AdminCategoriesPage() {
           <CategorySelector categories={categories} onRefresh={fetchCategories} />
         </div>
 
-        <h2 className="text-xl font-bold mb-4">Category Table:</h2>
+        {/* সার্চ বার ও শিরোনাম */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Category Table:</h2>
+          <input 
+            type="text" 
+            placeholder="Search categories..."
+            className="p-2 border border-gray-300 rounded-lg w-64 text-sm"
+            value={tableSearch}
+            onChange={(e) => setTableSearch(e.target.value)}
+          />
+        </div>
+
         <table className="w-full text-left border-collapse border">
           <thead>
             <tr className="bg-gray-100 uppercase text-sm">
