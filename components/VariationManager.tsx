@@ -5,16 +5,17 @@ const COLOR_OPTIONS = ['Red', 'Blue', 'Green', 'Black', 'White', 'Yellow'];
 const SIZE_OPTIONS = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
 
 export default function VariationManager({ onAddVariation }: { onAddVariation: (variation: any) => void }) {
-  const [variation, setVariation] = useState({
-    sku: '', // SKU স্টেট যোগ করা হয়েছে
-    color: '', 
-    size: '', 
-    stock: 0, 
-    lowStock: 5, 
-    purchasePrice: 0, 
-    sellingPrice: 0, 
-    image: ''
-  })
+      const [variation, setVariation] = useState({
+      sku: '',
+      color: '', 
+      size: '', 
+      stock: 0, 
+      lowStock: 5, 
+      purchasePrice: 0, 
+      wholesalePrice: 0, // নতুন ফিল্ড
+      sellingPrice: 0, 
+      image: ''
+    })
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -68,9 +69,24 @@ export default function VariationManager({ onAddVariation }: { onAddVariation: (
           <div><label className="block text-xs font-medium mb-1 text-gray-400">LOW STOCK ALERT</label><input type="number" className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" defaultValue={5} onChange={e => setVariation({...variation, lowStock: parseInt(e.target.value)})} /></div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div><label className="block text-xs font-medium mb-1 text-gray-400">PURCHASE PRICE</label><input type="number" className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" defaultValue={0} onChange={e => setVariation({...variation, purchasePrice: parseInt(e.target.value)})} /></div>
-          <div><label className="block text-xs font-medium mb-1 text-gray-400">SELLING PRICE</label><input type="number" className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm text-green-500" defaultValue={0} onChange={e => setVariation({...variation, sellingPrice: parseInt(e.target.value)})} /></div>
+        <div className="grid grid-cols-3 gap-4">
+          {/* Purchase Price */}
+          <div>
+            <label className="block text-xs font-medium mb-1 text-gray-400">Cost Price</label>
+            <input type="number" className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" defaultValue={0} onChange={e => setVariation({...variation, purchasePrice: parseInt(e.target.value)})} />
+          </div>
+          
+          {/* Wholesale Price - নতুন */}
+          <div>
+            <label className="block text-xs font-medium mb-1 text-gray-400">Wholesale Price</label>
+            <input type="number" className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm text-yellow-500" defaultValue={0} onChange={e => setVariation({...variation, wholesalePrice: parseInt(e.target.value)})} />
+          </div>
+          
+          {/* Selling Price */}
+          <div>
+            <label className="block text-xs font-medium mb-1 text-gray-400">Regular Price</label>
+            <input type="number" className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm text-green-500" defaultValue={0} onChange={e => setVariation({...variation, sellingPrice: parseInt(e.target.value)})} />
+          </div>
         </div>
 
         <div>
