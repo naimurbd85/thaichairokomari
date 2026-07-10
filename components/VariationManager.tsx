@@ -4,7 +4,9 @@ import { useState, useRef } from 'react'
 const COLOR_OPTIONS = ['Red', 'Blue', 'Green', 'Black', 'White', 'Yellow'];
 const SIZE_OPTIONS = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
 
-export default function VariationManager({ onAddVariation }: { onAddVariation: (variation: any) => void }) {
+
+export default function VariationManager({ onAddVariation, initialData }: { onAddVariation: (variation: any) => void, initialData?: any 
+}) {
       const [variation, setVariation] = useState({
       sku: '',
       color: '', 
