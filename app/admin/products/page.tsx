@@ -25,6 +25,7 @@ export default function AdminProductsPage() {
     name: '', sku: '', description: '', target_audience: 'men',
     category_id: '', regular_price: '', wholesale_price: '', cost_price: '',
     discount_type: 'Percentage', discount_amount: '', 
+    weight: '', height: '', width: '', length: '',
     // এই নামগুলো আপডেট করুন
     stock_quantity: '', 
     low_stock_threshold: '5', 
@@ -66,6 +67,10 @@ export default function AdminProductsPage() {
       cost_price: product.cost_price ? String(product.cost_price) : '',
       discount_type: product.discount_type || 'Percentage',
       discount_amount: product.discount_amount ? String(product.discount_amount) : '',
+      weight: product.weight || '',
+      height: product.height || '',
+      width: product.width || '',
+      length: product.length || '',
       // নিচের লাইনগুলো আপডেট করা হয়েছে
       stock_quantity: product.stock_quantity ? String(product.stock_quantity) : '',
       low_stock_threshold: product.low_stock_threshold ? String(product.low_stock_threshold) : '5',
@@ -102,6 +107,7 @@ export default function AdminProductsPage() {
         cost_price: '',
         discount_type: 'Percentage', 
         discount_amount: '', 
+        weight: '', height: '', width: '', length: '',
         // নতুন নামগুলো এখানে ব্যবহার করুন
         stock_quantity: '', 
         low_stock_threshold: '5', 
@@ -138,6 +144,11 @@ export default function AdminProductsPage() {
         // Inventory: এখানে ensure করা হচ্ছে যেন ভ্যালু না থাকলে 0 বা 5 হয়
         stock_quantity: formData.stock_quantity !== '' ? parseInt(formData.stock_quantity) : 0,
         low_stock_threshold: formData.low_stock_threshold !== '' ? parseInt(formData.low_stock_threshold) : 5,
+
+        weight: parseFloat(formData.weight) || 0,
+        height: parseFloat(formData.height) || 0,
+        width: parseFloat(formData.width) || 0,
+        length: parseFloat(formData.length) || 0,
         
         stock_status: formData.stock_status || 'In Stock',
         variant_available: formData.variant_available === 'Yes' // Boolean হিসেবে সেভ করা ভালো
@@ -256,6 +267,52 @@ export default function AdminProductsPage() {
                   />
                 </div>
               </div>
+
+              <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">Dimensions & Weight</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="flex flex-col">
+                  <label className="block text-xs font-medium mb-1 text-gray-600">Weight (kg)</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    value={formData.weight} 
+                    onChange={e => setFormData(prev => ({...prev, weight: e.target.value}))} 
+                    className="p-2 border rounded-lg text-sm w-full" 
+                    placeholder="0.00" 
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="block text-xs font-medium mb-1 text-gray-600">Height (cm)</label>
+                  <input 
+                    type="number" 
+                    value={formData.height} 
+                    onChange={e => setFormData(prev => ({...prev, height: e.target.value}))} 
+                    className="p-2 border rounded-lg text-sm w-full" 
+                    placeholder="0" 
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="block text-xs font-medium mb-1 text-gray-600">Width (cm)</label>
+                  <input 
+                    type="number" 
+                    value={formData.width} 
+                    onChange={e => setFormData(prev => ({...prev, width: e.target.value}))} 
+                    className="p-2 border rounded-lg text-sm w-full" 
+                    placeholder="0" 
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="block text-xs font-medium mb-1 text-gray-600">Length (cm)</label>
+                  <input 
+                    type="number" 
+                    value={formData.length} 
+                    onChange={e => setFormData(prev => ({...prev, length: e.target.value}))} 
+                    className="p-2 border rounded-lg text-sm w-full" 
+                    placeholder="0" 
+                  />
+                </div>
+              </div>
+
             </div>
 
         </div>
