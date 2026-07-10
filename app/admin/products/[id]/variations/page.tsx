@@ -73,7 +73,7 @@ export default function ManageVariationsPage() {
           {editingIndex !== null && (
             <button 
               onClick={() => setEditingIndex(null)}
-              className="w-full mt-2 text-xs text-gray-500 underline"
+              className="w-full mt-4 bg-gray-200 text-gray-700 font-bold py-2 rounded-lg hover:bg-gray-300 transition"
             >
               Cancel Edit
             </button>
