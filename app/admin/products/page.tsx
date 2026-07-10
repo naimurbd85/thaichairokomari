@@ -46,6 +46,10 @@ export default function AdminProductsPage() {
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
   const [selectedProductForVariant, setSelectedProductForVariant] = useState<any>(null);
 
+
+  const [uploaderKey, setUploaderKey] = useState(0);
+
+
   // বাটন ক্লিক হ্যান্ডলার
   const openVariantModal = (product: any) => {
     setSelectedProductForVariant(product);
@@ -108,6 +112,7 @@ export default function AdminProductsPage() {
         discount_type: 'Percentage', 
         discount_amount: '', 
         weight: '', height: '', width: '', length: '',
+        
         // নতুন নামগুলো এখানে ব্যবহার করুন
         stock_quantity: '', 
         low_stock_threshold: '5', 
@@ -115,6 +120,7 @@ export default function AdminProductsPage() {
         variant_available: 'No'
       });
       setUploadedImages([]);
+      setUploaderKey(prev => prev + 1);
       setVariations([]);
     };
 
@@ -317,7 +323,11 @@ export default function AdminProductsPage() {
 
         </div>
 
-        <ImageUploader onImagesUploaded={(urls: string[]) => setUploadedImages(urls)} />
+        <ImageUploader 
+          key={uploaderKey} 
+          onImagesUploaded={(urls: string[]) => setUploadedImages(urls)} 
+        />
+        
 
         <button 
   type="submit" 

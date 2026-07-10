@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/app/utils/supabase'
 
 interface ImageUploaderProps {
@@ -10,7 +10,7 @@ interface ImageUploaderProps {
 interface PreviewImage {
   file: File
   localUrl: string     // ব্রাউজারের তাৎক্ষণিক দেখার জন্য
-  publicUrl: string | null // সুপাবেস আপলোড হওয়ার পর লিঙ্ক
+  publicUrl: string | null // সুপাবেস আপলোড হওয়ার পর লিঙ্ক
   status: 'pending' | 'uploading' | 'success' | 'error'
 }
 
@@ -19,12 +19,23 @@ export default function ImageUploader({ onImagesUploaded }: ImageUploaderProps) 
   const [globalUploading, setGlobalUploading] = useState(false)
   const supabase = createClient()
 
+  // মেমোরি লিক রোধ করার জন্য ক্লিনআপ ইফেক্ট
+  useEffect(() => {
+    return () => {
+      items.forEach(item => {
+        if (item.localUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(item.localUrl)
+        }
+      })
+    }
+  }, [items])
+
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return
 
     const selectedFiles = Array.from(e.target.files)
     
-    // ১. ১ মিলিসেকেন্ডের মধ্যে লোকাল প্রিভিউ তৈরি করা (Blob Object)
+    // ১. লোকাল প্রিভিউ তৈরি করা
     const newItems: PreviewImage[] = selectedFiles.map(file => ({
       file,
       localUrl: URL.createObjectURL(file),
@@ -36,9 +47,7 @@ export default function ImageUploader({ onImagesUploaded }: ImageUploaderProps) 
     setItems(updatedItems)
     setGlobalUploading(true)
 
-    // ২. এবার ব্যাকগ্রাউন্ডে একটি একটি করে সুপাবেসে আপলোড হবে এবং প্রগ্রেস দেখাবে
-    const finalPublicUrls: string[] = items.map(i => i.publicUrl).filter(Boolean) as string[]
-
+    // ২. ব্যাকগ্রাউন্ডে আপলোড
     for (let i = 0; i < updatedItems.length; i++) {
       if (updatedItems[i].status !== 'pending') continue
 
@@ -62,7 +71,6 @@ export default function ImageUploader({ onImagesUploaded }: ImageUploaderProps) 
         if (data?.publicUrl) {
           updatedItems[i].publicUrl = data.publicUrl
           updatedItems[i].status = 'success'
-          finalPublicUrls.push(data.publicUrl)
         } else {
           updatedItems[i].status = 'error'
         }
@@ -71,8 +79,14 @@ export default function ImageUploader({ onImagesUploaded }: ImageUploaderProps) 
         updatedItems[i].status = 'error'
       }
 
+      // প্রতিটি আপলোডের পর স্টেট আপডেট এবং প্যারেন্টে ডাটা পাঠানো
       setItems([...updatedItems])
-      onImagesUploaded([...finalPublicUrls]) // প্যারেন্ট পেজে ক্লাউড লিঙ্ক পাঠানো
+      
+      const successfulUrls = updatedItems
+        .filter(item => item.status === 'success' && item.publicUrl)
+        .map(item => item.publicUrl as string)
+        
+      onImagesUploaded(successfulUrls)
     }
 
     setGlobalUploading(false)
@@ -80,7 +94,6 @@ export default function ImageUploader({ onImagesUploaded }: ImageUploaderProps) 
 
   const handleRemoveImage = (indexToRemove: number) => {
     const targetItem = items[indexToRemove]
-    // মেমোরি লিক বন্ধ করতে লোকাল অবজেক্ট ইউআরএল রিলিজ করা
     if (targetItem.localUrl.startsWith('blob:')) {
       URL.revokeObjectURL(targetItem.localUrl)
     }
@@ -88,7 +101,10 @@ export default function ImageUploader({ onImagesUploaded }: ImageUploaderProps) 
     const updatedItems = items.filter((_, index) => index !== indexToRemove)
     setItems(updatedItems)
     
-    const remainingPublicUrls = updatedItems.map(i => i.publicUrl).filter(Boolean) as string[]
+    const remainingPublicUrls = updatedItems
+      .filter(item => item.status === 'success' && item.publicUrl)
+      .map(i => i.publicUrl as string)
+      
     onImagesUploaded(remainingPublicUrls)
   }
 
@@ -109,14 +125,12 @@ export default function ImageUploader({ onImagesUploaded }: ImageUploaderProps) 
         </div>
       </div>
 
-      {/* লাইভ ইমেজ গ্রিড প্রিভিউ */}
       {items.length > 0 && (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 mt-4">
           {items.map((item, index) => (
             <div key={index} className="relative aspect-square border rounded-lg bg-white overflow-hidden group shadow-sm">
               <img src={item.localUrl} alt="Preview" className="w-full h-full object-cover" />
               
-              {/* স্ট্যাটাস ওভারলে লজিক */}
               {item.status === 'uploading' && (
                 <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mb-1"></div>
@@ -134,7 +148,6 @@ export default function ImageUploader({ onImagesUploaded }: ImageUploaderProps) 
                 </div>
               )}
 
-              {/* রিমুভ বাটন */}
               <button
                 type="button"
                 onClick={() => handleRemoveImage(index)}
