@@ -91,12 +91,12 @@ export default function ManageVariationsPage() {
                   <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center border">
                       {v.image ? (
                         <img 
-                          // এখানে আপনার Supabase Storage-এর Public URL টি বসান
-                          src={`https://আপনার-প্রজেক্ট-আইডি.supabase.co/storage/v1/object/public/আপনার-বাকেটের-নাম/${v.image}`} 
+                          // এখানে আপনার প্রজেক্টের সঠিক পাবলিক ইউআরএল ফরম্যাট ব্যবহার করা হয়েছে
+                          src={`https://oendgqpzvkllagavtglq.supabase.co/storage/v1/object/public/product-images/${v.image}`} 
                           alt="Variant" 
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            // যদি কোনো কারণে ছবি লোড না হয়, তবে ইমেজটি লুকিয়ে শুধু নাম দেখাবে
+                            // যদি ইমেজ লোড না হয়, তবে এটি হাইড হয়ে যাবে
                             e.currentTarget.style.display = 'none';
                           }}
                         />
