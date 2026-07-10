@@ -8,12 +8,6 @@ export default function CategorySelector({ categories, onRefresh }: any) {
   const [level2, setLevel2] = useState('')
   const [level3, setLevel3] = useState('')
   const [loading, setLoading] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('');
-
-  // ফিল্টার করা ক্যাটাগরি (শুধুমাত্র মেইন ক্যাটাগরির সার্চের জন্য এটি কার্যকর হবে)
-  const filteredLevel1 = categories.filter((c: any) => 
-    !c.parent_id && c.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const addCategory = async (parentId: string | null) => {
     const name = prompt("Enter new category name:");
@@ -42,18 +36,7 @@ export default function CategorySelector({ categories, onRefresh }: any) {
 
   return (
     <div className="space-y-4">
-      {/* সার্চ ইনপুট ব্লক */}
-      <div className="mb-4">
-        <input 
-          type="text" 
-          placeholder="Search Main Categories..."
-          className="w-full p-2 border border-gray-300 rounded-lg"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
-      {/* Level 1 Category (এখানে filteredLevel1 ব্যবহার করা হয়েছে) */}
+      {/* Level 1 Category */}
       <div className="flex gap-2">
         <label className="w-24 self-center font-medium">Main Cat</label>
         <select 
@@ -62,14 +45,14 @@ export default function CategorySelector({ categories, onRefresh }: any) {
           disabled={loading}
         >
           <option value="">Select</option>
-          {filteredLevel1.map((c:any) => (
+          {categories.filter((c:any) => !c.parent_id).map((c:any) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
         <button onClick={() => addCategory(null)} className="px-4 bg-gray-200 hover:bg-gray-300 rounded font-bold">+</button>
       </div>
 
-      {/* Level 2 & 3 Category (এগুলো আগের মতোই থাকবে) */}
+      {/* Level 2 Category */}
       <div className="flex gap-2">
         <label className="w-24 self-center font-medium">Sub Cat</label>
         <select 
@@ -86,6 +69,7 @@ export default function CategorySelector({ categories, onRefresh }: any) {
         <button onClick={() => addCategory(level1)} className="px-4 bg-gray-200 hover:bg-gray-300 rounded font-bold" disabled={!level1}>+</button>
       </div>
 
+      {/* Level 3 Category */}
       <div className="flex gap-2">
         <label className="w-24 self-center font-medium">Sub Sub Cat</label>
         <select 
