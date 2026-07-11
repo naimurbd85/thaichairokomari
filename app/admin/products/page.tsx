@@ -209,7 +209,7 @@ export default function AdminProductsPage() {
             </div>
             {/* Filter, Category & Origin */}
             <div>
-              <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mb-3">Filter, Category & Origin</h2>
+              <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mb-3">Filter, Category</h2>
               <CategorySelector 
                 categories={categories} 
                 onCategorySelect={(id: string) => setFormData(prev => ({...prev, category_id: id}))} 
