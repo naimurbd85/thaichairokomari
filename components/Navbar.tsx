@@ -1,29 +1,32 @@
-import Image from "next/image";
 import Link from "next/link";
 
-export default function Navbar() {
+interface NavbarProps {
+  onSearch?: (term: string) => void;
+}
+
+export default function Navbar({ onSearch }: { onSearch?: (term: string) => void }) {
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-gray-200">
+    <nav className="sticky top-0 z-50 bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
-        {/* লোগো */}
         <Link href="/">
-          <Image src="/tclogo.png" alt="Thaichi Rokomari" width={200} height={50} className="h-12 w-auto" />
+          <h1 className="text-2xl font-extrabold tracking-tighter">
+            <span className="text-orange-600">Thaichi</span>{" "}
+            <span className="text-blue-600">Rokomari</span>
+          </h1>
         </Link>
 
-        {/* সার্চ বার (এখন হেডারের ভেতরে) */}
         <div className="flex-1 max-w-lg">
           <input 
             type="text" 
             placeholder="Search products..." 
-            className="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+            className="w-full px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-orange-500 outline-none text-sm"
+            onChange={(e) => onSearch?.(e.target.value)}
           />
         </div>
 
-        {/* নেভিগেশন মেনু (বড় টেক্সট) */}
-        <div className="flex gap-8 text-base font-bold text-gray-800">
-          <Link href="/" className="hover:text-orange-600 transition">Home</Link>
-          <Link href="/products" className="hover:text-orange-600 transition">Products</Link>
-          <Link href="/cart" className="hover:text-orange-600 transition">Cart (0)</Link>
+        <div className="flex gap-6 font-bold">
+          <Link href="/">Home</Link>
+          <Link href="/cart">Cart</Link>
         </div>
       </div>
     </nav>
