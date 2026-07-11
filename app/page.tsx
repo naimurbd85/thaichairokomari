@@ -58,7 +58,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar onSearch={(term) => setSearchTerm(term)} />
 
-      <main className="max-w-7xl mx-auto w-full px-6 flex flex-1 gap-8 py-8">
+      <main className="max-w-7xl mx-auto w-full px-4 md:px-6 flex flex-col md:flex-row gap-8 py-8">
         {/* Sidebar */}
         <aside className="w-64 space-y-6 self-start sticky top-24">
           <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
