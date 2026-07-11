@@ -20,27 +20,39 @@ export default function Home() {
   }, [selectedAudience, level1, level2, level3, searchTerm]);
 
   const fetchData = async () => {
-    setLoading(true);
-    // ক্যাটাগরি লোড
-    const { data: catData } = await supabase.from('categories').select('*');
-    if (catData) setCategories(catData);
+        setLoading(true); // লোডিং স্টেট চালু রাখুন
+        
+        // ১. ক্যাটাগরি ডাটা আনুন
+        const { data: catData } = await supabase.from('categories').select('*');
+        if (catData) setCategories(catData);
 
-    // প্রোডাক্ট কোয়েরি
-    let query = supabase.from('products').select('*').eq('is_active', true);
-    
-    if (selectedAudience !== 'all') query = query.eq('target_audience', selectedAudience);
-    
-    const activeCategoryId = level3 || level2 || level1;
-    if (activeCategoryId) {
-      query = query.eq('category_id', activeCategoryId);
-    }
-    
-    if (searchTerm) query = query.ilike('name', `%${searchTerm}%`);
+        // ২. মেইন কোয়েরি
+        let query = supabase.from('products').select('*').eq('is_active', true);
 
-    const { data: prodData, error } = await query;
-    if (prodData) setProducts(prodData);
-    setLoading(false);
-  };
+        // ৩. অডিয়েন্স ফিল্টার (যদি থাকে)
+        if (selectedAudience !== 'all') query = query.eq('target_audience', selectedAudience);
+
+        // ৪. রিকার্সিভ ক্যাটাগরি ফিল্টার
+        const activeCategoryId = level3 || level2 || level1;
+        if (activeCategoryId && catData) {
+            const getChildIds = (id: string): string[] => {
+                const children = catData.filter(c => c.parent_id == id) || [];
+                return [id, ...children.flatMap(child => getChildIds(child.id.toString()))];
+            };
+            
+            const allRelevantIds = getChildIds(activeCategoryId);
+            query = query.in('category_id', allRelevantIds);
+        }
+        
+        // ৫. সার্চ ফিল্টার
+        if (searchTerm) query = query.ilike('name', `%${searchTerm}%`);
+
+        // ৬. ডাটা ফেচ
+        const { data: prodData } = await query;
+        if (prodData) setProducts(prodData);
+        
+        setLoading(false); // লোডিং বন্ধ করুন
+    };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
