@@ -2,12 +2,17 @@
 import { useState } from 'react'
 import { createClient } from '@/app/utils/supabase'
 
-export default function CategorySelector({ categories, onRefresh }: any) {
+export default function CategorySelector({ categories, onRefresh, onCategorySelect }: any) {
   const supabase = createClient()
   const [level1, setLevel1] = useState('')
   const [level2, setLevel2] = useState('')
   const [level3, setLevel3] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // যখনই কোনো ক্যাটাগরি সিলেক্ট হবে, তখন সেটি প্যারেন্টকে জানিয়ে দিবে
+  const handleSelection = (id: string) => {
+    onCategorySelect(id || null);
+  }
 
   const addCategory = async (parentId: string | null) => {
     const name = prompt("Enter new category name:");
@@ -40,7 +45,12 @@ export default function CategorySelector({ categories, onRefresh }: any) {
       <div className="flex gap-2">
         <label className="w-24 self-center font-medium">Main Cat</label>
         <select 
-          onChange={(e) => {setLevel1(e.target.value); setLevel2(''); setLevel3('')}} 
+          onChange={(e) => {
+            const val = e.target.value;
+            setLevel1(val); setLevel2(''); setLevel3('');
+            handleSelection(val);
+          }} 
+          value={level1}
           className="flex-1 p-2 border rounded"
           disabled={loading}
         >
@@ -56,7 +66,11 @@ export default function CategorySelector({ categories, onRefresh }: any) {
       <div className="flex gap-2">
         <label className="w-24 self-center font-medium">Sub Cat</label>
         <select 
-          onChange={(e) => {setLevel2(e.target.value); setLevel3('')}} 
+          onChange={(e) => {
+            const val = e.target.value;
+            setLevel2(val); setLevel3('');
+            handleSelection(val);
+          }} 
           value={level2} 
           disabled={!level1 || loading}
           className="flex-1 p-2 border rounded"
@@ -73,7 +87,11 @@ export default function CategorySelector({ categories, onRefresh }: any) {
       <div className="flex gap-2">
         <label className="w-24 self-center font-medium">Sub Sub Cat</label>
         <select 
-          onChange={(e) => setLevel3(e.target.value)} 
+          onChange={(e) => {
+            const val = e.target.value;
+            setLevel3(val);
+            handleSelection(val);
+          }} 
           value={level3} 
           disabled={!level2 || loading}
           className="flex-1 p-2 border rounded"

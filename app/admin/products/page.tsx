@@ -212,6 +212,7 @@ export default function AdminProductsPage() {
               <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mb-3">Filter, Category</h2>
               <CategorySelector 
                 categories={categories} 
+                onRefresh={loadData} 
                 onCategorySelect={(id: string) => setFormData(prev => ({...prev, category_id: id}))} 
               />
             </div>
