@@ -2,7 +2,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/app/utils/supabase'
 
-const COLOR_OPTIONS = ['Red', 'Blue', 'Green', 'Black', 'White', 'Yellow'];
+const COLOR_OPTIONS = ['Red', 'Blue', 'Green', 'Black', 'White', 'Yellow', 'Powder Blue', 'Dusty Rose Pink', 'Mint Green', 'Jet Black', 'Hot Pink', 
+'Peach Nude' ];
 const SIZE_OPTIONS = ['S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
 
 export default function VariationManager({ onAddVariation, initialData }: { onAddVariation: (variation: any) => void, initialData?: any }) {
