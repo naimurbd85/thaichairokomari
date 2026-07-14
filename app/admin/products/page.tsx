@@ -1,12 +1,10 @@
 'use client'
-import dynamic from 'next/dynamic';
 
-// ReactQuill কে ডাইনামিকালি ইমপোর্ট করুন
-const ReactQuill = dynamic(() => import('react-quill'), { 
+import dynamic from 'next/dynamic';
+const ReactQuill = dynamic(() => import('react-quill-new'), { 
   ssr: false,
-  loading: () => <p>Loading editor...</p>
+  loading: () => <p>Loading editor...</p> // এটি ব্যবহার করলে ইউজার এক্সপেরিয়েন্স ভালো হবে
 });
-import 'react-quill/dist/quill.snow.css'; // স্টাইল ফাইলটি এখানে ইমপোর্ট করুন
 import { useState, useEffect, useTransition } from 'react'
 import { createClient } from '@/app/utils/supabase'
 import CategorySelector from '@/components/CategorySelector'
@@ -66,8 +64,11 @@ export default function AdminProductsPage() {
     setIsVariantModalOpen(true);
   };
 
-  useEffect(() => { loadData() }, [])
-
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      loadData();
+    }
+  }, []);
   const handleEdit = (product: any) => {
     setEditingProduct(product);
     setFormData({
@@ -362,89 +363,27 @@ export default function AdminProductsPage() {
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                <th className="p-3 w-16">Media</th>
-                <th className="p-3">Product Name</th>
-                <th className="p-3">Origin</th>
-                <th className="p-3">SKU</th>
-                <th className="p-3 text-right">Cost</th>      {/* নতুন */}
-                <th className="p-3 text-right">Wholesale</th>  {/* নতুন */}
-                <th className="p-3 text-right">Price</th>
-                <th className="p-3 text-center">Qty</th>
-                <th className="p-3 text-center">Actions</th>
-              </tr>
+              <tr className="border-b bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider"><th className="p-3 w-16">Media</th><th className="p-3">Product Name</th><th className="p-3">Origin</th><th className="p-3">SKU</th><th className="p-3 text-right">Cost</th><th className="p-3 text-right">Wholesale</th><th className="p-3 text-right">Price</th><th className="p-3 text-center">Qty</th><th className="p-3 text-center">Actions</th></tr>
             </thead>
-
             <tbody className="text-sm divide-y">
               {products.length > 0 ? (
                 products.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50/50 transition">
-                    {/* মিডিয়া এবং নাম */}
-                    <td className="p-3">
-                      {product.images?.length > 0 ? (
-                        <img src={product.images[0]} className="w-9 h-9 object-cover rounded-full" />
-                      ) : (
-                        <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-[9px] text-gray-400">No Img</div>
-                      )}
-                    </td>
+                    <td className="p-3">{product.images?.length > 0 ? <img src={product.images[0]} className="w-9 h-9 object-cover rounded-full" /> : <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-[9px] text-gray-400">No Img</div>}</td>
                     <td className="p-3 font-semibold text-gray-800">{product.name}</td>
-                    
-                    {/* অরিজিন */}
-                    <td className="p-3">
-                      {product.target_audience ? (
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          product.target_audience === 'china' ? 'bg-red-50 text-red-700' :
-                          product.target_audience === 'thai' ? 'bg-green-50 text-green-700' :
-                          'bg-gray-100 text-gray-600'
-                        }`}>
-                          {product.target_audience}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 text-xs italic">N/A</span>
-                      )}
-                    </td>
-
+                    <td className="p-3">{product.target_audience ? <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${product.target_audience === 'china' ? 'bg-red-50 text-red-700' : product.target_audience === 'thai' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{product.target_audience}</span> : <span className="text-gray-400 text-xs italic">N/A</span>}</td>
                     <td className="p-3 font-mono text-xs text-gray-400">{product.sku}</td>
-                    
-                    {/* নতুন কলামগুলো */}
                     <td className="p-3 text-right font-medium text-gray-600">৳{product.cost_price || 0}</td>
                     <td className="p-3 text-right font-medium text-gray-600">৳{product.wholesale_price || 0}</td>
-                    
                     <td className="p-3 text-right font-medium text-gray-900">৳{product.price || 0}</td>
                     <td className="p-3 text-center font-mono font-bold">{product.stock_quantity}</td>
-                    
-                    {/* অ্যাকশন বাটন */}
                     <td className="p-3 text-center space-x-2">
-                      <button 
-                        onClick={() => openVariantModal(product)} 
-                        className="text-green-600 hover:text-green-800 font-bold text-xs"
-                      >
-                        Add Variant
-                      </button>
-
-                      {/* যদি প্রোডাক্টের ভেরিয়েন্ট থেকে থাকে, তবেই বাটনটি দেখাবে */}
-                      {product.variations && product.variations.length > 0 && (
-                        <button 
-                          onClick={() => router.push(`/admin/products/${product.id}/variations`)} 
-                          className="text-purple-600 hover:text-purple-800 font-bold text-xs"
-                        >
-                          Edit Variant
-                        </button>
+                      <button onClick={() => openVariantModal(product)} className="text-green-600 hover:text-green-800 font-bold text-xs">Add Variant</button>
+                      {product.variations?.length > 0 && (
+                        <button onClick={() => router.push(`/admin/products/${product.id}/variations`)} className="text-purple-600 hover:text-purple-800 font-bold text-xs">Edit Variant</button>
                       )}
-                      
-                      <button 
-                        onClick={() => handleEdit(product)} 
-                        className="text-blue-600 hover:text-blue-800 font-bold text-xs"
-                      >
-                        Edit
-                      </button>
-                      
-                      <button 
-                        onClick={() => handleDelete(product.id)} 
-                        className="text-red-600 hover:text-red-800 font-bold text-xs"
-                      >
-                        Delete
-                      </button>
+                      <button onClick={() => handleEdit(product)} className="text-blue-600 hover:text-blue-800 font-bold text-xs">Edit</button>
+                      <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-800 font-bold text-xs">Delete</button>
                     </td>
                   </tr>
                 ))
@@ -452,7 +391,6 @@ export default function AdminProductsPage() {
                 <tr><td colSpan={9} className="p-8 text-center text-gray-400">No products found.</td></tr>
               )}
             </tbody>
-
           </table>
         </div>
       </div>
