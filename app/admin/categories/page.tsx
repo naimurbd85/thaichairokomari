@@ -14,7 +14,6 @@ export default function AdminCategoriesPage() {
   const supabase = createClient()
   const [categories, setCategories] = useState<Category[]>([])
   const [tableSearch, setTableSearch] = useState('')
-  // নতুন স্টেট: সিলেক্ট করা ক্যাটাগরির আইডি রাখার জন্য
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
 
   const fetchCategories = async () => {
@@ -40,32 +39,29 @@ export default function AdminCategoriesPage() {
     mainCats.forEach(main => {
       const subs = categories.filter(c => c.parent_id === main.id)
       if (subs.length === 0) {
-        list.push({ main: main.name, sub: '-', subSub: '-', id: main.id })
+        list.push({ main: main.name, sub: '-', subSub: '-', id: main.id, mainId: main.id, subId: null, subSubId: null })
       } else {
         subs.forEach(sub => {
           const subSubs = categories.filter(c => c.parent_id === sub.id)
           if (subSubs.length === 0) {
-            list.push({ main: main.name, sub: sub.name, subSub: '-', id: sub.id })
+            list.push({ main: main.name, sub: sub.name, subSub: '-', id: sub.id, mainId: main.id, subId: sub.id, subSubId: null })
           } else {
             subSubs.forEach(ss => {
-              list.push({ main: main.name, sub: sub.name, subSub: ss.name, id: ss.id })
+              list.push({ main: main.name, sub: sub.name, subSub: ss.name, id: ss.id, mainId: main.id, subId: sub.id, subSubId: ss.id })
             })
           }
         })
       }
     })
     
-    // ফিল্টারিং লজিক: 
-    // ১. সার্চ বার অনুযায়ী ফিল্টার
-    // ২. যদি কোনো ক্যাটাগরি সিলেক্ট করা থাকে, তবে তার সাথে ম্যাচ করে এমনগুলো দেখাবে
     return list.filter(item => {
       const matchesSearch = item.main.toLowerCase().includes(tableSearch.toLowerCase()) ||
                             item.sub.toLowerCase().includes(tableSearch.toLowerCase()) ||
                             item.subSub.toLowerCase().includes(tableSearch.toLowerCase())
       
-      // এখানে আইডি ম্যাচিং লজিক (item.id চেক করা হচ্ছে, যা flattened লিস্টে রাখা হয়েছে)
+      // নতুন লজিক: সিলেক্টেড আইডি মেইন, সাব অথবা সাব-সাব যেকোনোটার সাথে মিললেই দেখাবে
       const matchesSelection = selectedCategoryId 
-        ? (item.id === selectedCategoryId || categories.find(c => c.id === selectedCategoryId)?.parent_id === item.id || categories.find(c => c.id === selectedCategoryId)?.id === item.id) 
+        ? (item.mainId === selectedCategoryId || item.subId === selectedCategoryId || item.subSubId === selectedCategoryId)
         : true;
 
       return matchesSearch && matchesSelection
