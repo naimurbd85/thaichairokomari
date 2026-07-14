@@ -147,7 +147,7 @@ export default function Home() {
                 <div className="w-full h-52 bg-gray-50 rounded-xl mb-4 overflow-hidden">
                   <img src={product.images?.[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover"/>
                 </div>
-                <h3 className="font-bold text-lg mb-1 line-clamp-1">{product.name}</h3>
+                <h3 className="font-bold text-lg mb-1 line-clamp-2">{product.name}</h3>
                 <p className="text-orange-600 font-black text-xl mb-3">{product.regular_price} BDT</p>
                 <button onClick={() => setExpandedProductId(expandedProductId === product.id ? null : product.id)} className="text-xs font-semibold text-blue-600 underline mb-3">
                   {expandedProductId === product.id ? "Hide Details" : "View Details & Origin"}
