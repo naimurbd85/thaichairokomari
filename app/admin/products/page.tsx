@@ -243,32 +243,34 @@ export default function AdminProductsPage() {
                 </div>
               </div>
               
-              <label className="block text-xs font-medium mb-1">Description</label>
-                <div className="bg-white rounded-lg border">
-                  <ReactQuill 
-                    theme="snow" 
-                    value={formData.description || ''} 
-                    onChange={(content) => setFormData(prev => ({...prev, description: content}))} 
-                    placeholder="Enter product description here..."
-                    className="h-48"
-                  />
-                </div>
-              
-              <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">Pricing</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex flex-col">
-                  <label className="block text-xs font-medium mb-1 text-gray-600">Cost Price</label>
-                  <input type="number" value={formData.cost_price || ''} onChange={e => setFormData(prev => ({...prev, cost_price: e.target.value}))} className="p-2 border rounded-lg text-sm w-full" />
-                </div>
-                <div className="flex flex-col">
-                  <label className="block text-xs font-medium mb-1 text-gray-600">Wholesale Price</label>
-                  <input type="number" value={formData.wholesale_price || ''} onChange={e => setFormData(prev => ({...prev, wholesale_price: e.target.value}))} className="p-2 border rounded-lg text-sm w-full" />
-                </div>
-                <div className="flex flex-col">
-                  <label className="block text-xs font-medium mb-1 text-gray-600">Regular Price</label>
-                  <input type="number" value={formData.regular_price || ''} onChange={e => setFormData(prev => ({...prev, regular_price: e.target.value}))} className="p-2 border rounded-lg text-sm w-full" />
-                </div>
+              {/* Description Section */}
+              <div>
+                <label className="block text-xs font-medium mb-1">Description</label>
+                <ReactQuill 
+                  theme="snow" 
+                  value={formData.description || ''} 
+                  onChange={(content) => setFormData(prev => ({...prev, description: content}))} 
+                  placeholder="Enter product description here..."
+                  className="rounded-lg"
+                />
               </div>
+              
+              {/* Pricing Section - mt-4 দিয়ে কিছুটা গ্যাপ ঠিক রাখা হয়েছে */}
+                <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">Pricing</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex flex-col">
+                    <label className="block text-xs font-medium mb-1 text-gray-600">Cost Price</label>
+                    <input type="number" value={formData.cost_price || ''} onChange={e => setFormData(prev => ({...prev, cost_price: e.target.value}))} className="p-2 border rounded-lg text-sm w-full" />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="block text-xs font-medium mb-1 text-gray-600">Wholesale Price</label>
+                    <input type="number" value={formData.wholesale_price || ''} onChange={e => setFormData(prev => ({...prev, wholesale_price: e.target.value}))} className="p-2 border rounded-lg text-sm w-full" />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="block text-xs font-medium mb-1 text-gray-600">Regular Price</label>
+                    <input type="number" value={formData.regular_price || ''} onChange={e => setFormData(prev => ({...prev, regular_price: e.target.value}))} className="p-2 border rounded-lg text-sm w-full" />
+                  </div>
+                </div>
 
               {/* নতুন যুক্ত করা অংশ: Quantity ও Low Stock Alert */}
               <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">Inventory</h2>
