@@ -55,12 +55,10 @@ export default function AdminCategoriesPage() {
     })
     
     return list.filter(item => {
-      // সার্চ লজিক
       const matchesSearch = item.main.toLowerCase().includes(tableSearch.toLowerCase()) ||
                             item.sub.toLowerCase().includes(tableSearch.toLowerCase()) ||
                             item.subSub.toLowerCase().includes(tableSearch.toLowerCase())
       
-      // সিলেকশন লজিক: সিলেক্টেড আইডি যদি মেইন, সাব বা সাব-সাব আইডির সাথে মিলে যায়
       const matchesSelection = selectedCategoryId 
         ? (Number(item.mainId) === Number(selectedCategoryId) || 
            Number(item.subId) === Number(selectedCategoryId) || 
@@ -79,7 +77,19 @@ export default function AdminCategoriesPage() {
 
       <div className="p-8 max-w-6xl mx-auto">
         <div className="bg-white p-8 border rounded-lg shadow-sm mb-10">
-          <h2 className="text-xl font-bold mb-6">Add/Filter Category</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold">Add/Filter Category</h2>
+            {/* Clear Filter বাটন: যদি কোনো ক্যাটাগরি সিলেক্ট করা থাকে তবেই দেখাবে */}
+            {selectedCategoryId && (
+              <button 
+                onClick={() => setSelectedCategoryId(null)}
+                className="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded border"
+              >
+                Clear Filter ✕
+              </button>
+            )}
+          </div>
+          
           <CategorySelector 
             categories={categories} 
             onRefresh={fetchCategories} 
