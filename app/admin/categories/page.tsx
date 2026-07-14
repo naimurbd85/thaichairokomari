@@ -94,6 +94,7 @@ export default function AdminCategoriesPage() {
             categories={categories} 
             onRefresh={fetchCategories} 
             onCategorySelect={(id: number | null) => setSelectedCategoryId(id)} 
+            selectedCategoryId={selectedCategoryId}
           />
         </div>
 

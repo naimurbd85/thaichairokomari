@@ -1,17 +1,25 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/app/utils/supabase'
 
-export default function CategorySelector({ categories, onRefresh, onCategorySelect }: any) {
+export default function CategorySelector({ categories, onRefresh, onCategorySelect, selectedCategoryId }: any) {
   const supabase = createClient()
   const [level1, setLevel1] = useState('')
   const [level2, setLevel2] = useState('')
   const [level3, setLevel3] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // যখনই কোনো ক্যাটাগরি সিলেক্ট হবে, তখন সেটি প্যারেন্টকে জানিয়ে দিবে
+  // প্যারেন্ট থেকে selectedCategoryId null হলে ড্রপডাউন রিসেট করা
+  useEffect(() => {
+    if (selectedCategoryId === null) {
+      setLevel1('');
+      setLevel2('');
+      setLevel3('');
+    }
+  }, [selectedCategoryId]);
+
   const handleSelection = (id: string) => {
-    onCategorySelect(id || null);
+    onCategorySelect(id ? Number(id) : null);
   }
 
   const addCategory = async (parentId: string | null) => {
@@ -29,7 +37,7 @@ export default function CategorySelector({ categories, onRefresh, onCategorySele
     setLoading(true);
     const { error } = await supabase
       .from('categories')
-      .insert([{ name: trimmedName, parent_id: parentId || null, slug: slug }]);
+      .insert([{ name: trimmedName, parent_id: parentId ? Number(parentId) : null, slug: slug }]);
 
     if (error) {
       alert("Error saving category: " + error.message);
@@ -76,7 +84,7 @@ export default function CategorySelector({ categories, onRefresh, onCategorySele
           className="flex-1 p-2 border rounded"
         >
           <option value="">Select</option>
-          {categories.filter((c:any) => c.parent_id == level1).map((c:any) => (
+          {categories.filter((c:any) => String(c.parent_id) === level1).map((c:any) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
@@ -97,7 +105,7 @@ export default function CategorySelector({ categories, onRefresh, onCategorySele
           className="flex-1 p-2 border rounded"
         >
           <option value="">Select</option>
-          {categories.filter((c:any) => c.parent_id == level2).map((c:any) => (
+          {categories.filter((c:any) => String(c.parent_id) === level2).map((c:any) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
