@@ -1,4 +1,7 @@
 'use client'
+import dynamic from 'next/dynamic';
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css';
 import { useState, useEffect, useTransition } from 'react'
 import { createClient } from '@/app/utils/supabase'
 import CategorySelector from '@/components/CategorySelector'
@@ -234,7 +237,15 @@ export default function AdminProductsPage() {
               </div>
               
               <label className="block text-xs font-medium mb-1">Description</label>
-              <textarea rows={3} value={formData.description || ''} onChange={e => setFormData(prev => ({...prev, description: e.target.value}))} className="w-full p-2 border rounded-lg text-sm" />
+                <div className="bg-white rounded-lg border">
+                  <ReactQuill 
+                    theme="snow" 
+                    value={formData.description || ''} 
+                    onChange={(content) => setFormData(prev => ({...prev, description: content}))} 
+                    placeholder="Enter product description here..."
+                    className="h-48"
+                  />
+                </div>
               
               <h2 className="text-md font-bold text-gray-700 bg-blue-50 p-2 rounded mt-4 mb-2">Pricing</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
