@@ -28,21 +28,22 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ReactQuill কাস্টমাইজেশন (একবারই যথেষ্ট) */
+/* ReactQuill কাস্টমাইজেশন */
 .ql-toolbar.ql-snow {
-  border: 1px solid #d1d5db !important;
-  border-bottom: none !important;
-  border-radius: 8px 8px 0 0 !important;
-  padding: 4px !important;
+  background-color: #f9fafb; /* হালকা ব্যাকগ্রাউন্ড */
+  border: none !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  border-radius: 8px 8px 0 0;
 }
 
 .ql-container.ql-snow {
-  border: 1px solid #d1d5db !important;
-  border-radius: 0 0 8px 8px !important;
-  min-height: 150px !important;
+  border: none !important; /* বক্সের বর্ডার বাদ দেওয়া হলো */
+  background-color: #ffffff;
 }
 
 .ql-editor {
-  min-height: 150px !important;
-  padding: 12px !important;
+  min-height: 120px;
+  padding: 10px;
+  border: 1px solid #e5e7eb; /* শুধুমাত্র ভেতরে হালকা বর্ডার */
+  border-radius: 0 0 8px 8px;
 }
