@@ -55,14 +55,17 @@ export default function AdminCategoriesPage() {
     })
     
     return list.filter(item => {
+      // সার্চ লজিক
       const matchesSearch = item.main.toLowerCase().includes(tableSearch.toLowerCase()) ||
                             item.sub.toLowerCase().includes(tableSearch.toLowerCase()) ||
                             item.subSub.toLowerCase().includes(tableSearch.toLowerCase())
       
-      // নতুন লজিক: সিলেক্টেড আইডি মেইন, সাব অথবা সাব-সাব যেকোনোটার সাথে মিললেই দেখাবে
+      // সিলেকশন লজিক: সিলেক্টেড আইডি যদি মেইন, সাব বা সাব-সাব আইডির সাথে মিলে যায়
       const matchesSelection = selectedCategoryId 
-        ? (item.mainId === selectedCategoryId || item.subId === selectedCategoryId || item.subSubId === selectedCategoryId)
-        : true;
+        ? (Number(item.mainId) === Number(selectedCategoryId) || 
+           Number(item.subId) === Number(selectedCategoryId) || 
+           Number(item.subSubId) === Number(selectedCategoryId))
+        : true
 
       return matchesSearch && matchesSelection
     })
