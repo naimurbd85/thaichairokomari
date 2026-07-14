@@ -1,7 +1,12 @@
 'use client'
 import dynamic from 'next/dynamic';
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
+
+// ReactQuill কে ডাইনামিকালি ইমপোর্ট করুন
+const ReactQuill = dynamic(() => import('react-quill'), { 
+  ssr: false,
+  loading: () => <p>Loading editor...</p>
+});
+import 'react-quill/dist/quill.snow.css'; // স্টাইল ফাইলটি এখানে ইমপোর্ট করুন
 import { useState, useEffect, useTransition } from 'react'
 import { createClient } from '@/app/utils/supabase'
 import CategorySelector from '@/components/CategorySelector'
