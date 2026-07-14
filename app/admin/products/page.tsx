@@ -250,7 +250,7 @@ export default function AdminProductsPage() {
                     value={formData.description || ''} 
                     onChange={(content) => setFormData(prev => ({...prev, description: content}))} 
                     placeholder="Enter product description here..."
-                    className="h-28"
+                    className="h-48"
                   />
                 </div>
               
