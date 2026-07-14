@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* ReactQuill এডিটর স্টাইল */
+@import 'react-quill-new/dist/quill.snow.css';
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -25,9 +28,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ReactQuill এডিটর কাস্টমাইজেশন */
-@import 'react-quill-new/dist/quill.snow.css';
-
+/* ReactQuill কাস্টমাইজেশন (একবারই যথেষ্ট) */
 .ql-toolbar.ql-snow {
   border: 1px solid #d1d5db !important;
   border-bottom: none !important;
@@ -43,4 +44,5 @@ body {
 
 .ql-editor {
   min-height: 150px !important;
+  padding: 12px !important;
 }
