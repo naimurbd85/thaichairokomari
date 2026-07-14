@@ -14,6 +14,8 @@ export default function AdminCategoriesPage() {
   const supabase = createClient()
   const [categories, setCategories] = useState<Category[]>([])
   const [tableSearch, setTableSearch] = useState('')
+  // নতুন স্টেট: সিলেক্ট করা ক্যাটাগরির আইডি রাখার জন্য
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
 
   const fetchCategories = async () => {
     const { data } = await supabase.from('categories').select('*')
@@ -31,7 +33,7 @@ export default function AdminCategoriesPage() {
     fetchCategories()
   }, [])
 
-  const getFlattenedCategories = () => {
+  const getFilteredCategories = () => {
     const mainCats = categories.filter(c => !c.parent_id)
     const list: any[] = []
 
@@ -53,27 +55,39 @@ export default function AdminCategoriesPage() {
       }
     })
     
-    return list.filter(item => 
-      item.main.toLowerCase().includes(tableSearch.toLowerCase()) ||
-      item.sub.toLowerCase().includes(tableSearch.toLowerCase()) ||
-      item.subSub.toLowerCase().includes(tableSearch.toLowerCase())
-    )
+    // ফিল্টারিং লজিক: 
+    // ১. সার্চ বার অনুযায়ী ফিল্টার
+    // ২. যদি কোনো ক্যাটাগরি সিলেক্ট করা থাকে, তবে তার সাথে ম্যাচ করে এমনগুলো দেখাবে
+    return list.filter(item => {
+      const matchesSearch = item.main.toLowerCase().includes(tableSearch.toLowerCase()) ||
+                            item.sub.toLowerCase().includes(tableSearch.toLowerCase()) ||
+                            item.subSub.toLowerCase().includes(tableSearch.toLowerCase())
+      
+      // এখানে আইডি ম্যাচিং লজিক (item.id চেক করা হচ্ছে, যা flattened লিস্টে রাখা হয়েছে)
+      const matchesSelection = selectedCategoryId 
+        ? (item.id === selectedCategoryId || categories.find(c => c.id === selectedCategoryId)?.parent_id === item.id || categories.find(c => c.id === selectedCategoryId)?.id === item.id) 
+        : true;
+
+      return matchesSearch && matchesSelection
+    })
   }
 
   return (
     <div>
-      {/* Sticky Banner */}
       <div className="sticky top-0 z-50 bg-blue-600 text-white p-4 shadow-md text-center font-bold text-xl">
         Thaichi Rokomari
       </div>
 
       <div className="p-8 max-w-6xl mx-auto">
         <div className="bg-white p-8 border rounded-lg shadow-sm mb-10">
-          <h2 className="text-xl font-bold mb-6">Add Category</h2>
-          <CategorySelector categories={categories} onRefresh={fetchCategories} />
+          <h2 className="text-xl font-bold mb-6">Add/Filter Category</h2>
+          <CategorySelector 
+            categories={categories} 
+            onRefresh={fetchCategories} 
+            onCategorySelect={(id: number | null) => setSelectedCategoryId(id)} 
+          />
         </div>
 
-        {/* সার্চ বার ও শিরোনাম */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Category Table:</h2>
           <input 
@@ -95,7 +109,7 @@ export default function AdminCategoriesPage() {
             </tr>
           </thead>
           <tbody>
-            {getFlattenedCategories().map((item, index) => (
+            {getFilteredCategories().map((item, index) => (
               <tr key={index} className="border-b hover:bg-gray-50">
                 <td className="border p-3">{item.main}</td>
                 <td className="border p-3">{item.sub}</td>
