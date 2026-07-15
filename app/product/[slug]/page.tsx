@@ -1,18 +1,20 @@
-import { createClient } from '@/app/utils/supabase';
+// app/product/[slug]/page.tsx
+import { createServerSupabaseClient } from '@/app/utils/supabaseServer'; 
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
 export default async function ProductPage({ params }: { params: { slug: string } }) {
-  const supabase = createClient();
+  // সার্ভার সাইড সুপাবেস ক্লায়েন্ট কল করা
+  const supabase = await createServerSupabaseClient(); 
   
-  // লজিক আপডেট: error হ্যান্ডলিং সহ ডাটা ফেচ
+  // প্রোডাক্ট ফেচ করা
   const { data: product, error } = await supabase
     .from('products')
     .select('*')
     .eq('slug', params.slug)
     .single();
 
-  // যদি প্রোডাক্ট না পাওয়া যায় বা ডাটাবেস এরর থাকে, তবে 404 দেখাবে
+  // ডাটা না থাকলে বা এরর হলে 404 দেখাবে
   if (!product || error) {
     notFound();
   }
@@ -21,13 +23,13 @@ export default async function ProductPage({ params }: { params: { slug: string }
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4">
         {/* ব্যাক বাটন */}
-        <Link href="/" className="text-gray-500 hover:text-black mb-6 inline-block font-semibold">
+        <Link href="/" className="text-gray-500 hover:text-black mb-6 inline-block font-semibold transition">
           ← Back to Shop
         </Link>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* ইমেজ সেকশন */}
-          <div className="bg-white p-4 rounded-2xl shadow-sm border">
+          <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
             <img 
               src={product.images?.[0] || '/placeholder.png'} 
               alt={product.name} 
@@ -36,7 +38,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
           </div>
 
           {/* প্রোডাক্ট ডিটেইলস */}
-          <div className="bg-white p-8 rounded-2xl shadow-sm border">
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
             <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
               {product.target_audience || 'General'}
             </span>
@@ -45,10 +47,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
             <p className="text-3xl font-black text-orange-600 mb-6">৳{Number(product.regular_price).toLocaleString()}</p>
             
             <div className="flex gap-4 mb-8">
-              <button className="flex-1 bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition shadow-lg">
+              <button className="flex-1 bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition shadow-lg shadow-gray-200">
                 Add to Cart
               </button>
-              <button className="flex-1 bg-orange-500 text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg">
+              <button className="flex-1 bg-orange-500 text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg shadow-orange-200">
                 Buy Now
               </button>
             </div>
