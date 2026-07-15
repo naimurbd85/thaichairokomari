@@ -78,16 +78,20 @@ export default function Home() {
         ) : products.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {products.map((product) => (
-              <div key={product.id} className="bg-white p-4 border rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300">
-                {/* লিংকড ইমেজ */}
-                <Link href={`/product/${product.slug}`} className="w-full h-52 bg-gray-50 rounded-xl mb-4 overflow-hidden block">
-                  <img src={product.images?.[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"/>
-                </Link>
+            <div key={product.id} className="bg-white p-4 border rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300">
+              {/* লিংকড ইমেজ - slug এর বদলে id */}
+              <Link href={`/product/${product.id}`} className="w-full h-52 bg-gray-50 rounded-xl mb-4 overflow-hidden block">
+                <img 
+                  src={product.images?.[0] || '/placeholder.png'} 
+                  alt={product.name} 
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                />
+              </Link>
 
-                {/* লিংকড নাম */}
-                <Link href={`/product/${product.slug}`}>
-                  <h3 className="font-bold text-lg mb-1 line-clamp-2 hover:text-blue-600 transition">{product.name}</h3>
-                </Link>
+              {/* লিংকড নাম - slug এর বদলে id */}
+              <Link href={`/product/${product.id}`}>
+                <h3 className="font-bold text-lg mb-1 line-clamp-2 hover:text-blue-600 transition">{product.name}</h3>
+              </Link>
                 
                 <p className="text-orange-600 font-black text-xl mb-3"> ৳{Number(product.regular_price).toFixed(2)} </p>
                 
