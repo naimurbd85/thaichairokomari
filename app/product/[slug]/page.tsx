@@ -5,13 +5,15 @@ import Link from 'next/link';
 export default async function ProductPage({ params }: { params: { slug: string } }) {
   const supabase = createClient();
   
-  const { data: product } = await supabase
+  // লজিক আপডেট: error হ্যান্ডলিং সহ ডাটা ফেচ
+  const { data: product, error } = await supabase
     .from('products')
     .select('*')
     .eq('slug', params.slug)
     .single();
 
-  if (!product) {
+  // যদি প্রোডাক্ট না পাওয়া যায় বা ডাটাবেস এরর থাকে, তবে 404 দেখাবে
+  if (!product || error) {
     notFound();
   }
 
