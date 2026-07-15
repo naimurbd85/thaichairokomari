@@ -353,15 +353,27 @@ export default function AdminProductsPage() {
           initialImages={uploadedImages}
           onImagesUploaded={(urls: string[]) => setUploadedImages(urls)} 
         />
-        
 
-        <button 
-  type="submit" 
-  disabled={isLoading} 
-  className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl"
->
-  {isLoading ? 'Processing...' : (editingProduct ? 'Update Product' : 'Save Product')}
-</button>
+        {/* বাটন কন্টেইনার */}
+        <div className="flex flex-col gap-3 mt-4">
+          {editingProduct && (
+            <button 
+              type="button"
+              onClick={resetForm}
+              className="w-full bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl hover:bg-gray-300 transition"
+            >
+              Cancel Edit
+            </button>
+          )}
+
+          <button 
+            type="submit" 
+            disabled={isLoading} 
+            className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition"
+          >
+            {isLoading ? 'Processing...' : (editingProduct ? 'Update Product' : 'Save Product')}
+          </button>
+        </div>
       </form>
 
       <div className="bg-white p-6 rounded-xl shadow-sm border mt-8">
