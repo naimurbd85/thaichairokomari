@@ -16,7 +16,8 @@ export default async function ProductPage({ params }: { params: { id: string } }
     .single();
 
   if (!product || error) {
-    notFound();
+    //notFound();
+    return <div>এরর: {error?.message || "প্রোডাক্ট ডাটাবেসে নেই"}</div>;
   }
 
   return (
