@@ -225,6 +225,7 @@ export default function AdminProductsPage() {
               <CategorySelector 
                 categories={categories} 
                 onRefresh={loadData} 
+                value={formData.category_id}
                 onCategorySelect={(id: string) => setFormData(prev => ({...prev, category_id: id}))} 
               />
             </div>
