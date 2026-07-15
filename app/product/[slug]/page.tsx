@@ -14,6 +14,11 @@ export default async function ProductPage({ params }: { params: { slug: string }
     .eq('slug', params.slug)
     .single();
 
+    // এই লাইনটি যোগ করুন, বিল্ড করার পর ব্রাউজারের কনসোল বা সার্ভার টার্মিনালে দেখুন কি দেখাচ্ছে
+    console.log("params.slug:", params.slug);
+    console.log("product data:", product);
+    console.log("error:", error);
+
   // ডাটা না থাকলে বা এরর হলে 404 দেখাবে
   if (!product || error) {
     notFound();
