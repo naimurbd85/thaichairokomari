@@ -1,25 +1,26 @@
-// app/product/[slug]/page.tsx
-import { createServerSupabaseClient } from '@/app/utils/supabaseServer'; 
+import { createServerSupabaseClient } from '@/app/utils/supabaseServer';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
-// এখানে { slug: string } এর বদলে { id: string } দিন
-export default async function ProductPage({ params }: { params: { id: string } }) {
-  const { id } = params; // params থেকে id নিন
+// এখানে params কে Promise হিসেবে নিতে হবে (Next.js 15+ এর জন্য)
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params; 
   
-  const supabase = await createServerSupabaseClient(); 
+  const supabase = await createServerSupabaseClient();
   
   const { data: product, error } = await supabase
     .from('products')
     .select('*')
-    .eq('id', id) // এখানে params.id এর বদলে সরাসরি id দিন
+    .eq('id', id)
     .single();
 
-  if (!product || error) {
-    //notFound();
-    return <div>এরর: {error?.message || "প্রোডাক্ট ডাটাবেসে নেই"}</div>;
+  // যদি প্রোডাক্ট না পাওয়া যায় বা এরর হয়
+  if (error || !product) {
+    console.error("Supabase Error:", error);
+    notFound(); // এটি Next.js এর বিল্ট-ইন 404 পেজে নিয়ে যাবে
   }
 
+  // এখন UI রিটার্ন করুন
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4">
@@ -45,7 +46,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
             </span>
             <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-3 mb-4">{product.name}</h1>
             
-            <p className="text-3xl font-black text-orange-600 mb-6">৳{Number(product.regular_price).toLocaleString()}</p>
+            <p className="text-3xl font-black text-orange-600 mb-6">৳{Number(product.regular_price || 0).toLocaleString()}</p>
             
             <div className="flex gap-4 mb-8">
               <button className="flex-1 bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition shadow-lg shadow-gray-200">
@@ -60,7 +61,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
               <h3 className="font-bold text-gray-900 mb-2">Product Description</h3>
               <div 
                 className="prose prose-sm text-gray-600 max-w-none" 
-                dangerouslySetInnerHTML={{ __html: product.description }} 
+                dangerouslySetInnerHTML={{ __html: product.description || '' }} 
               />
             </div>
 
