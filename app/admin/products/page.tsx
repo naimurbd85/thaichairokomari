@@ -94,6 +94,7 @@ export default function AdminProductsPage() {
       variant_available: product.variant_available ? 'Yes' : 'No'
     });
     setUploadedImages(product.images || []);
+    setUploaderKey(prev => prev + 1);
     setVariations(product.variations || []); 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -142,12 +143,13 @@ export default function AdminProductsPage() {
 
     const payload = {
         name: formData.name,
-        slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
+        slug: editingProduct ? editingProduct.slug : (formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now()),
         sku: formData.sku,
         description: formData.description,
         target_audience: formData.target_audience || null,
         category_id: formData.category_id ? parseInt(formData.category_id) : null,
         images: uploadedImages,
+        variations: variations,
         
         // Pricing
         price: parseFloat(formData.regular_price) || 0,
@@ -348,6 +350,7 @@ export default function AdminProductsPage() {
 
         <ImageUploader 
           key={uploaderKey} 
+          initialImages={uploadedImages}
           onImagesUploaded={(urls: string[]) => setUploadedImages(urls)} 
         />
         

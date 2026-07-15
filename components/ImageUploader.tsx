@@ -4,20 +4,33 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/app/utils/supabase'
 
 interface ImageUploaderProps {
+  initialImages?: string[] // নতুন যোগ করা হয়েছে
   onImagesUploaded: (urls: string[]) => void
 }
 
 interface PreviewImage {
-  file: File
-  localUrl: string     // ব্রাউজারের তাৎক্ষণিক দেখার জন্য
-  publicUrl: string | null // সুপাবেস আপলোড হওয়ার পর লিঙ্ক
+  file?: File | null
+  localUrl: string 
+  publicUrl: string | null 
   status: 'pending' | 'uploading' | 'success' | 'error'
 }
 
-export default function ImageUploader({ onImagesUploaded }: ImageUploaderProps) {
+export default function ImageUploader({ initialImages = [], onImagesUploaded }: ImageUploaderProps) {
   const [items, setItems] = useState<PreviewImage[]>([])
   const [globalUploading, setGlobalUploading] = useState(false)
   const supabase = createClient()
+
+  // এডিট করার সময় initialImages আপডেট হলে প্রিভিউ লোড করা
+  useEffect(() => {
+    if (initialImages && initialImages.length > 0) {
+      const initialItems: PreviewImage[] = initialImages.map(url => ({
+        localUrl: url,
+        publicUrl: url,
+        status: 'success'
+      }))
+      setItems(initialItems)
+    }
+  }, [initialImages])
 
   // মেমোরি লিক রোধ করার জন্য ক্লিনআপ ইফেক্ট
   useEffect(() => {
@@ -35,7 +48,7 @@ export default function ImageUploader({ onImagesUploaded }: ImageUploaderProps) 
 
     const selectedFiles = Array.from(e.target.files)
     
-    // ১. লোকাল প্রিভিউ তৈরি করা
+    // নতুন আইটেমগুলো স্টেট-এ যোগ করা
     const newItems: PreviewImage[] = selectedFiles.map(file => ({
       file,
       localUrl: URL.createObjectURL(file),
@@ -47,7 +60,7 @@ export default function ImageUploader({ onImagesUploaded }: ImageUploaderProps) 
     setItems(updatedItems)
     setGlobalUploading(true)
 
-    // ২. ব্যাকগ্রাউন্ডে আপলোড
+    // ব্যাকগ্রাউন্ডে আপলোড
     for (let i = 0; i < updatedItems.length; i++) {
       if (updatedItems[i].status !== 'pending') continue
 
@@ -55,6 +68,8 @@ export default function ImageUploader({ onImagesUploaded }: ImageUploaderProps) 
       setItems([...updatedItems])
 
       const currentItem = updatedItems[i]
+      if (!currentItem.file) continue
+
       const fileExt = currentItem.file.name.split('.').pop()
       const fileName = `${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`
       const filePath = `products/${fileName}`
@@ -79,7 +94,6 @@ export default function ImageUploader({ onImagesUploaded }: ImageUploaderProps) 
         updatedItems[i].status = 'error'
       }
 
-      // প্রতিটি আপলোডের পর স্টেট আপডেট এবং প্যারেন্টে ডাটা পাঠানো
       setItems([...updatedItems])
       
       const successfulUrls = updatedItems
