@@ -50,7 +50,8 @@ export default function CheckoutPage() {
       contact_number: formData.contact_number,
       detailed_address: `${formData.detailed_address}, ${formData.thana}, ${formData.district}, ${formData.division}`,
       total_amount: totalAmount,
-      orders: cart.map(item => `${item.name} (QTY: ${item.quantity})`).join(', ')
+      // নিচে খেয়াল করুন, এখানে পণ্যের নাম ও দাম পাঠানোর নিয়ম বদলেছি
+      orders: cart.map(item => `${item.name} (QTY: ${item.quantity}) - ৳${item.regular_price * item.quantity}`).join('\n')
     };
 
     try {
