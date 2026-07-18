@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 export default function ProductActions({ product }: { product: any }) {
   const router = useRouter();
 
-  const addToCart = () => {
+  const addToCart = (showNotification = true) => {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     const existingItem = cart.find((item: any) => item.id === product.id);
     
@@ -16,17 +16,21 @@ export default function ProductActions({ product }: { product: any }) {
     }
     
     localStorage.setItem('cart', JSON.stringify(cart));
-    alert("Added to cart!");
+    
+    // শুধুমাত্র তখনই alert দেখাবে যদি showNotification true হয়
+    if (showNotification) {
+      alert("Added to cart!");
+    }
   };
 
   const buyNow = () => {
-    addToCart();
+    addToCart(false); // false পাঠানোর ফলে alert আসবে না
     router.push('/checkout');
   };
 
   return (
     <div className="flex gap-4 mb-8">
-      <button onClick={addToCart} className="flex-1 bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition">
+      <button onClick={() => addToCart()} className="flex-1 bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition">
         Add to Cart
       </button>
       <button onClick={buyNow} className="flex-1 bg-orange-500 text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition">
