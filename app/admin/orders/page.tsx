@@ -38,9 +38,9 @@ export default function AdminOrders() {
           <tbody>
             {orders.map((order) => (
               <tr key={order.id}>
-                <td className="border p-2">{order.full_name}</td>
+                <td className="border p-2">{order.customer_name}</td> {/* এখানে নাম ঠিক করলাম */}
                 <td className="border p-2">{order.contact_number}</td>
-                <td className="border p-2">{order.address}</td>
+                <td className="border p-2">{order.detailed_address}</td> {/* এখানে অ্যাড্রেস ঠিক করলাম */}
                 <td className="border p-2">৳{order.total_amount}</td>
                 <td className="border p-2">{new Date(order.created_at).toLocaleDateString()}</td>
               </tr>
