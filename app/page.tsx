@@ -78,38 +78,38 @@ export default function Home() {
         ) : products.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {products.map((product) => (
-            <div key={product.id} className="bg-white p-4 border rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300">
-              {/* লিংকড ইমেজ - slug এর বদলে id */}
-              <Link href={`/product/${product.id}`} className="w-full h-52 bg-gray-50 rounded-xl mb-4 overflow-hidden block">
-                <img 
-                  src={product.images?.[0] || '/placeholder.png'} 
-                  alt={product.name} 
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
-              </Link>
+              <div key={product.id} className="bg-white p-4 border rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300">
+                {/* প্রোডাক্ট ইমেজ */}
+                <Link href={`/product/${product.id}`} className="w-full h-52 bg-gray-50 rounded-xl mb-4 overflow-hidden block">
+                  <img 
+                    src={product.images?.[0] || '/placeholder.png'} 
+                    alt={product.name} 
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  />
+                </Link>
 
-              {/* লিংকড নাম - slug এর বদলে id */}
-              <Link href={`/product/${product.id}`}>
-                <h3 className="font-bold text-lg mb-1 line-clamp-2 hover:text-blue-600 transition">{product.name}</h3>
-              </Link>
+                {/* Origin এবং Category ব্যাজ */}
+                <div className="flex gap-2 mb-2">
+                  <span className="text-[10px] font-bold uppercase bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                    {product.target_audience || 'General'}
+                  </span>
+                  <span className="text-[10px] font-bold uppercase bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                    {categories.find(c => c.id === product.category_id)?.name || 'Uncategorized'}
+                  </span>
+                </div>
+
+                {/* প্রোডাক্ট নাম */}
+                <Link href={`/product/${product.id}`}>
+                  <h3 className="font-bold text-lg mb-1 line-clamp-2 hover:text-blue-600 transition">{product.name}</h3>
+                </Link>
                 
-                <p className="text-orange-600 font-black text-xl mb-3"> ৳{Number(product.regular_price).toFixed(2)} </p>
+                {/* প্রাইস */}
+                <p className="text-orange-600 font-black text-xl mb-3">৳{Number(product.regular_price || 0).toLocaleString()}</p>
                 
-                <button onClick={() => setExpandedProductId(expandedProductId === product.id ? null : product.id)} className="text-xs font-semibold text-blue-600 underline mb-3">
-                  {expandedProductId === product.id ? "Hide Details" : "View Details & Origin"}
-                </button>
-                
-                {expandedProductId === product.id && (
-                  <div className="text-sm text-gray-600 border-t pt-2 mb-4 animate-in fade-in">
-                    <p><span className="font-bold">Origin:</span> {product.target_audience || "N/A"}</p>
-                    <p className="line-clamp-3">{product.description}</p>
-                  </div>
-                )}
-                
-                {/* ডুয়াল বাটন ডিজাইন */}
-                <div className="flex gap-2">
-                    <button className="flex-1 bg-gray-900 text-white py-2 rounded-xl font-bold hover:bg-gray-800 transition text-sm">Add to Cart</button>
-                    <button className="flex-1 bg-orange-600 text-white py-2 rounded-xl font-bold hover:bg-orange-700 transition text-sm">Buy Now</button>
+                {/* বাটন কন্টেইনার */}
+                <div className="flex gap-2 mt-4">
+                  <button className="flex-1 bg-gray-900 text-white py-2 rounded-xl font-bold hover:bg-gray-800 transition text-sm">Add to Cart</button>
+                  <button className="flex-1 bg-orange-600 text-white py-2 rounded-xl font-bold hover:bg-orange-700 transition text-sm">Buy Now</button>
                 </div>
               </div>
             ))}
