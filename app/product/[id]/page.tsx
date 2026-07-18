@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@/app/utils/supabaseServer';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import ProductActions from './ProductActions';
 
 // এখানে params কে Promise হিসেবে নিতে হবে (Next.js 15+ এর জন্য)
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -48,14 +49,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             
             <p className="text-3xl font-black text-orange-600 mb-6">৳{Number(product.regular_price || 0).toLocaleString()}</p>
             
-            <div className="flex gap-4 mb-8">
-              <button className="flex-1 bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition shadow-lg shadow-gray-200">
-                Add to Cart
-              </button>
-              <button className="flex-1 bg-orange-500 text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg shadow-orange-200">
-                Buy Now
-              </button>
-            </div>
+            <ProductActions product={product} />
 
             <div className="border-t pt-6">
               <h3 className="font-bold text-gray-900 mb-2">Product Description</h3>
