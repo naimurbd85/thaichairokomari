@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/app/utils/supabase';
 import { useRouter } from 'next/navigation';
+import emailjs from '@emailjs/browser';
 
 export default function CheckoutPage() {
   const supabase = createClient();
@@ -42,7 +43,28 @@ export default function CheckoutPage() {
 
     await supabase.from('order_items').insert(orderItems);
 
-    // ৩. সাকসেসফুলি শেষ করা
+    // ৩. EmailJS দিয়ে নোটিফিকেশন পাঠানো
+    const templateParams = {
+      order_id: order.id,
+      customer_name: formData.customer_name,
+      contact_number: formData.contact_number,
+      detailed_address: `${formData.detailed_address}, ${formData.thana}, ${formData.district}, ${formData.division}`,
+      total_amount: totalAmount,
+      orders: cart.map(item => `${item.name} (QTY: ${item.quantity})`).join(', ')
+    };
+
+    try {
+      await emailjs.send(
+        'service_chg15mr',      // আপনার সার্ভিস আইডি
+        'YOUR_TEMPLATE_ID',     // আপনার টেমপ্লেট আইডি
+        templateParams,
+        'YOUR_PUBLIC_KEY'       // আপনার পাবলিক কি
+      );
+    } catch (error) {
+      console.error("Email failed:", error);
+    }
+
+    // ৪. সাকসেসফুলি শেষ করা
     localStorage.removeItem('cart');
     alert("Order Placed Successfully!");
     router.push('/');
