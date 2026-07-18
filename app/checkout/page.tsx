@@ -56,9 +56,9 @@ export default function CheckoutPage() {
     try {
       await emailjs.send(
         'service_chg15mr',      // আপনার সার্ভিস আইডি
-        'YOUR_TEMPLATE_ID',     // আপনার টেমপ্লেট আইডি
+        'template_2dv0c6l',     // আপনার টেমপ্লেট আইডি
         templateParams,
-        'YOUR_PUBLIC_KEY'       // আপনার পাবলিক কি
+        'mKf2ckp72m_5OXExj'       // আপনার পাবলিক কি
       );
     } catch (error) {
       console.error("Email failed:", error);
