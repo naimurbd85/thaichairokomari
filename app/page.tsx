@@ -158,8 +158,40 @@ export default function Home() {
                   )}
                   
                   <div className="flex gap-2">
-                    <button className="flex-1 bg-gray-900 text-white py-2 rounded-xl font-bold hover:bg-gray-800 transition text-sm">Add to Cart</button>
-                    <button className="flex-1 bg-orange-600 text-white py-2 rounded-xl font-bold hover:bg-orange-700 transition text-sm">Buy Now</button>
+                    <button 
+                      onClick={() => {
+                        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                        const existingItem = cart.find((item: any) => item.id === product.id);
+                        
+                        if (existingItem) {
+                          existingItem.quantity += 1;
+                        } else {
+                          cart.push({ ...product, quantity: 1 });
+                        }
+                        
+                        localStorage.setItem('cart', JSON.stringify(cart));
+                        alert("Product added to cart!");
+                      }}
+                      className="flex-1 bg-gray-900 text-white py-2 rounded-xl font-bold hover:bg-gray-800 transition text-sm"
+                    >
+                      Add to Cart
+                    </button>
+                    <button 
+                      onClick={() => {
+                        // আগে কার্টে যোগ করা (যাতে চেকআউট পেজে ডাটা পায়)
+                        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                        const existingItem = cart.find((item: any) => item.id === product.id);
+                        if (!existingItem) {
+                            cart.push({ ...product, quantity: 1 });
+                            localStorage.setItem('cart', JSON.stringify(cart));
+                        }
+                        // চেকআউট পেজে রিডাইরেক্ট
+                        window.location.href = '/checkout';
+                      }}
+                      className="flex-1 bg-orange-600 text-white py-2 rounded-xl font-bold hover:bg-orange-700 transition text-sm"
+                    >
+                      Buy Now
+                    </button>
                   </div>
                 </div>
               ))}
