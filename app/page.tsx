@@ -16,6 +16,7 @@ export default function Home() {
   const [level3, setLevel3] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const stripHtml = (html: string | undefined | null) => html?.replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ');
 
   useEffect(() => {
     fetchData();
@@ -156,9 +157,10 @@ export default function Home() {
                     </button>
                     
                     {expandedProductId === product.id && (
-                      <div className="text-sm text-gray-600 border-t pt-2 mb-4 animate-in fade-in">
+                    <div className="text-sm text-gray-600 border-t pt-2 mb-4 animate-in fade-in">
                         <p><span className="font-bold">Origin:</span> {product.target_audience || "N/A"}</p>
-                        <p className="line-clamp-3">{product.description}</p>
+                        {/* এখানে ফাংশনটি কল করা হয়েছে */}
+                        <p className="line-clamp-3">{stripHtml(product.description)}</p>
                       </div>
                     )}
                     
