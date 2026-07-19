@@ -37,8 +37,9 @@ export default function LoginPage() {
       <form onSubmit={handleLogin} className="bg-white p-10 rounded-3xl shadow-xl w-full max-w-md border border-slate-100">
         {/* ব্র্যান্ড ব্যানার */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-            THAICHI <span className="text-emerald-500">ROKOMARI</span>
+          <h1 className="text-3xl font-black tracking-tight">
+            <span className="text-[#FF4500]">Thaichi</span>{' '}
+            <span className="text-[#2563EB]">Rokomari</span>
           </h1>
           <p className="text-slate-500 text-sm mt-2">Operational Admin Panel</p>
         </div>
