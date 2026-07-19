@@ -41,7 +41,6 @@ export default function LoginPage() {
             <span className="text-[#FF4500]">Thaichi</span>{' '}
             <span className="text-[#2563EB]">Rokomari</span>
           </h1>
-          <p className="text-slate-500 text-sm mt-2">Operational Admin Panel</p>
         </div>
 
         <div className="space-y-4">
