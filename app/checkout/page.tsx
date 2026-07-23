@@ -69,7 +69,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar onSearch={() => {}} />
+      <Navbar showSearchAndCart={false} />
       <main className="max-w-4xl mx-auto w-full p-6 grid md:grid-cols-2 gap-8 flex-1">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <h2 className="text-xl font-bold mb-4 text-gray-800">Shipping Details</h2>

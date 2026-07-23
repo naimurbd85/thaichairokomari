@@ -28,7 +28,7 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar onSearch={() => {}} />
+      <Navbar showSearchAndCart={false} />
       <main className="max-w-4xl mx-auto w-full p-6 flex-1">
         <h1 className="text-2xl font-bold mb-6">Your Cart</h1>
         {cart.map(item => (
