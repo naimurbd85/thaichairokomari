@@ -158,11 +158,15 @@ export default function Home() {
                     
                     {expandedProductId === product.id && (
                       <div className="text-sm text-gray-600 border-t pt-2 mb-4 animate-in fade-in">
-                        {/*<p><span className="font-bold">Origin:</span> {product.target_audience || "N/A"}</p>*/ }
-                        {/*<p className="line-clamp-3"></p> এখানে line-clamp-3 ক্লাসটি মুছে দেওয়া হয়েছে যাতে সম্পূর্ণ ডেসক্রিপশন দেখা যায়*/ }
-                        <p>{stripHtml(product.description)}</p>
+                        {/* dangerouslySetInnerHTML ব্যবহার করার ফলে যেভাবে এন্ট্রি দেওয়া হয়েছে, ঠিক সেভাবেই দেখাবে */}
+                        <div 
+                          className="prose prose-sm max-none space-y-2"
+                          dangerouslySetInnerHTML={{ __html: product.description }} 
+                        />
                       </div>
                     )}
+
+                    
                     
                     <div className="flex gap-2 mt-auto">
                       <button 
