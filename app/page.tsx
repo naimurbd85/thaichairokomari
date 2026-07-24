@@ -11,8 +11,9 @@ export default function Home() {
   const [selectedAudience, setSelectedAudience] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   
-  // পপ-আপ বা মোডালের জন্য স্টেট
+  // পপ-আপ বা মোডালের জন্য স্টেট এবং সিলেক্টেড ইমেজ স্টেট
   const [activeModalProduct, setActiveModalProduct] = useState<any | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string>('');
 
   const [level1, setLevel1] = useState<string>('');
   const [level2, setLevel2] = useState<string>('');
@@ -50,6 +51,12 @@ export default function Home() {
     setLoading(false);
   };
 
+  // মোডাল ওপেন করার সময় প্রথম ছবিটি ডিফল্ট সিলেক্ট করা
+  const openModal = (product: any) => {
+    setActiveModalProduct(product);
+    setSelectedImage(product.images?.[0] || '/placeholder.png');
+  };
+
   // কার্ট ফাংশন
   const handleAddToCart = (product: any) => {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -57,7 +64,7 @@ export default function Home() {
     if (existingItem) { 
       existingItem.quantity += 1; 
     } else { 
-      cart.push({ ...product, quantity: 1 }); 
+      cart.push({ ...product, quantity: 1, selectedImage: selectedImage }); 
     }
     localStorage.setItem('cart', JSON.stringify(cart));
     alert("Product added to cart!");
@@ -67,7 +74,7 @@ export default function Home() {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     const existingItem = cart.find((item: any) => item.id === product.id);
     if (!existingItem) { 
-      cart.push({ ...product, quantity: 1 }); 
+      cart.push({ ...product, quantity: 1, selectedImage: selectedImage }); 
       localStorage.setItem('cart', JSON.stringify(cart)); 
     }
     window.location.href = '/checkout';
@@ -118,10 +125,10 @@ export default function Home() {
         </div>
       )}
 
-      {/* প্রোডাক্ট ডিটেইলস পপ-আপ (Modal) */}
+      {/* প্রোডাক্ট ডিটেইলস ও মাল্টিপল ইমেজ গ্যালারি পপ-আপ (Modal) */}
       {activeModalProduct && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 relative shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <button 
               onClick={() => setActiveModalProduct(null)} 
               className="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 w-10 h-10 rounded-full flex items-center justify-center font-bold text-gray-700 transition"
@@ -130,13 +137,32 @@ export default function Home() {
             </button>
             
             <div className="flex flex-col md:flex-row gap-6">
-              <div className="w-full md:w-1/2 h-64 bg-gray-50 rounded-2xl overflow-hidden p-2 flex items-center justify-center border">
-                <img 
-                  src={activeModalProduct.images?.[0] || '/placeholder.png'} 
-                  alt={activeModalProduct.name} 
-                  className="w-full h-full object-contain" 
-                />
+              {/* ইমেজ গ্যালারি সেকশন */}
+              <div className="w-full md:w-1/2 flex flex-col gap-3">
+                <div className="w-full h-72 bg-gray-50 rounded-2xl overflow-hidden p-2 flex items-center justify-center border">
+                  <img 
+                    src={selectedImage} 
+                    alt={activeModalProduct.name} 
+                    className="w-full h-full object-contain transition-all duration-300" 
+                  />
+                </div>
+                {/* থাম্বনেইল লিস্ট */}
+                {activeModalProduct.images && activeModalProduct.images.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {activeModalProduct.images.map((img: string, idx: number) => (
+                      <button 
+                        key={idx} 
+                        onClick={() => setSelectedImage(img)}
+                        className={`w-16 h-16 rounded-xl border-2 overflow-hidden flex-shrink-0 transition ${selectedImage === img ? 'border-orange-600 scale-95 shadow-md' : 'border-gray-200 opacity-70 hover:opacity-100'}`}
+                      >
+                        <img src={img} alt="" className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
+
+              {/* পণ্যের বিবরণ */}
               <div className="w-full md:w-1/2 flex flex-col">
                 <div className="flex gap-2 mb-2">
                   <span className="text-[10px] font-bold uppercase bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{activeModalProduct.target_audience || 'General'}</span>
@@ -238,7 +264,7 @@ export default function Home() {
                     
                     {/* পপ-আপ ওপেন করার বাটন */}
                     <button 
-                      onClick={() => setActiveModalProduct(product)} 
+                      onClick={() => openModal(product)} 
                       className="text-xs font-semibold text-blue-600 underline mb-3 self-start hover:text-blue-800"
                     >
                       View Details
