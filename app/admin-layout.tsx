@@ -1,6 +1,7 @@
 // app/admin-layout.tsx
 'use client';
-
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/app/utils/supabase';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -15,10 +16,18 @@ import {
 
 export default function SharedAdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient(); // <--- এখানে supabase ডিক্লেয়ার করা হয়েছে
 
   const menuItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   ];
+
+  // লগআউট হ্যান্ডলার ফাংশন
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
   const configItems = [
     { name: 'Product Management', href: '/admin/products', icon: ShoppingBag },
@@ -90,14 +99,17 @@ export default function SharedAdminLayout({ children }: { children: React.ReactN
         </nav>
 
         <div className="p-4 border-t border-slate-800">
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-xl text-sm font-medium transition-all">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-xl text-sm font-medium transition-all"
+          >
             <LogOut size={18} />
             Logout
           </button>
         </div>
       </aside>
 
-      {/* ডান পাশের মূল কন্টেন্ট এরিয়া */}
+      {/* ডান পাশের মূল কন্টেন্ট এরিয়া */}
       <div className="pl-64 flex flex-col flex-1 w-full">
         <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10 shadow-sm">
           <div className="font-extrabold tracking-tighter text-lg">
