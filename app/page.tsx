@@ -11,10 +11,9 @@ export default function Home() {
   const [selectedAudience, setSelectedAudience] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   
-  // পপ-আপ বা মোডালের জন্য স্টেট এবং সিলেক্টেড ইমেজ ও ভেরিয়েন্ট স্টেট
+  // পপ-আপ বা মোডালের জন্য স্টেট এবং সিলেক্টেড ইমেজ স্টেট
   const [activeModalProduct, setActiveModalProduct] = useState<any | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>('');
-  const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
 
   const [level1, setLevel1] = useState<string>('');
   const [level2, setLevel2] = useState<string>('');
@@ -52,66 +51,32 @@ export default function Home() {
     setLoading(false);
   };
 
-  // মোডাল ওপেন করার সময় প্রথম ছবি এবং ডিফল্ট ভেরিয়েন্ট সেট করা
+  // মোডাল ওপেন করার সময় প্রথম ছবিটি ডিফল্ট সিলেক্ট করা
   const openModal = (product: any) => {
     setActiveModalProduct(product);
     setSelectedImage(product.images?.[0] || '/placeholder.png');
-    // যদি প্রোডাক্টের ভেরিয়েন্ট থাকে তবে প্রথম ভেরিয়েন্টটি ডিফল্ট সিলেক্ট করতে পারেন অথবা খালি রাখতে পারেন
-    setSelectedVariant(product.variants && product.variants.length > 0 ? product.variants[0] : null);
   };
 
-  // কার্ট ফাংশন (ভেরিয়েন্ট চেকসহ)
+  // কার্ট ফাংশন
   const handleAddToCart = (product: any) => {
-    // যদি প্রোডাক্টের ভেরিয়েন্ট বা অপশন থাকে কিন্তু সিলেক্ট করা না থাকে
-    if (product.variants && product.variants.length > 0 && !selectedVariant) {
-      alert("Please select a variant/option before adding to cart!");
-      return;
-    }
-
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    
-    // ইউনিক কার্ট আইটেমের জন্য আইডি ও ভেরিয়েন্ট মিলিয়ে চেক করা যেতে পারে
-    const cartItemId = selectedVariant ? `${product.id}-${selectedVariant.id || selectedVariant.name}` : product.id;
-    
-    const existingItem = cart.find((item: any) => item.cartItemId === cartItemId);
-    
+    const existingItem = cart.find((item: any) => item.id === product.id);
     if (existingItem) { 
       existingItem.quantity += 1; 
     } else { 
-      cart.push({ 
-        ...product, 
-        cartItemId, 
-        quantity: 1, 
-        selectedImage: selectedImage, 
-        selectedVariant: selectedVariant 
-      }); 
+      cart.push({ ...product, quantity: 1, selectedImage: selectedImage }); 
     }
-    
     localStorage.setItem('cart', JSON.stringify(cart));
     alert("Product added to cart!");
   };
 
   const handleBuyNow = (product: any) => {
-    if (product.variants && product.variants.length > 0 && !selectedVariant) {
-      alert("Please select a variant/option before buying!");
-      return;
-    }
-
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const cartItemId = selectedVariant ? `${product.id}-${selectedVariant.id || selectedVariant.name}` : product.id;
-    const existingItem = cart.find((item: any) => item.cartItemId === cartItemId);
-    
+    const existingItem = cart.find((item: any) => item.id === product.id);
     if (!existingItem) { 
-      cart.push({ 
-        ...product, 
-        cartItemId, 
-        quantity: 1, 
-        selectedImage: selectedImage, 
-        selectedVariant: selectedVariant 
-      }); 
+      cart.push({ ...product, quantity: 1, selectedImage: selectedImage }); 
       localStorage.setItem('cart', JSON.stringify(cart)); 
     }
-    
     window.location.href = '/checkout';
   };
 
@@ -160,7 +125,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* প্রোডাক্ট ডিটেইলস, ইমেজ গ্যালারি ও ভেরিয়েন্ট মোডাল (Modal) */}
+      {/* প্রোডাক্ট ডিটেইলস ও মাল্টিপল ইমেজ গ্যালারি পপ-আপ (Modal) */}
       {activeModalProduct && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 relative shadow-2xl animate-in fade-in zoom-in-95 duration-200">
@@ -197,7 +162,7 @@ export default function Home() {
                 )}
               </div>
 
-              {/* পণ্যের বিবরণ ও ভেরিয়েন্ট সিলেকশন */}
+              {/* পণ্যের বিবরণ */}
               <div className="w-full md:w-1/2 flex flex-col">
                 <div className="flex gap-2 mb-2">
                   <span className="text-[10px] font-bold uppercase bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{activeModalProduct.target_audience || 'General'}</span>
@@ -205,27 +170,8 @@ export default function Home() {
                 </div>
                 <h2 className="font-bold text-xl mb-2 text-gray-800">{activeModalProduct.name}</h2>
                 <p className="text-orange-600 font-black text-2xl mb-4">
-                  Tk {Number(selectedVariant?.price || activeModalProduct.regular_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  Tk {Number(activeModalProduct.regular_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
-
-                {/* ভেরিয়েন্ট সিলেকশন অপশন (যদি ভেরিয়েন্ট থাকে) */}
-                {activeModalProduct.variants && activeModalProduct.variants.length > 0 && (
-                  <div className="mb-4">
-                    <label className="block text-xs font-bold text-gray-600 uppercase mb-2">Select Variant / Option:</label>
-                    <div className="flex flex-wrap gap-2">
-                      {activeModalProduct.variants.map((variant: any, idx: number) => (
-                        <button
-                          key={idx}
-                          onClick={() => setSelectedVariant(variant)}
-                          className={`px-3 py-1.5 rounded-xl border text-xs font-semibold transition ${selectedVariant === variant ? 'border-orange-600 bg-orange-50 text-orange-600 shadow-sm' : 'border-gray-200 text-gray-700 hover:border-gray-400'}`}
-                        >
-                          {variant.name || variant.title || `Option ${idx + 1}`}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 <Link href={`/product/${activeModalProduct.id}`} className="text-xs text-blue-600 hover:underline mb-4 font-semibold">
                   View Full Product Page →
                 </Link>
@@ -326,13 +272,13 @@ export default function Home() {
                     
                     <div className="flex gap-2 mt-auto">
                       <button 
-                        onClick={() => openModal(product)}
+                        onClick={() => handleAddToCart(product)}
                         className="flex-1 bg-gray-900 text-white py-2.5 rounded-xl font-bold hover:bg-gray-800 transition text-sm"
                       >
                         Add to Cart
                       </button>
                       <button 
-                        onClick={() => openModal(product)}
+                        onClick={() => handleBuyNow(product)}
                         className="flex-1 bg-orange-600 text-white py-2.5 rounded-xl font-bold hover:bg-orange-700 transition text-sm"
                       >
                         Buy Now
