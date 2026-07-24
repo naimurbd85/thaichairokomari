@@ -157,10 +157,9 @@ export default function Home() {
                     </button>
                     
                     {expandedProductId === product.id && (
-                      <div className="text-sm text-gray-600 border-t pt-2 mb-4 animate-in fade-in">
-                        {/* dangerouslySetInnerHTML ব্যবহার করার ফলে যেভাবে এন্ট্রি দেওয়া হয়েছে, ঠিক সেভাবেই দেখাবে */}
+                      <div className="text-sm text-gray-600 border-t pt-2 mb-4 animate-in fade-in overflow-hidden">
                         <div 
-                          className="prose prose-sm max-none space-y-2"
+                          className="prose prose-sm max-w-full break-words space-y-2"
                           dangerouslySetInnerHTML={{ __html: product.description }} 
                         />
                       </div>
