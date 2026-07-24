@@ -100,8 +100,8 @@ export default function SharedAdminLayout({ children }: { children: React.ReactN
       {/* ডান পাশের মূল কন্টেন্ট এরিয়া */}
       <div className="pl-64 flex flex-col flex-1 w-full">
         <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10 shadow-sm">
-          <div className="font-semibold text-slate-700">
-            System Operational Panel
+          <div className="font-extrabold tracking-tighter text-lg">
+            <span className="text-orange-600">Thaichi</span> <span className="text-blue-600">Rokomari</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-emerald-100 text-emerald-700 font-bold rounded-full flex items-center justify-center text-sm shadow-inner">
