@@ -51,7 +51,7 @@ export default async function DashboardPage() {
     },
     { 
       title: 'Account Balance', 
-      value: '৳ 50,000', // আপনার অ্যাকাউন্ট বা ট্রানজেকশন টেবিল থাকলে সেখান থেকে ডেটা এনে এখানে বসাতে পারেন
+      value: 'Tk 0.00', // আপনার অ্যাকাউন্ট বা ট্রানজেকশন টেবিল থাকলে সেখান থেকে ডেটা এনে এখানে বসাতে পারেন
       link: '/admin/accounts', 
       color: 'text-amber-600', 
       bg: 'bg-amber-50', 

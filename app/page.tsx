@@ -150,17 +150,17 @@ export default function Home() {
                       <h3 className="font-bold text-lg mb-1 line-clamp-2 hover:text-blue-600 transition flex-1">{product.name}</h3>
                     </Link>
                     
-                    <p className="text-orange-600 font-black text-xl mb-3"> ৳{Number(product.regular_price || 0).toLocaleString()} </p>
+                    <p className="text-orange-600 font-black text-xl mb-3"> Tk {Number(product.regular_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     
                     <button onClick={() => setExpandedProductId(expandedProductId === product.id ? null : product.id)} className="text-xs font-semibold text-blue-600 underline mb-3 self-start">
                       {expandedProductId === product.id ? "Hide Details" : "View Details & Origin"}
                     </button>
                     
                     {expandedProductId === product.id && (
-                    <div className="text-sm text-gray-600 border-t pt-2 mb-4 animate-in fade-in">
+                      <div className="text-sm text-gray-600 border-t pt-2 mb-4 animate-in fade-in">
                         <p><span className="font-bold">Origin:</span> {product.target_audience || "N/A"}</p>
-                        {/* এখানে ফাংশনটি কল করা হয়েছে */}
-                        <p className="line-clamp-3">{stripHtml(product.description)}</p>
+                        {/*<p className="line-clamp-3"></p> এখানে line-clamp-3 ক্লাসটি মুছে দেওয়া হয়েছে যাতে সম্পূর্ণ ডেসক্রিপশন দেখা যায়*/ }
+                        <p>{stripHtml(product.description)}</p>
                       </div>
                     )}
                     
