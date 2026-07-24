@@ -2,14 +2,61 @@
 import SharedAdminLayout from '../admin-layout';
 import { ArrowUpRight, ShoppingBag, ClipboardList, Layers, Wallet } from 'lucide-react';
 import Link from 'next/link';
+import { createClient } from '@/app/utils/supabase';
 
-export default function DashboardPage() {
-  // প্রফেশনাল স্ট্যাটাস কার্ডস
+export default async function DashboardPage() {
+  const supabase = createClient();
+
+  // ১. Supabase থেকে রিয়েল ডেটা কাউন্ট বা ফেচ করা
+  const { count: productCount } = await supabase
+    .from('products')
+    .select('*', { count: 'exact', head: true });
+
+  const { count: orderCount } = await supabase
+    .from('orders')
+    .select('*', { count: 'exact', head: true });
+
+  const { count: categoryCount } = await supabase
+    .from('categories')
+    .select('*', { count: 'exact', head: true });
+
+  // একাউন্ট ব্যালেন্স যদি কোনো টেবিল বা টোটাল থেকে হিসাব করতে চান (এখানে উদাহরণের জন্য 0 রাখা হয়েছে, আপনার টেবিল অনুযায়ী কুয়েরি করে নিতে পারেন)
+  // const accountBalance = 50000; 
+
+  // প্রফেশনাল স্ট্যাটাস কার্ডস (ডাইনামিক ভ্যালুসহ)
   const cards = [
-    { title: 'Total Products', value: '120', link: '/admin/products', color: 'text-blue-600', bg: 'bg-blue-50', icon: ShoppingBag },
-    { title: 'Total Orders', value: '45', link: '/admin/orders', color: 'text-emerald-600', bg: 'bg-emerald-50', icon: ClipboardList },
-    { title: 'Categories', value: '12', link: '/admin/categories', color: 'text-purple-600', bg: 'bg-purple-50', icon: Layers },
-    { title: 'Account Balance', value: '৳ 50,000', link: '/admin/accounts', color: 'text-amber-600', bg: 'bg-amber-50', icon: Wallet },
+    { 
+      title: 'Total Products', 
+      value: productCount !== null ? productCount.toLocaleString() : '0', 
+      link: '/admin/products', 
+      color: 'text-blue-600', 
+      bg: 'bg-blue-50', 
+      icon: ShoppingBag 
+    },
+    { 
+      title: 'Total Orders', 
+      value: orderCount !== null ? orderCount.toLocaleString() : '0', 
+      link: '/admin/orders', 
+      color: 'text-emerald-600', 
+      bg: 'bg-emerald-50', 
+      icon: ClipboardList 
+    },
+    { 
+      title: 'Categories', 
+      value: categoryCount !== null ? categoryCount.toLocaleString() : '0', 
+      link: '/admin/categories', 
+      color: 'text-purple-600', 
+      bg: 'bg-purple-50', 
+      icon: Layers 
+    },
+    { 
+      title: 'Account Balance', 
+      value: '৳ 50,000', // আপনার অ্যাকাউন্ট বা ট্রানজেকশন টেবিল থাকলে সেখান থেকে ডেটা এনে এখানে বসাতে পারেন
+      link: '/admin/accounts', 
+      color: 'text-amber-600', 
+      bg: 'bg-amber-50', 
+      icon: Wallet 
+    },
   ];
 
   return (
@@ -41,19 +88,6 @@ export default function DashboardPage() {
             </div>
           );
         })}
-      </div>
-
-      {/* কুইক অ্যাকশন সেকশন */}
-      <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-        <h3 className="font-bold text-slate-800 text-lg mb-6">Quick Actions</h3>
-        <div className="flex gap-4">
-          <Link href="/admin/products" className="px-6 py-3 bg-slate-900 text-white rounded-xl font-semibold hover:bg-slate-800 transition shadow-sm">
-            Manage Inventory
-          </Link>
-          <Link href="/admin/orders" className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition">
-            View Orders
-          </Link>
-        </div>
       </div>
     </SharedAdminLayout>
   );
