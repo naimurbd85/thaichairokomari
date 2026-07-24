@@ -129,7 +129,8 @@ export default function Home() {
                 {[1, 2, 3].map(i => <div key={i} className="h-80 bg-gray-200 rounded-2xl" />)}
               </div>
             ) : products.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                 {products.map((product) => (
                   <div key={product.id} className="bg-white p-4 border rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col">
                     {/* ছবির জন্য object-contain ব্যবহার করা হয়েছে যাতে পুরো ছবি দেখা যায় */}
