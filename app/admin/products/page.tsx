@@ -197,7 +197,7 @@ export default function AdminProductsPage() {
     <SharedAdminLayout>
       <div className="p-6 w-full max-w-[97%] mx-auto">
         <h1 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
-          {editingProduct ? `Edit Product: ${editingProduct.name}` : 'Thaichi Rokomari'}
+          {editingProduct ? `Edit Product: ${editingProduct.name}` : 'Add Product'}
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
