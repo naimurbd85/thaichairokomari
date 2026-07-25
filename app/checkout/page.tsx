@@ -25,7 +25,8 @@ export default function CheckoutPage() {
   
   const [formData, setFormData] = useState({
     customer_name: '', contact_number: '', email: '',
-    division: '', district: '', thana: '', detailed_address: ''
+    division: '', district: '', thana: '', detailed_address: '',
+    delivery_charge: 120 // ডিফল্ট ডেলিভারি চার্জ
   });
 
   useEffect(() => {
@@ -33,21 +34,57 @@ export default function CheckoutPage() {
     if (savedCart) setCart(JSON.parse(savedCart));
   }, []);
 
-  // বিভাগ পরিবর্তনের সাথে সাথে জেলার লিস্ট আপডেট করার লজিক
+  // বিভাগ পরিবর্তনের সাথে সাথে জেলার লিস্ট আপডেট করা
   const handleDivisionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedDivision = e.target.value;
-    setFormData({ ...formData, division: selectedDivision, district: '' });
+    setFormData(prev => ({ 
+      ...prev, 
+      division: selectedDivision, 
+      district: '',
+      delivery_charge: selectedDivision === 'Dhaka' ? 60 : 120 // বিভাগ ঢাকা হলে প্রাথমিক চার্জ ৬০, অন্যথায় ১২০
+    }));
     setDistricts(selectedDivision ? DIVISION_DISTRICTS[selectedDivision] || [] : []);
   };
 
-  const totalAmount = cart.reduce((sum, item) => sum + (item.regular_price * item.quantity), 0);
+  // জেলা পরিবর্তনের লজিক
+  const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedDistrict = e.target.value;
+    let charge = 120; // ঢাকার বাইরের জন্য ১২০ টাকা
+
+    if (formData.division === 'Dhaka') {
+      if (selectedDistrict === 'Dhaka') {
+        charge = 60; // ঢাকা সিটি
+      } else {
+        charge = 100; // ঢাকার সাব-এরিয়া (Gazipur, Narayanganj, etc.)
+      }
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      district: selectedDistrict,
+      delivery_charge: charge
+    }));
+  };
+
+  const subtotal = cart.reduce((sum, item) => sum + (item.regular_price * item.quantity), 0);
+  const totalAmount = subtotal + formData.delivery_charge;
 
   const handleOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .insert([{ ...formData, total_amount: totalAmount }])
+      .insert([{ 
+        customer_name: formData.customer_name,
+        contact_number: formData.contact_number,
+        email: formData.email,
+        division: formData.division,
+        district: formData.district,
+        thana: formData.thana,
+        detailed_address: formData.detailed_address,
+        delivery_charge: formData.delivery_charge,
+        total_amount: totalAmount 
+      }])
       .select()
       .single();
 
@@ -68,6 +105,8 @@ export default function CheckoutPage() {
       customer_name: formData.customer_name,
       contact_number: formData.contact_number,
       detailed_address: `${formData.detailed_address}, Thana: ${formData.thana}, District: ${formData.district}, Division: ${formData.division}`,
+      subtotal: subtotal,
+      delivery_charge: formData.delivery_charge,
       total_amount: totalAmount,
       orders: cart.map(item => `${item.name} (QTY: ${item.quantity}) - ৳${item.regular_price * item.quantity}`).join('\n')
     };
@@ -109,7 +148,6 @@ export default function CheckoutPage() {
               className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
               required 
             />
-            {/* ইমেইল ফিল্ড অপশনাল করা হয়েছে */}
             <input 
               type="email"
               name="email" 
@@ -134,7 +172,7 @@ export default function CheckoutPage() {
 
               <select 
                 value={formData.district}
-                onChange={(e) => setFormData({...formData, district: e.target.value})} 
+                onChange={handleDistrictChange} 
                 className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm bg-white" 
                 required
                 disabled={!formData.division}
@@ -146,7 +184,6 @@ export default function CheckoutPage() {
               </select>
             </div>
 
-            {/* থানা / উপজেলা ইনপুট ফিল্ড */}
             <input 
               name="thana" 
               placeholder="Thana / Upazila / Area" 
@@ -155,7 +192,6 @@ export default function CheckoutPage() {
               required 
             />
 
-            {/* বিস্তারিত ঠিকানা (Detailed Address) এখন নিচে */}
             <textarea 
               name="detailed_address" 
               placeholder="Detailed Address (House No, Road No, Village, etc.)" 
@@ -171,6 +207,7 @@ export default function CheckoutPage() {
           </form>
         </div>
         
+        {/* অর্ডার সামারি ও ডেলিভারি চার্জ ডিসপ্লে */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 self-start">
           <h2 className="text-xl font-bold mb-4 text-gray-800">Order Summary</h2>
           {cart.map((item, i) => (
@@ -179,9 +216,20 @@ export default function CheckoutPage() {
               <span className="font-semibold">৳{item.regular_price * item.quantity}</span>
             </div>
           ))}
+
+          <div className="flex justify-between py-2 border-b text-sm mt-2 text-gray-600">
+            <span>Subtotal:</span>
+            <span className="font-semibold">৳{subtotal}</span>
+          </div>
+
+          <div className="flex justify-between py-2 border-b text-sm text-gray-600">
+            <span>Delivery Charge:</span>
+            <span className="font-semibold">৳{formData.delivery_charge}</span>
+          </div>
+
           <div className="flex justify-between mt-4 text-lg font-bold">
             <span>Total:</span>
-            <span className="text-orange-600">৳{totalAmount}</span>
+            <span className="orange-600 text-orange-600">৳{totalAmount}</span>
           </div>
         </div>
       </main>
