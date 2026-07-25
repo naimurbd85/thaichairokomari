@@ -42,9 +42,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
           {/* প্রোডাক্ট ডিটেইলস */}
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-              {product.target_audience || 'General'}
-            </span>
+            
             <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-3 mb-4">{product.name}</h1>
             
             <p className="text-3xl font-black text-orange-600 mb-6">৳{Number(product.regular_price || 0).toLocaleString()}</p>
