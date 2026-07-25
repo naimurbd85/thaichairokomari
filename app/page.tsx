@@ -8,6 +8,7 @@ export default function Home() {
   const supabase = createClient();
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [allActiveProducts, setAllActiveProducts] = useState<any[]>([]);
   const [selectedAudience, setSelectedAudience] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   
@@ -21,9 +22,22 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+  // প্রথমবার সব ক্যাটাগরি এবং অরিজিন অনুযায়ী ফিল্টার ছাড়া বা বেস প্রোডাক্টগুলো এনে রাখা
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
   useEffect(() => {
     fetchData();
   }, [selectedAudience, level1, level2, level3, searchTerm]);
+
+  const fetchInitialData = async () => {
+    const { data: catData } = await supabase.from('categories').select('*');
+    if (catData) setCategories(catData);
+
+    const { data: prodData } = await supabase.from('products').select('*').eq('is_active', true);
+    if (prodData) setAllActiveProducts(prodData);
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -51,7 +65,24 @@ export default function Home() {
     setLoading(false);
   };
 
-  // মোডাল ওপেন করার সময় প্রথম ছবিটি ডিফল্ট সিলেক্ট করা
+  // হেল্পার ফাংশন: নির্দিষ্ট ক্যাটাগরি বা তার সাব-ক্যাটাগরিতে প্রোডাক্ট আছে কিনা চেক করার জন্য
+  const hasProductsInCategory = (catId: string) => {
+    // অরিজিন (selectedAudience) ফিল্টার বিবেচনা করে প্রোডাক্ট লিস্ট তৈরি
+    let baseProducts = allActiveProducts;
+    if (selectedAudience !== 'all') {
+      baseProducts = baseProducts.filter(p => p.target_audience === selectedAudience);
+    }
+
+    const getChildIds = (id: string): string[] => {
+      const children = categories.filter(c => c.parent_id == id) || [];
+      return [id, ...children.flatMap(child => getChildIds(child.id.toString()))];
+    };
+
+    const relevantCatIds = getChildIds(catId);
+    return baseProducts.some(p => relevantCatIds.includes(String(p.category_id)));
+  };
+
+  // মোডাল ওপেন করার সময় প্রথম ছবিটি ডিফল্ট সিলেক্ট করা
   const openModal = (product: any) => {
     setActiveModalProduct(product);
     setSelectedImage(product.images?.[0] || '/placeholder.png');
@@ -108,17 +139,29 @@ export default function Home() {
             </select>
 
             <h3 className="font-bold text-gray-800 text-sm border-b pb-2">Categories</h3>
+            
+            {/* Main Category */}
             <select className="w-full p-3 border rounded-lg text-sm" value={level1} onChange={(e) => {setLevel1(e.target.value); setLevel2(''); setLevel3('');}}>
               <option value="">Main Category</option>
-              {categories.filter(c => !c.parent_id).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {categories
+                .filter(c => !c.parent_id && hasProductsInCategory(c.id))
+                .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+
+            {/* Sub Category */}
             <select className="w-full p-3 border rounded-lg text-sm" value={level2} onChange={(e) => {setLevel2(e.target.value); setLevel3('');}} disabled={!level1}>
               <option value="">Sub Category</option>
-              {categories.filter(c => c.parent_id == level1).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {categories
+                .filter(c => c.parent_id == level1 && hasProductsInCategory(c.id))
+                .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+
+            {/* Sub Sub Category */}
             <select className="w-full p-3 border rounded-lg text-sm" value={level3} onChange={(e) => setLevel3(e.target.value)} disabled={!level2}>
               <option value="">Sub Sub Category</option>
-              {categories.filter(c => c.parent_id == level2).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {categories
+                .filter(c => c.parent_id == level2 && hasProductsInCategory(c.id))
+                .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <button onClick={() => setIsFilterOpen(false)} className="w-full mt-8 bg-black text-white py-3 rounded-xl font-bold">Show Results</button>
@@ -217,17 +260,28 @@ export default function Home() {
             </select>
             <h3 className="font-bold mb-4 text-gray-800 text-sm border-b pb-2">Categories</h3>
             <div className="space-y-3">
+              {/* Main Category */}
               <select className="w-full p-2.5 border rounded-lg text-sm" value={level1} onChange={(e) => {setLevel1(e.target.value); setLevel2(''); setLevel3('');}}>
                 <option value="">Main Category</option>
-                {categories.filter(c => !c.parent_id).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories
+                  .filter(c => !c.parent_id && hasProductsInCategory(c.id))
+                  .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+
+              {/* Sub Category */}
               <select className="w-full p-2.5 border rounded-lg text-sm" value={level2} onChange={(e) => {setLevel2(e.target.value); setLevel3('');}} disabled={!level1}>
                 <option value="">Sub Category</option>
-                {categories.filter(c => c.parent_id == level1).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories
+                  .filter(c => c.parent_id == level1 && hasProductsInCategory(c.id))
+                  .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+
+              {/* Sub Sub Category */}
               <select className="w-full p-2.5 border rounded-lg text-sm" value={level3} onChange={(e) => setLevel3(e.target.value)} disabled={!level2}>
                 <option value="">Sub Sub Category</option>
-                {categories.filter(c => c.parent_id == level2).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories
+                  .filter(c => c.parent_id == level2 && hasProductsInCategory(c.id))
+                  .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
           </div>
