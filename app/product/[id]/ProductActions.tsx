@@ -17,7 +17,7 @@ export default function ProductActions({ product }: { product: any }) {
     
     localStorage.setItem('cart', JSON.stringify(cart));
     
-    // শুধুমাত্র তখনই alert দেখাবে যদি showNotification true হয়
+    // শুধুমাত্র তখনই alert দেখাবে যদি showNotification true হয়
     if (showNotification) {
       alert("Added to cart!");
     }

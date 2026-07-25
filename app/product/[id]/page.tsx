@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from '@/app/utils/supabaseServer';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import ProductActions from './ProductActions';
+import ProductGallery from './ProductGallery';
 
 // এখানে params কে Promise হিসেবে নিতে হবে (Next.js 15+ এর জন্য)
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -15,10 +15,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     .eq('id', id)
     .single();
 
-  // যদি প্রোডাক্ট না পাওয়া যায় বা এরর হয়
+  // যদি প্রোডাক্ট না পাওয়া যায় বা এরর হয়
   if (error || !product) {
     console.error("Supabase Error:", error);
-    notFound(); // এটি Next.js এর বিল্ট-ইন 404 পেজে নিয়ে যাবে
+    notFound(); // এটি Next.js এর বিল্ট-ইন 404 পেজে নিয়ে যাবে
   }
 
   // এখন UI রিটার্ন করুন
@@ -31,34 +31,30 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         </Link>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* ইমেজ সেকশন */}
-          <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-            <img 
-              src={product.images?.[0] || '/placeholder.png'} 
-              alt={product.name} 
-              className="w-full h-[400px] object-cover rounded-xl"
-            />
-          </div>
+          {/* ইমেজ সেকশন ও গ্যালারি */}
+          <ProductGallery product={product} />
 
           {/* প্রোডাক্ট ডিটেইলস */}
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-            
-            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-3 mb-4">{product.name}</h1>
-            
-            <p className="text-3xl font-black text-orange-600 mb-6">৳{Number(product.regular_price || 0).toLocaleString()}</p>
-            
-            <ProductActions product={product} />
-
-            <div className="border-t pt-6">
-              <h3 className="font-bold text-gray-900 mb-2">Product Description</h3>
-              <div 
-                className="prose prose-sm text-gray-600 max-w-none break-words overflow-hidden" 
-                dangerouslySetInnerHTML={{ __html: product.description || '' }} 
-              />
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                {product.target_audience || 'General'}
+              </span>
+              <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-3 mb-4">{product.name}</h1>
+              
+              <p className="text-3xl font-black text-orange-600 mb-6">৳{Number(product.regular_price || 0).toLocaleString()}</p>
+              
+              <div className="border-t pt-6">
+                <h3 className="font-bold text-gray-900 mb-2">Product Description</h3>
+                <div 
+                  className="prose prose-sm text-gray-600 max-w-none break-words overflow-hidden" 
+                  dangerouslySetInnerHTML={{ __html: product.description || '' }} 
+                />
+              </div>
             </div>
 
             {/* স্টক ইনফো */}
-            <div className="mt-6 text-sm">
+            <div className="mt-6 text-sm border-t pt-4">
               <p className="text-gray-500">SKU: <span className="text-gray-900 font-bold">{product.sku}</span></p>
               <p className="text-gray-500 mt-1">Status: 
                 <span className={`ml-2 font-bold ${product.stock_quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
