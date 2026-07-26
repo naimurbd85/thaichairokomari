@@ -11,17 +11,21 @@ export default function CartPage() {
     setCart(savedCart);
   }, []);
 
-  const updateQuantity = (id: number, delta: number) => {
-    const newCart = cart.map(item => 
-      item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
-    );
+  const updateQuantity = (identifier: any, delta: number) => {
+    const newCart = cart.map(item => {
+      const uniqueKey = item.cartItemId || item.id;
+      if (uniqueKey === identifier) {
+        return { ...item, quantity: Math.max(1, item.quantity + delta) };
+      }
+      return item;
+    });
     setCart(newCart);
     localStorage.setItem('cart', JSON.stringify(newCart));
     window.dispatchEvent(new Event('storage'));
   };
 
-  const removeItem = (id: number) => {
-    const newCart = cart.filter(item => item.id !== id);
+  const removeItem = (identifier: any) => {
+    const newCart = cart.filter(item => (item.cartItemId || item.id) !== identifier);
     setCart(newCart);
     localStorage.setItem('cart', JSON.stringify(newCart));
     window.dispatchEvent(new Event('storage'));
@@ -35,32 +39,43 @@ export default function CartPage() {
         
         {cart.length > 0 ? (
           <>
-            {cart.map(item => (
-              <div key={item.id} className="flex items-center justify-between border-b bg-white p-4 rounded-xl mb-3 shadow-sm gap-4">
-                {/* প্রোডাক্ট ইমেজ ও নাম */}
-                <div className="flex items-center gap-4">
-                  <img 
-                    src={item.images?.[0] || '/placeholder.png'} 
-                    alt={item.name} 
-                    className="w-16 h-16 object-cover rounded-lg border border-gray-100"
-                  />
-                  <div>
-                    <h3 className="font-bold text-gray-900">{item.name}</h3>
-                    <p className="text-orange-600 font-semibold">৳{Number(item.regular_price || 0).toLocaleString()}</p>
-                  </div>
-                </div>
+            {cart.map((item, index) => {
+              const uniqueKey = item.cartItemId || item.id || index;
+              return (
+                <div key={uniqueKey} className="flex items-center justify-between border-b bg-white p-4 rounded-xl mb-3 shadow-sm gap-4">
+                  {/* প্রোডাক্ট ইমেজ ও নাম */}
+                  <div className="flex items-center gap-4">
+                    <img 
+                      src={item.images?.[0] || '/placeholder.png'} 
+                      alt={item.name} 
+                      className="w-16 h-16 object-cover rounded-lg border border-gray-100"
+                    />
+                    <div>
+                      <h3 className="font-bold text-gray-900">{item.name}</h3>
+                      
+                      {/* ভেরিয়েশন শো করার জন্য */}
+                      {item.selectedVariation && (
+                        <p className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded inline-block mt-1">
+                          Variant: {item.selectedVariation.name || item.selectedVariation.sku}
+                        </p>
+                      )}
 
-                {/* কোয়ান্টিটি ও রিমুভ বাটন */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center border rounded-lg bg-gray-50 overflow-hidden">
-                    <button onClick={() => updateQuantity(item.id, -1)} className="px-3 py-1 hover:bg-gray-200 transition font-bold">-</button>
-                    <span className="px-3 font-bold">{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.id, 1)} className="px-3 py-1 hover:bg-gray-200 transition font-bold">+</button>
+                      <p className="text-orange-600 font-semibold mt-1">৳{Number(item.regular_price || 0).toLocaleString()}</p>
+                    </div>
                   </div>
-                  <button onClick={() => removeItem(item.id)} className="text-red-500 hover:text-red-700 underline text-sm font-medium">Remove</button>
+
+                  {/* কোয়ান্টিটি ও রিমুভ বাটন */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center border rounded-lg bg-gray-50 overflow-hidden">
+                      <button onClick={() => updateQuantity(uniqueKey, -1)} className="px-3 py-1 hover:bg-gray-200 transition font-bold">-</button>
+                      <span className="px-3 font-bold">{item.quantity}</span>
+                      <button onClick={() => updateQuantity(uniqueKey, 1)} className="px-3 py-1 hover:bg-gray-200 transition font-bold">+</button>
+                    </div>
+                    <button onClick={() => removeItem(uniqueKey)} className="text-red-500 hover:text-red-700 underline text-sm font-medium">Remove</button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             <a href="/checkout" className="block mt-6 bg-orange-600 text-white text-center py-3.5 rounded-xl font-bold shadow-md hover:bg-orange-700 transition">
               Proceed to Checkout
