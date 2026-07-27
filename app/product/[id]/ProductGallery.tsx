@@ -1,21 +1,43 @@
-// app/product/[id]/ProductGallery.tsx
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProductActions from './ProductActions';
 
-export default function ProductGallery({ product }: { product: any }) {
+// ইন্টারফেসে selectedImage অপশনাল হিসেবে যোগ করা হলো
+interface ProductGalleryProps {
+  product: any;
+  selectedImage?: string | null; 
+}
+
+export default function ProductGallery({ product, selectedImage: externalSelectedImage }: ProductGalleryProps) {
   const images = product.images?.length > 0 ? product.images : ['/placeholder.png'];
   const [selectedImage, setSelectedImage] = useState(images[0]);
+  const [selectedVariation, setSelectedVariation] = useState<any>(null);
 
-  // সিলেক্ট করা ইমেজটি কার্টে পাঠানোর জন্য প্রোডাক্ট অবজেক্টের সাথে যুক্ত করা হলো
-  const productWithSelectedImage = {
+  // যদি বাইরে থেকে বা ভেরিয়েন্ট থেকে কোনো ছবি সিলেক্ট করা হয়, তা আপডেট হবে
+  useEffect(() => {
+    if (externalSelectedImage) {
+      setSelectedImage(externalSelectedImage);
+    }
+  }, [externalSelectedImage]);
+
+  const handleVariationChange = (variation: any) => {
+    setSelectedVariation(variation);
+    const variantImg = variation?.image || variation?.photo;
+    if (variantImg) {
+      setSelectedImage(variantImg);
+    }
+  };
+
+  const productWithSelectedData = {
     ...product,
-    images: [selectedImage] 
+    images: [selectedImage],
+    selectedImage: selectedImage,
+    selectedVariation: selectedVariation
   };
 
   return (
     <div className="space-y-4">
-      {/* মূল বড় ছবি */}
+      {/* মূল বড় ছবি */}
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
         <img 
           src={selectedImage} 
@@ -43,7 +65,10 @@ export default function ProductGallery({ product }: { product: any }) {
 
       {/* ProductActions কম্পোনেন্ট */}
       <div className="mt-6">
-        <ProductActions product={productWithSelectedImage} />
+        <ProductActions 
+          product={productWithSelectedData} 
+          onVariationSelect={handleVariationChange} 
+        />
       </div>
     </div>
   );

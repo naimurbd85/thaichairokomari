@@ -7,6 +7,8 @@ interface Variation {
   sku?: string;
   price?: number;
   stock?: number;
+  image?: string;
+  photo?: string;
   [key: string]: any;
 }
 
@@ -19,22 +21,29 @@ interface ProductActionsProps {
     sku: string;
     stock_quantity: number;
     variations?: Variation[];
+    selectedImage?: string;
     [key: string]: any;
   };
+  onVariationSelect?: (variation: Variation) => void; // গ্যালারিতে ছবি পাঠানোর জন্য
 }
 
-export default function ProductActions({ product }: ProductActionsProps) {
+export default function ProductActions({ product, onVariationSelect }: ProductActionsProps) {
   const router = useRouter();
   
-  // প্রোডাক্টের ভেরিয়েশন আছে কিনা চেক করা
   const variations = Array.isArray(product.variations) ? product.variations : [];
   const hasVariations = variations.length > 0;
 
-  // সিলেক্টেড ভেরিয়েশন স্টেট
   const [selectedVariation, setSelectedVariation] = useState<Variation | null>(null);
 
+  // ভেরিয়েন্ট সিলেক্ট হ্যান্ডলার
+  const handleSelect = (v: Variation) => {
+    setSelectedVariation(v);
+    if (onVariationSelect) {
+      onVariationSelect(v); // প্যারেন্ট (ProductGallery)-কে জানিয়ে দেওয়া হলো
+    }
+  };
+
   const addToCart = (showNotification = true) => {
-    // যদি ভেরিয়েশন থাকে কিন্তু ইউজার সিলেক্ট না করে
     if (hasVariations && !selectedVariation) {
       alert("দয়া করে প্রথমে প্রোডাক্টের ভেরিয়েশন (যেমন: Size/Color) সিলেক্ট করুন।");
       return false;
@@ -42,17 +51,18 @@ export default function ProductActions({ product }: ProductActionsProps) {
 
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     
-    // ইউনিক কার্ট আইটেম আইডি তৈরি (যাতে ভিন্ন ভেরিয়েশন আলাদা আইটেম হিসেবে থাকে)
     const cartItemId = hasVariations 
       ? `${product.id}-${selectedVariation?.name || selectedVariation?.sku}` 
       : String(product.id);
     
     const existingItem = cart.find((item: any) => item.cartItemId === cartItemId);
     
-    // ভেরিয়েশন অনুযায়ী প্রাইস নির্ধারণ
     const itemPrice = hasVariations && selectedVariation?.price 
       ? Number(selectedVariation.price) 
       : Number(product.regular_price || product.price || 0);
+
+    // কার্টে সেভ হওয়ার সময় ভেরিয়েন্টের নিজস্ব ছবি বা সিলেক্টেড ছবি প্রাধান্য পাবে
+    const finalImage = selectedVariation?.image || selectedVariation?.photo || product.selectedImage || product.images?.[0] || '';
 
     if (existingItem) {
       existingItem.quantity += 1;
@@ -63,7 +73,9 @@ export default function ProductActions({ product }: ProductActionsProps) {
         selectedVariation: selectedVariation || null,
         regular_price: itemPrice, 
         price: itemPrice,
-        quantity: 1
+        quantity: 1,
+        selectedImage: finalImage,
+        image: finalImage
       });
     }
     
@@ -77,7 +89,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
   };
 
   const buyNow = () => {
-    const success = addToCart(false); // ভেরিয়েশন সিলেক্ট করা না থাকলে ফলস রিটার্ন করবে এবং থামিয়ে দেবে
+    const success = addToCart(false); 
     if (success) {
       router.push('/checkout');
     }
@@ -92,18 +104,24 @@ export default function ProductActions({ product }: ProductActionsProps) {
           <div className="flex flex-wrap gap-2">
             {variations.map((v: Variation, index: number) => {
               const isSelected = selectedVariation === v;
+              const variantImg = v.image || v.photo;
+
               return (
                 <button
                   key={index}
                   type="button"
-                  onClick={() => setSelectedVariation(v)}
-                  className={`px-4 py-2 border rounded-xl text-sm font-medium transition ${
+                  onClick={() => handleSelect(v)}
+                  className={`px-3 py-2 border rounded-xl text-sm font-medium transition flex items-center gap-2 ${
                     isSelected 
-                      ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-sm' 
+                      ? 'border-orange-600 bg-orange-50 text-orange-600 shadow-sm' 
                       : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'
                   }`}
                 >
-                  {v.name || v.sku || `Variant ${index + 1}`} 
+                  {/* যদি ভেরিয়েন্টের ছবি থাকে তবে ছোট থাম্বনেইল দেখাবে */}
+                  {variantImg && (
+                    <img src={variantImg} alt="" className="w-6 h-6 object-cover rounded-md" />
+                  )}
+                  <span>{v.name || v.sku || `Variant ${index + 1}`}</span>
                   {v.price ? ` (৳${v.price})` : ''}
                 </button>
               );
@@ -113,7 +131,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
       )}
 
       {/* প্রাইস ডিসপ্লে */}
-      <div className="text-xl font-bold text-blue-600">
+      <div className="text-xl font-bold text-orange-600">
         ৳{selectedVariation?.price || product.regular_price || product.price}
       </div>
 
