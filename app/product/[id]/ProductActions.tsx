@@ -126,9 +126,11 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
             {parsedVariations.map((v: Variation, index: number) => {
               const isSelected = selectedVariation === v;
               const rawImg = v.image || v.photo;
-              // সুপাবেসের সম্পূর্ণ ইমেজ লিংক তৈরি করা
-              const variantImg = rawImg 
-                ? (rawImg.startsWith('http') ? rawImg : `${supabaseStorageBase}${rawImg}`)
+              
+              // 👉 এখানে encodeURIComponent ব্যবহার করে স্পেস ও স্পেশাল ক্যারেক্টার ফিক্স করা হলো
+              const encodedImgName = rawImg ? encodeURIComponent(rawImg).replace(/%2F/g, '/') : null;
+              const variantImg = encodedImgName 
+                ? (encodedImgName.startsWith('http') ? encodedImgName : `${supabaseStorageBase}${encodedImgName}`)
                 : null;
 
               return (
@@ -144,10 +146,11 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
                 >
                   {variantImg && (
                     <img 
-                      src={variantImg.startsWith('http') ? variantImg : `https://oendgqpzvkllagavtglq.supabase.co/storage/v1/object/public/product-images/products/${variantImg}`} 
+                      src={variantImg} 
                       alt="" 
                       className="w-6 h-6 object-cover rounded-md flex-shrink-0"
                       onError={(e) => {
+                        console.log("Image failed to load:", variantImg);
                         (e.target as HTMLElement).style.display = 'none';
                       }}
                     />
@@ -157,6 +160,7 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
                 </button>
               );
             })}
+
           </div>
         </div>
       )}
