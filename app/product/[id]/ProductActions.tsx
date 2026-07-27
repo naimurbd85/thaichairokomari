@@ -1,9 +1,29 @@
-// app/product/[id]/ProductActions.tsx
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function ProductActions({ product }: { product: any }) {
+interface Variation {
+  name?: string;
+  sku?: string;
+  price?: number;
+  stock?: number;
+  [key: string]: any;
+}
+
+interface ProductActionsProps {
+  product: {
+    id: number;
+    name: string;
+    price: number;
+    regular_price?: number;
+    sku: string;
+    stock_quantity: number;
+    variations?: Variation[];
+    [key: string]: any;
+  };
+}
+
+export default function ProductActions({ product }: ProductActionsProps) {
   const router = useRouter();
   
   // প্রোডাক্টের ভেরিয়েশন আছে কিনা চেক করা
@@ -11,7 +31,7 @@ export default function ProductActions({ product }: { product: any }) {
   const hasVariations = variations.length > 0;
 
   // সিলেক্টেড ভেরিয়েশন স্টেট
-  const [selectedVariation, setSelectedVariation] = useState<any>(null);
+  const [selectedVariation, setSelectedVariation] = useState<Variation | null>(null);
 
   const addToCart = (showNotification = true) => {
     // যদি ভেরিয়েশন থাকে কিন্তু ইউজার সিলেক্ট না করে
@@ -22,13 +42,17 @@ export default function ProductActions({ product }: { product: any }) {
 
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     
-    // কার্টে ইউনিক আইটেম হিসেবে রাখার জন্য আইডি + ভেরিয়েশন আইডি বা নাম মিলিয়ে চেক করা
-    const cartItemId = hasVariations ? `${product.id}-${selectedVariation.name || selectedVariation.sku}` : product.id;
+    // ইউনিক কার্ট আইটেম আইডি তৈরি (যাতে ভিন্ন ভেরিয়েশন আলাদা আইটেম হিসেবে থাকে)
+    const cartItemId = hasVariations 
+      ? `${product.id}-${selectedVariation?.name || selectedVariation?.sku}` 
+      : String(product.id);
     
     const existingItem = cart.find((item: any) => item.cartItemId === cartItemId);
     
-    // যদি ভেরিয়েশন সিলেক্টেড থাকে, তবে প্রাইস ভেরিয়েশন অনুযায়ী আপডেট হবে
-    const itemPrice = hasVariations && selectedVariation.price ? Number(selectedVariation.price) : Number(product.regular_price || 0);
+    // ভেরিয়েশন অনুযায়ী প্রাইস নির্ধারণ
+    const itemPrice = hasVariations && selectedVariation?.price 
+      ? Number(selectedVariation.price) 
+      : Number(product.regular_price || product.price || 0);
 
     if (existingItem) {
       existingItem.quantity += 1;
@@ -38,6 +62,7 @@ export default function ProductActions({ product }: { product: any }) {
         cartItemId,
         selectedVariation: selectedVariation || null,
         regular_price: itemPrice, 
+        price: itemPrice,
         quantity: 1
       });
     }
@@ -46,13 +71,13 @@ export default function ProductActions({ product }: { product: any }) {
     window.dispatchEvent(new Event('storage'));
     
     if (showNotification) {
-      alert("Added to cart!");
+      alert("Product added to cart successfully! 🛒");
     }
     return true;
   };
 
   const buyNow = () => {
-    const success = addToCart(false); // ভেরিয়েশন সিলেক্ট করা না থাকলে ফলস রিটার্ন করবে
+    const success = addToCart(false); // ভেরিয়েশন সিলেক্ট করা না থাকলে ফলস রিটার্ন করবে এবং থামিয়ে দেবে
     if (success) {
       router.push('/checkout');
     }
@@ -60,12 +85,12 @@ export default function ProductActions({ product }: { product: any }) {
 
   return (
     <div className="space-y-4 mb-8">
-      {/* যদি ভেরিয়েশন থাকে তবে ড্রপডাউন বা বাটন দেখাবে */}
+      {/* যদি ভেরিয়েশন থাকে তবে বাটন দেখাবে */}
       {hasVariations && (
         <div className="space-y-2">
           <label className="block text-sm font-bold text-gray-700">Select Variation:</label>
           <div className="flex flex-wrap gap-2">
-            {variations.map((v: any, index: number) => {
+            {variations.map((v: Variation, index: number) => {
               const isSelected = selectedVariation === v;
               return (
                 <button
@@ -74,7 +99,7 @@ export default function ProductActions({ product }: { product: any }) {
                   onClick={() => setSelectedVariation(v)}
                   className={`px-4 py-2 border rounded-xl text-sm font-medium transition ${
                     isSelected 
-                      ? 'border-orange-600 bg-orange-50 text-orange-600 shadow-sm' 
+                      ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-sm' 
                       : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'
                   }`}
                 >
@@ -87,12 +112,25 @@ export default function ProductActions({ product }: { product: any }) {
         </div>
       )}
 
+      {/* প্রাইস ডিসপ্লে */}
+      <div className="text-xl font-bold text-blue-600">
+        ৳{selectedVariation?.price || product.regular_price || product.price}
+      </div>
+
       {/* অ্যাকশন বাটন */}
       <div className="flex gap-4">
-        <button onClick={() => addToCart()} className="flex-1 bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition">
+        <button 
+          type="button" 
+          onClick={() => addToCart(true)} 
+          className="flex-1 bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-800 transition"
+        >
           Add to Cart
         </button>
-        <button onClick={buyNow} className="flex-1 bg-orange-500 text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition">
+        <button 
+          type="button" 
+          onClick={buyNow} 
+          className="flex-1 bg-orange-500 text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition"
+        >
           Buy Now
         </button>
       </div>
