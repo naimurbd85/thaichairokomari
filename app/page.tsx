@@ -90,24 +90,49 @@ export default function Home() {
 
   // কার্ট ফাংশন
   const handleAddToCart = (product: any) => {
+    // প্রোডাক্টের ভেরিয়েশন আছে কিনা চেক করা
+    const hasVariations = Array.isArray(product.variations) && product.variations.length > 0;
+
+    if (hasVariations) {
+      // ভেরিয়েশন থাকলে ডিটেইলস পেজে রিডাইরেক্ট করবে
+      window.location.href = `/product/${product.id}`;
+      return;
+    }
+
+    // ভেরিয়েশন না থাকলে স্বাভাবিক নিয়মে কার্টে যোগ হবে
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     const existingItem = cart.find((item: any) => item.id === product.id);
+    
     if (existingItem) { 
       existingItem.quantity += 1; 
     } else { 
-      cart.push({ ...product, quantity: 1, selectedImage: selectedImage }); 
+      cart.push({ ...product, quantity: 1, selectedImage: typeof selectedImage !== 'undefined' ? selectedImage : (product.images?.[0] || '') }); 
     }
+    
     localStorage.setItem('cart', JSON.stringify(cart));
+    window.dispatchEvent(new Event('storage')); // কার্ট কাউন্ট রিফ্রেশ করার জন্য
     alert("Product added to cart!");
   };
 
   const handleBuyNow = (product: any) => {
+    // প্রোডাক্টের ভেরিয়েশন আছে কিনা চেক করা
+    const hasVariations = Array.isArray(product.variations) && product.variations.length > 0;
+
+    if (hasVariations) {
+      // ভেরিয়েশন থাকলে ডিটেইলস পেজে রিডাইরেক্ট করবে
+      window.location.href = `/product/${product.id}`;
+      return;
+    }
+
+    // ভেরিয়েশন না থাকলে কার্টে যোগ করে চেকআউটে যাবে
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     const existingItem = cart.find((item: any) => item.id === product.id);
+    
     if (!existingItem) { 
-      cart.push({ ...product, quantity: 1, selectedImage: selectedImage }); 
+      cart.push({ ...product, quantity: 1, selectedImage: typeof selectedImage !== 'undefined' ? selectedImage : (product.images?.[0] || '') }); 
       localStorage.setItem('cart', JSON.stringify(cart)); 
     }
+    
     window.location.href = '/checkout';
   };
 
