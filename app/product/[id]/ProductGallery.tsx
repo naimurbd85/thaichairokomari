@@ -2,24 +2,28 @@
 import { useState, useEffect } from 'react';
 import ProductActions from './ProductActions';
 
-// ইন্টারফেসে selectedImage অপশনাল হিসেবে যোগ করা হলো
 interface ProductGalleryProps {
   product: any;
   selectedImage?: string | null; 
 }
 
 export default function ProductGallery({ product, selectedImage: externalSelectedImage }: ProductGalleryProps) {
-  const images = product.images?.length > 0 ? product.images : ['/placeholder.png'];
+  // ডাটাবেজের `images` অ্যারে বা প্লেসহোল্ডার
+  const images = Array.isArray(product.images) && product.images.length > 0 
+    ? product.images 
+    : ['/placeholder.png'];
+    
   const [selectedImage, setSelectedImage] = useState(images[0]);
   const [selectedVariation, setSelectedVariation] = useState<any>(null);
 
-  // যদি বাইরে থেকে বা ভেরিয়েন্ট থেকে কোনো ছবি সিলেক্ট করা হয়, তা আপডেট হবে
+  // যদি বাইরে থেকে বা অন্য কোনো কারণে ইমেজ প্রপস পরিবর্তিত হয়
   useEffect(() => {
     if (externalSelectedImage) {
       setSelectedImage(externalSelectedImage);
     }
   }, [externalSelectedImage]);
 
+  // ভেরিয়েন্ট পরিবর্তনের হ্যান্ডলার
   const handleVariationChange = (variation: any) => {
     setSelectedVariation(variation);
     const variantImg = variation?.image || variation?.photo;
@@ -28,6 +32,7 @@ export default function ProductGallery({ product, selectedImage: externalSelecte
     }
   };
 
+  // কার্ট বা অন্যান্য কাজের জন্য সিলেক্টেড ডেটা সহ প্রোডাক্ট অবজেক্ট মডিফাই করা
   const productWithSelectedData = {
     ...product,
     images: [selectedImage],
@@ -38,7 +43,7 @@ export default function ProductGallery({ product, selectedImage: externalSelecte
   return (
     <div className="space-y-4">
       {/* মূল বড় ছবি */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-center">
         <img 
           src={selectedImage} 
           alt={product.name} 

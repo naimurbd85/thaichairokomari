@@ -4,7 +4,7 @@ import ProductGallery from './ProductGallery';
 import ProductActions from './ProductActions';
 
 export default function ProductMainContent({ product }: { product: any }) {
-  // ভেরিয়েন্ট থেকে সিলেক্ট করা ছবির স্টেট (string বা null)
+  // সিলেক্টেড ভেরিয়েন্টের ছবি রাখার স্টেট
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
@@ -17,7 +17,7 @@ export default function ProductMainContent({ product }: { product: any }) {
         <div>
           <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-3 mb-4">{product.name}</h1>
           
-          {/* এখানে ভেরিয়েন্ট থেকে শুধু ইমেজ স্ট্রিং বের করে পাস করা হলো */}
+          {/* ভেরিয়েন্ট সিলেক্ট হলে ইমেজ স্টেট আপডেট করার লজিক */}
           <ProductActions 
             product={product} 
             onVariationSelect={(v: any) => {
