@@ -7,8 +7,10 @@ interface Variation {
   sku?: string;
   price?: number;
   stock?: number;
-  image?: string;
-  photo?: string;
+  image?: string | null;   // 👉 এখানে | null যুক্ত করে দিন
+  photo?: string | null;  // 👉 এখানে | null যুক্ত করে দিন
+  sellingPrice?: number;
+  color?: string;
   [key: string]: any;
 }
 
@@ -16,11 +18,11 @@ interface ProductActionsProps {
   product: {
     id: number;
     name: string;
-    price: number;
-    regular_price?: number;
+    price: number | string;
+    regular_price?: number | string;
     sku: string;
     stock_quantity: number;
-    variations?: Variation[] | any;
+    variations?: any;
     [key: string]: any;
   };
   onVariationSelect?: (variation: Variation) => void;
@@ -29,38 +31,60 @@ interface ProductActionsProps {
 export default function ProductActions({ product, onVariationSelect }: ProductActionsProps) {
   const router = useRouter();
   
-  const variations = Array.isArray(product.variations) ? product.variations : [];
-  const hasVariations = variations.length > 0;
+  // 👉 ১. যদি variations স্ট্রিং আকারে থাকে, তবে তাকে পার্স করে অ্যারেতে রূপান্তর করা হলো
+  let parsedVariations: Variation[] = [];
+  try {
+    if (typeof product.variations === 'string') {
+      parsedVariations = JSON.parse(product.variations);
+    } else if (Array.isArray(product.variations)) {
+      parsedVariations = product.variations;
+    }
+  } catch (error) {
+    console.error("Failed to parse variations:", error);
+  }
 
+  const hasVariations = parsedVariations.length > 0;
   const [selectedVariation, setSelectedVariation] = useState<Variation | null>(null);
 
-  // 👉 এই ফাংশনটি মিসিং থাকার কারণে টাইপ এররটি আসছিল
+  // সুপাবেসের বেজ ইমেজ স্টোরেজ পাথ
+  const supabaseStorageBase = "https://oendgqpzvkllagavtglq.supabase.co/storage/v1/object/public/product-images/products/";
+
   const handleVariationClick = (v: Variation) => {
     setSelectedVariation(v);
     if (onVariationSelect) {
-      onVariationSelect(v);
+      // সিলেক্টেড ভেরিয়েন্টের ইমেজ পাথ ফিক্স করে পাস করা
+      const rawImg = v.image || v.photo;
+      const fullImg = rawImg ? (rawImg.startsWith('http') ? rawImg : `${supabaseStorageBase}${rawImg}`) : null;
+      
+      onVariationSelect({
+        ...v,
+        image: fullImg
+      });
     }
   };
 
   const addToCart = (showNotification = true) => {
     if (hasVariations && !selectedVariation) {
-      alert("দয়া করে প্রথমে প্রোডাক্টের ভেরিয়েশন (যেমন: Size/Color) সিলেক্ট করুন।");
+      alert("দয়া করে প্রথমে প্রোডাক্টের ভেরিয়েশন (যেমন: Color) সিলেক্ট করুন।");
       return false;
     }
 
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     
     const cartItemId = hasVariations 
-      ? `${product.id}-${selectedVariation?.name || selectedVariation?.sku}` 
+      ? `${product.id}-${selectedVariation?.sku || selectedVariation?.color}` 
       : String(product.id);
     
     const existingItem = cart.find((item: any) => item.cartItemId === cartItemId);
     
-    const itemPrice = hasVariations && selectedVariation?.price !== undefined 
-      ? Number(selectedVariation.price) 
+    const itemPrice = hasVariations && selectedVariation?.sellingPrice !== undefined 
+      ? Number(selectedVariation.sellingPrice) 
       : Number(product.regular_price || product.price || 0);
 
-    const finalImage = selectedVariation?.image || selectedVariation?.photo || (Array.isArray(product.images) ? product.images[0] : '');
+    const rawVariantImg = selectedVariation?.image || selectedVariation?.photo;
+    const finalImage = rawVariantImg 
+      ? (rawVariantImg.startsWith('http') ? rawVariantImg : `${supabaseStorageBase}${rawVariantImg}`)
+      : (Array.isArray(product.images) ? product.images[0] : '/placeholder.png');
 
     if (existingItem) {
       existingItem.quantity += 1;
@@ -99,9 +123,13 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
         <div className="space-y-2">
           <label className="block text-sm font-bold text-gray-700">Select Variation:</label>
           <div className="flex flex-wrap gap-2">
-            {variations.map((v: Variation, index: number) => {
+            {parsedVariations.map((v: Variation, index: number) => {
               const isSelected = selectedVariation === v;
-              const variantImg = v.image || v.photo;
+              const rawImg = v.image || v.photo;
+              // সুপাবেসের সম্পূর্ণ ইমেজ লিংক তৈরি করা
+              const variantImg = rawImg 
+                ? (rawImg.startsWith('http') ? rawImg : `${supabaseStorageBase}${rawImg}`)
+                : null;
 
               return (
                 <button
@@ -124,8 +152,8 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
                       }}
                     />
                   )}
-                  <span>{v.name || v.sku || `Variant ${index + 1}`}</span>
-                  {v.price !== undefined ? ` (৳${v.price})` : ''}
+                  <span>{v.color || v.sku || `Variant ${index + 1}`}</span>
+                  {v.sellingPrice !== undefined ? ` (৳${v.sellingPrice})` : ''}
                 </button>
               );
             })}
@@ -135,7 +163,7 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
 
       {/* প্রাইস ডিসপ্লে */}
       <div className="text-xl font-bold text-orange-600">
-        ৳{selectedVariation?.price !== undefined ? selectedVariation.price : (product.regular_price || product.price)}
+        ৳{selectedVariation?.sellingPrice !== undefined ? selectedVariation.sellingPrice : (product.regular_price || product.price)}
       </div>
 
       {/* অ্যাকশন বাটন */}
