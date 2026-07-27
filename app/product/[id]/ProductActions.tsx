@@ -144,9 +144,9 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
                 >
                   {variantImg && (
                     <img 
-                      src={variantImg} 
+                      src={variantImg.startsWith('http') ? variantImg : `https://oendgqpzvkllagavtglq.supabase.co/storage/v1/object/public/product-images/products/${variantImg}`} 
                       alt="" 
-                      className="w-6 h-6 object-cover rounded-md"
+                      className="w-6 h-6 object-cover rounded-md flex-shrink-0"
                       onError={(e) => {
                         (e.target as HTMLElement).style.display = 'none';
                       }}
