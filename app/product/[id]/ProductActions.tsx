@@ -11,6 +11,7 @@ interface Variation {
   photo?: string | null;
   sellingPrice?: number;
   color?: string;
+  type?: string;
   [key: string]: any;
 }
 
@@ -77,14 +78,14 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
 
   const addToCart = (showNotification = true) => {
     if (hasVariations && !selectedVariation) {
-      alert("দয়া করে প্রথমে প্রোডাক্টের ভেরিয়েশন (যেমন: Color) সিলেক্ট করুন।");
+      alert("দয়া করে প্রথমে প্রোডাক্টের ভেরিয়েশন সিলেক্ট করুন।");
       return false;
     }
 
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     
     const cartItemId = hasVariations 
-      ? `${product.id}-${selectedVariation?.sku || selectedVariation?.color}` 
+      ? `${product.id}-${selectedVariation?.sku || selectedVariation?.type || selectedVariation?.color}` 
       : String(product.id);
     
     const existingItem = cart.find((item: any) => item.cartItemId === cartItemId);
@@ -160,7 +161,7 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
                       }}
                     />
                   )}
-                  <span>{v.color || v.sku || `Variant ${index + 1}`}</span>
+                  <span>{v.type || v.color || v.sku || `Variant ${index + 1}`}</span>
                   {v.sellingPrice !== undefined ? ` (৳${v.sellingPrice})` : ''}
                 </button>
               );
