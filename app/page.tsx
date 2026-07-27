@@ -94,7 +94,8 @@ export default function Home() {
     const hasVariations = Array.isArray(product.variations) && product.variations.length > 0;
 
     if (hasVariations) {
-      // ভেরিয়েশন থাকলে ডিটেইলস পেজে রিডাইরেক্ট করবে
+      // ইউজারকে মেসেজ দেখানো এবং তারপর ডিটেইলস পেজে রিডাইরেক্ট করা
+      alert("Please select a variant first!");
       window.location.href = `/product/${product.id}`;
       return;
     }
@@ -119,7 +120,8 @@ export default function Home() {
     const hasVariations = Array.isArray(product.variations) && product.variations.length > 0;
 
     if (hasVariations) {
-      // ভেরিয়েশন থাকলে ডিটেইলস পেজে রিডাইরেক্ট করবে
+      // ইউজারকে মেসেজ দেখানো এবং তারপর ডিটেইলস পেজে রিডাইরেক্ট করা
+      alert("Please select a variant first!");
       window.location.href = `/product/${product.id}`;
       return;
     }
