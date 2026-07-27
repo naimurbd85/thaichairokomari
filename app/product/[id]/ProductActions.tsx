@@ -7,8 +7,8 @@ interface Variation {
   sku?: string;
   price?: number;
   stock?: number;
-  image?: string | null;   // 👉 এখানে | null যুক্ত করে দিন
-  photo?: string | null;  // 👉 এখানে | null যুক্ত করে দিন
+  image?: string | null;
+  photo?: string | null;
   sellingPrice?: number;
   color?: string;
   [key: string]: any;
@@ -31,7 +31,7 @@ interface ProductActionsProps {
 export default function ProductActions({ product, onVariationSelect }: ProductActionsProps) {
   const router = useRouter();
   
-  // 👉 ১. যদি variations স্ট্রিং আকারে থাকে, তবে তাকে পার্স করে অ্যারেতে রূপান্তর করা হলো
+  // variations স্ট্রিং আকারে থাকলে তা পার্স করে অ্যারেতে রূপান্তর
   let parsedVariations: Variation[] = [];
   try {
     if (typeof product.variations === 'string') {
@@ -49,12 +49,24 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
   // সুপাবেসের বেজ ইমেজ স্টোরেজ পাথ
   const supabaseStorageBase = "https://oendgqpzvkllagavtglq.supabase.co/storage/v1/object/public/product-images/products/";
 
+  // ইমেজ পাথ ফরম্যাট করার হেল্পার ফাংশন
+  const getFormattedImageUrl = (rawImg: string | null | undefined) => {
+    if (!rawImg) return null;
+    if (rawImg.startsWith('http')) return rawImg;
+    
+    // স্ল্যাশ অক্ষুণ্ণ রেখে প্রতিটি segment আলাদা এনকোড করা
+    const formattedPath = rawImg
+      .split('/')
+      .map((segment) => encodeURIComponent(segment))
+      .join('/');
+    return `${supabaseStorageBase}${formattedPath}`;
+  };
+
   const handleVariationClick = (v: Variation) => {
     setSelectedVariation(v);
     if (onVariationSelect) {
-      // সিলেক্টেড ভেরিয়েন্টের ইমেজ পাথ ফিক্স করে পাস করা
       const rawImg = v.image || v.photo;
-      const fullImg = rawImg ? (rawImg.startsWith('http') ? rawImg : `${supabaseStorageBase}${rawImg}`) : null;
+      const fullImg = getFormattedImageUrl(rawImg);
       
       onVariationSelect({
         ...v,
@@ -82,9 +94,7 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
       : Number(product.regular_price || product.price || 0);
 
     const rawVariantImg = selectedVariation?.image || selectedVariation?.photo;
-    const finalImage = rawVariantImg 
-      ? (rawVariantImg.startsWith('http') ? rawVariantImg : `${supabaseStorageBase}${rawVariantImg}`)
-      : (Array.isArray(product.images) ? product.images[0] : '/placeholder.png');
+    const finalImage = getFormattedImageUrl(rawVariantImg) || (Array.isArray(product.images) ? product.images[0] : '/placeholder.png');
 
     if (existingItem) {
       existingItem.quantity += 1;
@@ -126,12 +136,7 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
             {parsedVariations.map((v: Variation, index: number) => {
               const isSelected = selectedVariation === v;
               const rawImg = v.image || v.photo;
-              
-              // 👉 এখানে encodeURIComponent ব্যবহার করে স্পেস ও স্পেশাল ক্যারেক্টার ফিক্স করা হলো
-              const encodedImgName = rawImg ? encodeURIComponent(rawImg).replace(/%2F/g, '/') : null;
-              const variantImg = encodedImgName 
-                ? (encodedImgName.startsWith('http') ? encodedImgName : `${supabaseStorageBase}${encodedImgName}`)
-                : null;
+              const variantImg = getFormattedImageUrl(rawImg);
 
               return (
                 <button
@@ -160,7 +165,6 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
                 </button>
               );
             })}
-
           </div>
         </div>
       )}
