@@ -48,7 +48,7 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
   const [selectedVariation, setSelectedVariation] = useState<Variation | null>(null);
 
   // সুপাবেসের বেজ ইমেজ স্টোরেজ পাথ
-  const supabaseStorageBase = "https://oendgqpzvkllagavtglq.supabase.co/storage/v1/object/public/product-images/products/";
+  const supabaseStorageBase = "https://oendgqpzvkllagavtglq.supabase.co/storage/v1/object/public/product-images/";
 
   // ইমেজ পাথ ফরম্যাট করার হেল্পার ফাংশন
   const getFormattedImageUrl = (rawImg: string | null | undefined) => {
