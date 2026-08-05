@@ -27,7 +27,7 @@ interface ProductActionsProps {
     [key: string]: any;
   };
   onVariationSelect?: (variation: Variation) => void;
-  hidePrice?: boolean; // ডানপাশের কম্পোনেন্টে প্রাইস হাইড রাখার জন্য প্রপস
+  hidePrice?: boolean;
 }
 
 export default function ProductActions({ product, onVariationSelect, hidePrice = false }: ProductActionsProps) {
@@ -56,7 +56,6 @@ export default function ProductActions({ product, onVariationSelect, hidePrice =
     if (!rawImg) return null;
     if (rawImg.startsWith('http')) return rawImg;
     
-    // স্ল্যাশ অক্ষুণ্ণ রেখে প্রতিটি segment আলাদা এনকোড করা
     const formattedPath = rawImg
       .split('/')
       .map((segment) => encodeURIComponent(segment))
@@ -171,12 +170,7 @@ export default function ProductActions({ product, onVariationSelect, hidePrice =
         </div>
       )}
 
-      {/* প্রাইস ডিসপ্লে (Buy Now এর উপরে ডানপাশে নেওয়ার জন্য text-right যোগ করা হয়েছে) */}
-      {!hidePrice && (
-        <div className="text-xl font-bold text-orange-600 text-right pr-1">
-          ৳{selectedVariation?.sellingPrice !== undefined ? selectedVariation.sellingPrice : (product.regular_price || product.price)}
-        </div>
-      )}
+      {/* প্রাইস সেকশন পুরোপুরি বাদ দেওয়া হয়েছে */}
 
       {/* অ্যাকশন বাটন */}
       <div className="flex gap-4">

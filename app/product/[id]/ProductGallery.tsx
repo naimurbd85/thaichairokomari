@@ -47,7 +47,6 @@ export default function ProductGallery({ product, selectedImage: externalSelecte
         <img 
           src={selectedImage} 
           alt={product.name} 
-          /* object-cover পরিবর্তন করে object-contain করা হয়েছে */
           className="w-full h-[400px] object-contain rounded-xl transition-all duration-300"
         />
       </div>
@@ -66,7 +65,6 @@ export default function ProductGallery({ product, selectedImage: externalSelecte
               <img 
                 src={img} 
                 alt={`Thumbnail ${index + 1}`} 
-                /* থাম্বনেইলেও object-contain দেওয়া হলো যাতে কেটে না যায় */
                 className="w-full h-full object-contain rounded-lg" 
               />
             </button>
@@ -74,11 +72,12 @@ export default function ProductGallery({ product, selectedImage: externalSelecte
         </div>
       )}
 
-      {/* ProductActions কম্পোনেন্ট */}
+      {/* ProductActions কম্পোনেন্ট (hidePrice={true} পাস করা হয়েছে) */}
       <div className="mt-6">
         <ProductActions 
           product={productWithSelectedData} 
           onVariationSelect={handleVariationChange} 
+          hidePrice={true}
         />
       </div>
     </div>
