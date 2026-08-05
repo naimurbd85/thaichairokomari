@@ -16,7 +16,7 @@ export default function ProductGallery({ product, selectedImage: externalSelecte
   const [selectedImage, setSelectedImage] = useState(images[0]);
   const [selectedVariation, setSelectedVariation] = useState<any>(null);
 
-  // যদি বাইরে থেকে বা অন্য কোনো কারণে ইমেজ প্রপস পরিবর্তিত হয়
+  // যদি বাইরে থেকে বা অন্য কোনো কারণে ইমেজ প্রপস পরিবর্তিত হয়
   useEffect(() => {
     if (externalSelectedImage) {
       setSelectedImage(externalSelectedImage);
@@ -47,7 +47,8 @@ export default function ProductGallery({ product, selectedImage: externalSelecte
         <img 
           src={selectedImage} 
           alt={product.name} 
-          className="w-full h-[400px] object-cover rounded-xl transition-all duration-300"
+          /* object-cover পরিবর্তন করে object-contain করা হয়েছে */
+          className="w-full h-[400px] object-contain rounded-xl transition-all duration-300"
         />
       </div>
 
@@ -58,11 +59,16 @@ export default function ProductGallery({ product, selectedImage: externalSelecte
             <button
               key={index}
               onClick={() => setSelectedImage(img)}
-              className={`border-2 rounded-xl overflow-hidden w-20 h-20 flex-shrink-0 transition-all ${
+              className={`border-2 rounded-xl overflow-hidden w-20 h-20 flex-shrink-0 transition-all bg-white p-1 ${
                 selectedImage === img ? 'border-orange-600 scale-105 shadow-md' : 'border-gray-200 opacity-70 hover:opacity-100'
               }`}
             >
-              <img src={img} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+              <img 
+                src={img} 
+                alt={`Thumbnail ${index + 1}`} 
+                /* থাম্বনেইলেও object-contain দেওয়া হলো যাতে কেটে না যায় */
+                className="w-full h-full object-contain rounded-lg" 
+              />
             </button>
           ))}
         </div>
