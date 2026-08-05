@@ -27,9 +27,10 @@ interface ProductActionsProps {
     [key: string]: any;
   };
   onVariationSelect?: (variation: Variation) => void;
+  hidePrice?: boolean; // ডানপাশের কম্পোনেন্টে প্রাইস হাইড রাখার জন্য প্রপস
 }
 
-export default function ProductActions({ product, onVariationSelect }: ProductActionsProps) {
+export default function ProductActions({ product, onVariationSelect, hidePrice = false }: ProductActionsProps) {
   const router = useRouter();
   
   // variations স্ট্রিং আকারে থাকলে তা পার্স করে অ্যারেতে রূপান্তর
@@ -170,10 +171,12 @@ export default function ProductActions({ product, onVariationSelect }: ProductAc
         </div>
       )}
 
-      {/* প্রাইস ডিসপ্লে */}
-      <div className="text-xl font-bold text-orange-600">
-        ৳{selectedVariation?.sellingPrice !== undefined ? selectedVariation.sellingPrice : (product.regular_price || product.price)}
-      </div>
+      {/* প্রাইস ডিসপ্লে (Buy Now এর উপরে ডানপাশে নেওয়ার জন্য text-right যোগ করা হয়েছে) */}
+      {!hidePrice && (
+        <div className="text-xl font-bold text-orange-600 text-right pr-1">
+          ৳{selectedVariation?.sellingPrice !== undefined ? selectedVariation.sellingPrice : (product.regular_price || product.price)}
+        </div>
+      )}
 
       {/* অ্যাকশন বাটন */}
       <div className="flex gap-4">
