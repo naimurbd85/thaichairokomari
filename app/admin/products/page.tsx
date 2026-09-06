@@ -51,6 +51,69 @@ export default function AdminProductsPage() {
     if (prods) setProducts(prods)
   }
 
+  // ক্যাটাগরি আইডি থেকে স্বয়ংক্রিয় SKU জেনারেট করার ফাংশন
+const generateSKU = async (categoryId: string) => {
+  if (!categoryId) return;
+
+  // বর্তমান ক্যাটাগরি এবং তার প্যারেন্ট ক্যাটাগরিগুলো খুঁজে বের করা
+  const selectedCat = categories.find(c => String(c.id) === String(categoryId));
+  if (!selectedCat) return;
+
+  let subSubName = selectedCat.name;
+  let subCatName = '';
+  let mainCatName = '';
+
+  if (selectedCat.parent_id) {
+    const parentCat = categories.find(c => String(c.id) === String(selectedCat.parent_id));
+    if (parentCat) {
+      subCatName = parentCat.name;
+      if (parentCat.parent_id) {
+        const mainCat = categories.find(c => String(c.id) === String(parentCat.parent_id));
+        if (mainCat) {
+          mainCatName = mainCat.name;
+        }
+      }
+    }
+  }
+
+  // যদি আপনার স্ট্রাকচার অন্যরকম হয় (যেমন মেইন -> সাব -> সাব-সাব), সে অনুযায়ী নাম সাজিয়ে নেওয়া:
+  // এখানে ধরে নিচ্ছি: Main Cat -> Sub Cat -> Sub Sub Cat
+  // আপনার স্ক্রিনশট অনুযায়ী: Main = Baby Collection (BC), Sub = Baby Care (BC), Sub Sub = Baby Care Kit (BCK)
+  
+  let mainCode = 'GEN';
+  let subCode = 'GEN';
+  let subSubCode = 'GEN';
+
+  // যদি ৩ স্তরের ক্যাটাগরি হয়:
+  if (mainCatName && subCatName) {
+    mainCode = mainCatName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    subCode = subCatName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    subSubCode = subSubName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 3);
+  } else if (subCatName) {
+    // ২ স্তর হলে
+    mainCode = subCatName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    subCode = subSubName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    subSubCode = '';
+  } else {
+    mainCode = subSubName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  // এই ক্যাটাগরির অধীনে ইতিমধ্যে কয়টি প্রোডাক্ট আছে তা গোনা (সুপাবেস থেকে)
+  const { count, error } = await supabase
+    .from('products')
+    .select('*', { count: 'exact', head: true })
+    .eq('category_id', categoryId);
+
+  const nextSerial = ((count || 0) + 1).toString().padStart(3, '0'); // 001, 002 এভাবে তৈরি হবে
+
+  // SKU ফরম্যাট তৈরি: BC-BC-BCK-001
+  const parts = [mainCode, subCode, subSubCode, nextSerial].filter(Boolean);
+  const generatedSKU = parts.join('-');
+
+  // ফর্মের SKU স্টেট আপডেট করে দেওয়া
+  setFormData(prev => ({ ...prev, sku: generatedSKU }));
+};
+
 
   // নতুন স্টেট যোগ করুন
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
@@ -228,8 +291,14 @@ export default function AdminProductsPage() {
                   categories={categories} 
                   onRefresh={loadData} 
                   value={formData.category_id}
-                  onCategorySelect={(id: string) => setFormData(prev => ({...prev, category_id: id}))} 
+                  onCategorySelect={(id: string) => {
+                    setFormData(prev => ({...prev, category_id: id}));
+                    if (!editingProduct) { // নতুন প্রোডাক্ট যোগ করার সময়ই কেবল অটো SKU তৈরি হবে
+                      generateSKU(id);
+                    }
+                  }} 
                 />
+
               </div>
             </div>
 
