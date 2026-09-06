@@ -108,7 +108,7 @@ const generateSKU = async (categoryId: string) => {
 
   // SKU ফরম্যাট তৈরি: BC-BC-BCK-001
   const parts = [mainCode, subCode, subSubCode, nextSerial].filter(Boolean);
-  const generatedSKU = parts.join('-');
+  const generatedSKU = parts.join('');
 
   // ফর্মের SKU স্টেট আপডেট করে দেওয়া
   setFormData(prev => ({ ...prev, sku: generatedSKU }));
