@@ -51,11 +51,10 @@ export default function AdminProductsPage() {
     if (prods) setProducts(prods)
   }
 
-  // ক্যাটাগরি আইডি থেকে স্বয়ংক্রিয় SKU জেনারেট করার ফাংশন
+  // SKU Function
 const generateSKU = async (categoryId: string) => {
   if (!categoryId) return;
 
-  // বর্তমান ক্যাটাগরি এবং তার প্যারেন্ট ক্যাটাগরিগুলো খুঁজে বের করা
   const selectedCat = categories.find(c => String(c.id) === String(categoryId));
   if (!selectedCat) return;
 
@@ -75,30 +74,35 @@ const generateSKU = async (categoryId: string) => {
       }
     }
   }
-
-  // যদি আপনার স্ট্রাকচার অন্যরকম হয় (যেমন মেইন -> সাব -> সাব-সাব), সে অনুযায়ী নাম সাজিয়ে নেওয়া:
-  // এখানে ধরে নিচ্ছি: Main Cat -> Sub Cat -> Sub Sub Cat
-  // আপনার স্ক্রিনশট অনুযায়ী: Main = Baby Collection (BC), Sub = Baby Care (BC), Sub Sub = Baby Care Kit (BCK)
   
   let mainCode = 'GEN';
   let subCode = 'GEN';
   let subSubCode = 'GEN';
 
-  // যদি ৩ স্তরের ক্যাটাগরি হয়:
+  const createCodeFromName = (name: string, limit: number) => {
+    return name
+      .split(' ')
+      .map(w => w.replace(/[^a-zA-Z0-9]/g, '')) // & বা অন্য প্রতীক থাকলে তা মুছে ফেলবে
+      .filter(Boolean)
+      .map(w => w[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, limit);
+  };
+
   if (mainCatName && subCatName) {
-    mainCode = mainCatName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-    subCode = subCatName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-    subSubCode = subSubName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 3);
+    mainCode = createCodeFromName(mainCatName, 2);
+    subCode = createCodeFromName(subCatName, 2);
+    subSubCode = createCodeFromName(subSubName, 3);
   } else if (subCatName) {
     // ২ স্তর হলে
-    mainCode = subCatName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-    subCode = subSubName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    mainCode = createCodeFromName(subCatName, 2);
+    subCode = createCodeFromName(subSubName, 2);
     subSubCode = '';
   } else {
-    mainCode = subSubName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    mainCode = createCodeFromName(subSubName, 2);
   }
 
-  // এই ক্যাটাগরির অধীনে ইতিমধ্যে কয়টি প্রোডাক্ট আছে তা গোনা (সুপাবেস থেকে)
   const { count, error } = await supabase
     .from('products')
     .select('*', { count: 'exact', head: true })
@@ -106,16 +110,12 @@ const generateSKU = async (categoryId: string) => {
 
   const nextSerial = ((count || 0) + 1).toString().padStart(3, '0'); // 001, 002 এভাবে তৈরি হবে
 
-  // SKU ফরম্যাট তৈরি: BC-BC-BCK-001
   const parts = [mainCode, subCode, subSubCode, nextSerial].filter(Boolean);
   const generatedSKU = parts.join('');
 
-  // ফর্মের SKU স্টেট আপডেট করে দেওয়া
   setFormData(prev => ({ ...prev, sku: generatedSKU }));
 };
 
-
-  // নতুন স্টেট যোগ করুন
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
   const [selectedProductForVariant, setSelectedProductForVariant] = useState<any>(null);
 
@@ -123,7 +123,6 @@ const generateSKU = async (categoryId: string) => {
   const [uploaderKey, setUploaderKey] = useState(0);
 
 
-  // বাটন ক্লিক হ্যান্ডলার
   const openVariantModal = (product: any) => {
     setSelectedProductForVariant(product);
     setIsVariantModalOpen(true);
