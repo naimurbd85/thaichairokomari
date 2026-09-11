@@ -145,133 +145,133 @@ export default function CheckoutPage() {
       <main className="max-w-4xl mx-auto w-full p-6 grid md:grid-cols-2 gap-8 flex-1">
         
         {/* শিপিং ডিটেইলস ফর্ম */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Shipping Details</h2>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Shipping Details</h2>
 
-            <form onSubmit={handleOrderSubmit} className="space-y-3">
-              <input 
-                name="customer_name" 
-                placeholder="Full Name" 
-                onChange={(e) => setFormData({...formData, customer_name: e.target.value})} 
-                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
-                required 
-              />
-              <input 
-                name="contact_number" 
-                placeholder="Contact Number" 
-                onChange={(e) => setFormData({...formData, contact_number: e.target.value})} 
-                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
-                required 
-              />
-              <input 
-                type="email"
-                name="email" 
-                placeholder="Email (Optional)" 
-                onChange={(e) => setFormData({...formData, email: e.target.value})} 
-                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
-              />
+          <form onSubmit={handleOrderSubmit} className="space-y-3">
+            <input 
+              name="customer_name" 
+              placeholder="Full Name" 
+              onChange={(e) => setFormData({...formData, customer_name: e.target.value})} 
+              className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
+              required 
+            />
+            <input 
+              name="contact_number" 
+              placeholder="Contact Number" 
+              onChange={(e) => setFormData({...formData, contact_number: e.target.value})} 
+              className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
+              required 
+            />
+            <input 
+              type="email"
+              name="email" 
+              placeholder="Email (Optional)" 
+              onChange={(e) => setFormData({...formData, email: e.target.value})} 
+              className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
+            />
 
-              {/* বিভাগ এবং জেলা ড্রপডাউন */}
-              <div className="grid grid-cols-2 gap-2">
-                <select 
-                  value={formData.division}
-                  onChange={handleDivisionChange} 
-                  className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm bg-white" 
-                  required
-                >
-                  <option value="">Select Division / Area</option>
-                  {Object.keys(DIVISION_DISTRICTS).map((div) => (
-                    <option key={div} value={div}>{div}</option>
-                  ))}
-                </select>
+            {/* বিভাগ এবং জেলা ড্রপডাউন */}
+            <div className="grid grid-cols-2 gap-2">
+              <select 
+                value={formData.division}
+                onChange={handleDivisionChange} 
+                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm bg-white" 
+                required
+              >
+                <option value="">Select Division / Area</option>
+                {Object.keys(DIVISION_DISTRICTS).map((div) => (
+                  <option key={div} value={div}>{div}</option>
+                ))}
+              </select>
 
-                <select 
-                  value={formData.district}
-                  onChange={handleDistrictChange} 
-                  className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm bg-white" 
-                  required
-                  disabled={!formData.division}
-                >
-                  <option value="">Select District / Sub-Area</option>
-                  {districts.map((dist) => (
-                    <option key={dist} value={dist}>{dist}</option>
-                  ))}
-                </select>
+              <select 
+                value={formData.district}
+                onChange={handleDistrictChange} 
+                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm bg-white" 
+                required
+                disabled={!formData.division}
+              >
+                <option value="">Select District / Sub-Area</option>
+                {districts.map((dist) => (
+                  <option key={dist} value={dist}>{dist}</option>
+                ))}
+              </select>
+            </div>
+
+            <input 
+              name="thana" 
+              placeholder="Thana / Specific Area (e.g. Mirpur, Uttara)" 
+              onChange={(e) => setFormData({...formData, thana: e.target.value})} 
+              className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
+              required 
+            />
+
+            <textarea 
+              name="detailed_address" 
+              placeholder="Detailed Address (House No, Road No, Village, etc.)" 
+              rows={2}
+              onChange={(e) => setFormData({...formData, detailed_address: e.target.value})} 
+              className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm resize-none" 
+              required 
+            />
+
+            <button className="w-full bg-green-600 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-green-700 transition mt-2">
+              Confirm Order (Total: ৳{totalAmount})
+            </button>
+          </form>
+        </div>
+
+        {/* ডান পাশের কলাম: অর্ডার সামারি এবং সম্পূর্ণ আলাদা সেকশনে ডেলিভারি চার্জ চার্ট */}
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h2 className="text-xl font-bold mb-4 text-gray-800">Order Summary</h2>
+            {cart.map((item, i) => (
+              <div key={i} className="flex justify-between py-2 border-b text-sm">
+                <span className="text-gray-600">{item.name} x {item.quantity}</span>
+                <span className="font-semibold">৳{item.regular_price * item.quantity}</span>
               </div>
+            ))}
 
-              <input 
-                name="thana" 
-                placeholder="Thana / Specific Area (e.g. Mirpur, Uttara)" 
-                onChange={(e) => setFormData({...formData, thana: e.target.value})} 
-                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
-                required 
-              />
+            <div className="flex justify-between py-2 border-b text-sm mt-2 text-gray-600">
+              <span>Subtotal:</span>
+              <span className="font-semibold">৳{subtotal}</span>
+            </div>
 
-              <textarea 
-                name="detailed_address" 
-                placeholder="Detailed Address (House No, Road No, Village, etc.)" 
-                rows={2}
-                onChange={(e) => setFormData({...formData, detailed_address: e.target.value})} 
-                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm resize-none" 
-                required 
-              />
+            <div className="flex justify-between py-2 border-b text-sm text-gray-600">
+              <span>Delivery Charge:</span>
+              <span className="font-semibold">৳{formData.delivery_charge}</span>
+            </div>
 
-              <button className="w-full bg-green-600 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-green-700 transition mt-2">
-                Confirm Order (Total: ৳{totalAmount})
-              </button>
-            </form>
+            <div className="flex justify-between mt-4 text-lg font-bold">
+              <span>Total:</span>
+              <span className="text-orange-600">৳{totalAmount}</span>
+            </div>
           </div>
 
-          {/* ডেলিভারি চার্জ চার্ট পেজের নিচের অংশে */}
-          <div className="mt-6 pt-4 border-t border-gray-100">
-            <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          {/* আলাদা সেকশন হিসেবে ডেলিভারি চার্জ চার্ট */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
               <span>🚚</span> Delivery Charge Chart
             </h3>
-            <ul className="space-y-1 text-xs text-gray-600 bg-orange-50/50 p-3 rounded-xl border border-orange-100">
-              <li className="flex justify-between">
+            <ul className="space-y-2 text-xs text-gray-600">
+              <li className="flex justify-between py-1 border-b border-gray-100">
                 <span>Dhaka City Corporation:</span>
                 <span className="font-bold text-gray-800">৳60</span>
               </li>
-              <li className="flex justify-between">
+              <li className="flex justify-between py-1 border-b border-gray-100">
                 <span>Dhaka Sub Area (Savar, Ashulia, etc.):</span>
                 <span className="font-bold text-gray-800">৳100</span>
               </li>
-              <li className="flex justify-between">
+              <li className="flex justify-between py-1 border-b border-gray-100">
                 <span>Gazipur & Narayanganj District:</span>
                 <span className="font-bold text-gray-800">৳100</span>
               </li>
-              <li className="flex justify-between">
+              <li className="flex justify-between py-1">
                 <span>Outside Dhaka (Other Districts):</span>
                 <span className="font-bold text-gray-800">৳120</span>
               </li>
             </ul>
-          </div>
-        </div>
-
-        {/* অর্ডার সামারি ও ডেলিভারি চার্জ ডিসপ্লে */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 self-start">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">Order Summary</h2>
-          {cart.map((item, i) => (
-            <div key={i} className="flex justify-between py-2 border-b text-sm">
-              <span className="text-gray-600">{item.name} x {item.quantity}</span>
-              <span className="font-semibold">৳{item.regular_price * item.quantity}</span>
-            </div>
-          ))}
-
-          <div className="flex justify-between py-2 border-b text-sm mt-2 text-gray-600">
-            <span>Subtotal:</span>
-            <span className="font-semibold">৳{subtotal}</span>
-          </div>
-
-          <div className="flex justify-between py-2 border-b text-sm text-gray-600">
-            <span>Delivery Charge:</span>
-            <span className="font-semibold">৳{formData.delivery_charge}</span>
-          </div>
-
-          <div className="flex justify-between mt-4 text-lg font-bold">
-            <span>Total:</span>
-            <span className="text-orange-600">৳{totalAmount}</span>
           </div>
         </div>
       </main>
