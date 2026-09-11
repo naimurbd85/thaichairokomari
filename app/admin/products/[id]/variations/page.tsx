@@ -108,7 +108,8 @@ export default function ManageVariationsPage() {
                     <p className="font-bold">
                       {[v.color, v.size].filter(Boolean).join(' - ')}
                     </p>
-                    <p className="text-xs text-gray-500">SKU: {v.sku} | Cost: ৳{v.purchasePrice} | Sell: ৳{v.sellingPrice}</p>
+                    <p className="text-xs text-gray-500">SKU: {v.sku} | Cost: ৳{v.purchasePrice || v.costPrice || 0} | Sell: ৳{v.sellingPrice || v.regularPrice || 0}
+                    </p>
                   </div>
                 </div>
                 
