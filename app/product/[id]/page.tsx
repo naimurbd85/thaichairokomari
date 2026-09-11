@@ -20,6 +20,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     notFound();
   }
 
+  // টাকা ফরম্যাট করার ফাংশন (যেমন: Tk 350.00)
+  const formatPrice = (amount: number) => {
+    return `Tk ${Number(amount || 0).toFixed(2)}`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       {/* 🔝 কার্ট পেজের মতো টপ হেডার বার (সার্চ ও কার্ট হাইড করা) */}
@@ -39,7 +44,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               </h1>
               
               <p className="text-3xl font-black text-orange-600 mb-6">
-                ৳{Number(product.regular_price || 0).toLocaleString()}
+                {formatPrice(product.regular_price)}
               </p>
               
               <div className="border-t pt-6">
