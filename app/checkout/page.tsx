@@ -5,16 +5,17 @@ import { useRouter } from 'next/navigation';
 import emailjs from '@emailjs/browser';
 import Navbar from '../../components/Navbar';
 
-// বাংলাদেশের ৮টি বিভাগ এবং সেগুলোর অধীনে জেলা ও সাব-এরিয়ার তালিকা
+// বিভাগ এবং এলাকা/জেলার তালিকা
 const DIVISION_DISTRICTS: { [key: string]: string[] } = {
-  Dhaka: ['Dhaka', 'Dhaka Sub Area', 'Faridpur', 'Gazipur', 'Gopalganj', 'Kishoreganj', 'Madaripur', 'Manikganj', 'Munshiganj', 'Narayanganj', 'Narsingdi', 'Rajbari', 'Shariatpur', 'Tangail'],
-  Chattogram: ['Bandarban', 'Brahmanbaria', 'Chandpur', 'Chattogram', 'Cox\'s Bazar', 'Cumilla', 'Feni', 'Khagrachhari', 'Lakshmipur', 'Noakhali', 'Rangamati'],
-  Rajshahi: ['Bogura', 'Chapainawabganj', 'Joypurhat', 'Naogaon', 'Natore', 'Pabna', 'Rajshahi', 'Sirajganj'],
-  Khulna: ['Bagerhat', 'Chuadanga', 'Jashore', 'Jhenaidah', 'Khulna', 'Kushtia', 'Magura', 'Meherpur', 'Narail', 'Satkhira'],
-  Barishal: ['Barguna', 'Barishal', 'Bhola', 'Jhalokati', 'Patuakhali', 'Pirojpur'],
-  Sylhet: ['Habiganj', 'Moulvibazar', 'Sunamganj', 'Sylhet'],
-  Rangpur: ['Dinajpur', 'Gaibandha', 'Kurigram', 'Lalmonirhat', 'Nilphamari', 'Panchagarh', 'Rangpur', 'Thakurgaon'],
-  Mymensingh: ['Jamalpur', 'Mymensingh', 'Netrokona', 'Sherpur']
+  'Dhaka': ['Dhaka', 'Faridpur', 'Gazipur', 'Gopalganj', 'Kishoreganj', 'Madaripur', 'Manikganj', 'Munshiganj', 'Narayanganj', 'Narsingdi', 'Rajbari', 'Shariatpur', 'Tangail'],
+  'Dhaka Sub Area': ['Savar', 'Ashulia', 'Keraniganj', 'Tongi', 'Gazipur', 'Narayanganj'],
+  'Chattogram': ['Bandarban', 'Brahmanbaria', 'Chandpur', 'Chattogram', 'Cox\'s Bazar', 'Cumilla', 'Feni', 'Khagrachhari', 'Lakshmipur', 'Noakhali', 'Rangamati'],
+  'Rajshahi': ['Bogura', 'Chapainawabganj', 'Joypurhat', 'Naogaon', 'Natore', 'Pabna', 'Rajshahi', 'Sirajganj'],
+  'Khulna': ['Bagerhat', 'Chuadanga', 'Jashore', 'Jhenaidah', 'Khulna', 'Kushtia', 'Magura', 'Meherpur', 'Narail', 'Satkhira'],
+  'Barishal': ['Barguna', 'Barishal', 'Bhola', 'Jhalokati', 'Patuakhali', 'Pirojpur'],
+  'Sylhet': ['Habiganj', 'Moulvibazar', 'Sunamganj', 'Sylhet'],
+  'Rangpur': ['Dinajpur', 'Gaibandha', 'Kurigram', 'Lalmonirhat', 'Nilphamari', 'Panchagarh', 'Rangpur', 'Thakurgaon'],
+  'Mymensingh': ['Jamalpur', 'Mymensingh', 'Netrokona', 'Sherpur']
 };
 
 export default function CheckoutPage() {
@@ -22,7 +23,6 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [cart, setCart] = useState<any[]>([]);
   const [districts, setDistricts] = useState<string[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false); // ডেলিভারি চার্জ চার্ট মডাল স্টেট
 
   const [formData, setFormData] = useState({
     customer_name: '', contact_number: '', email: '',
@@ -35,35 +35,40 @@ export default function CheckoutPage() {
     if (savedCart) setCart(JSON.parse(savedCart));
   }, []);
 
-  // বিভাগ পরিবর্তনের লজিক
+  // বিভাগ বা এরিয়া পরিবর্তনের লজিক
   const handleDivisionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedDivision = e.target.value;
     
-    setFormData(prev => {
-      const newCharge = selectedDivision === 'Dhaka' ? 60 : 120;
-      return { 
-        ...prev, 
-        division: selectedDivision, 
-        district: '',
-        delivery_charge: newCharge 
-      };
-    });
+    let charge = 120;
+    if (selectedDivision === 'Dhaka') {
+      charge = 60;
+    } else if (selectedDivision === 'Dhaka Sub Area') {
+      charge = 100;
+    }
+
+    setFormData(prev => ({ 
+      ...prev, 
+      division: selectedDivision, 
+      district: '',
+      delivery_charge: charge 
+    }));
+    
     setDistricts(selectedDivision ? DIVISION_DISTRICTS[selectedDivision] || [] : []);
   };
 
   // জেলা বা সাব-এরিয়া পরিবর্তনের লজিক
   const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedDistrict = e.target.value;
-    let charge = 120; // ডিফল্ট ঢাকার বাইরে ১২০ টাকা
+    let charge = formData.delivery_charge;
 
     if (formData.division === 'Dhaka') {
       if (selectedDistrict === 'Dhaka') {
-        charge = 60; // ঢাকা সিটি কর্পোরেশন ৬০ টাকা
-      } else if (selectedDistrict === 'Dhaka Sub Area' || selectedDistrict === 'Gazipur' || selectedDistrict === 'Narayanganj') {
-        charge = 100; // ঢাকা সাব-এরিয়া, গাজীপুর বা নারায়ণগঞ্জ ১০০ টাকা
-      } else {
-        charge = 120; // ঢাকার অন্যান্য দূরবর্তী জেলা
+        charge = 60;
+      } else if (selectedDistrict === 'Gazipur' || selectedDistrict === 'Narayanganj') {
+        charge = 100;
       }
+    } else if (formData.division === 'Dhaka Sub Area') {
+      charge = 100;
     }
 
     setFormData(prev => ({
@@ -111,7 +116,7 @@ export default function CheckoutPage() {
       order_id: order.id,
       customer_name: formData.customer_name,
       contact_number: formData.contact_number,
-      detailed_address: `${formData.detailed_address}, Thana/Area: ${formData.thana}, District/Type: ${formData.district}, Division: ${formData.division}`,
+      detailed_address: `${formData.detailed_address}, Thana/Area: ${formData.thana}, District/Sub-Area: ${formData.district}, Division: ${formData.division}`,
       subtotal: subtotal,
       delivery_charge: formData.delivery_charge,
       total_amount: totalAmount,
@@ -140,91 +145,108 @@ export default function CheckoutPage() {
       <main className="max-w-4xl mx-auto w-full p-6 grid md:grid-cols-2 gap-8 flex-1">
         
         {/* শিপিং ডিটেইলস ফর্ম */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-800">Shipping Details</h2>
-            {/* ডেলিভারি চার্জ দেখতে পাওয়ার বাটন */}
-            <button 
-              type="button"
-              onClick={() => setIsModalOpen(true)}
-              className="text-xs bg-orange-50 text-orange-600 font-semibold px-3 py-1.5 rounded-lg border border-orange-200 hover:bg-orange-100 transition"
-            >
-              🚚 Delivery Charge Chart
-            </button>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Shipping Details</h2>
+
+            <form onSubmit={handleOrderSubmit} className="space-y-3">
+              <input 
+                name="customer_name" 
+                placeholder="Full Name" 
+                onChange={(e) => setFormData({...formData, customer_name: e.target.value})} 
+                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
+                required 
+              />
+              <input 
+                name="contact_number" 
+                placeholder="Contact Number" 
+                onChange={(e) => setFormData({...formData, contact_number: e.target.value})} 
+                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
+                required 
+              />
+              <input 
+                type="email"
+                name="email" 
+                placeholder="Email (Optional)" 
+                onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
+              />
+
+              {/* বিভাগ এবং জেলা ড্রপডাউন */}
+              <div className="grid grid-cols-2 gap-2">
+                <select 
+                  value={formData.division}
+                  onChange={handleDivisionChange} 
+                  className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm bg-white" 
+                  required
+                >
+                  <option value="">Select Division / Area</option>
+                  {Object.keys(DIVISION_DISTRICTS).map((div) => (
+                    <option key={div} value={div}>{div}</option>
+                  ))}
+                </select>
+
+                <select 
+                  value={formData.district}
+                  onChange={handleDistrictChange} 
+                  className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm bg-white" 
+                  required
+                  disabled={!formData.division}
+                >
+                  <option value="">Select District / Sub-Area</option>
+                  {districts.map((dist) => (
+                    <option key={dist} value={dist}>{dist}</option>
+                  ))}
+                </select>
+              </div>
+
+              <input 
+                name="thana" 
+                placeholder="Thana / Specific Area (e.g. Mirpur, Uttara)" 
+                onChange={(e) => setFormData({...formData, thana: e.target.value})} 
+                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
+                required 
+              />
+
+              <textarea 
+                name="detailed_address" 
+                placeholder="Detailed Address (House No, Road No, Village, etc.)" 
+                rows={2}
+                onChange={(e) => setFormData({...formData, detailed_address: e.target.value})} 
+                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm resize-none" 
+                required 
+              />
+
+              <button className="w-full bg-green-600 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-green-700 transition mt-2">
+                Confirm Order (Total: ৳{totalAmount})
+              </button>
+            </form>
           </div>
 
-          <form onSubmit={handleOrderSubmit} className="space-y-3">
-            <input 
-              name="customer_name" 
-              placeholder="Full Name" 
-              onChange={(e) => setFormData({...formData, customer_name: e.target.value})} 
-              className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
-              required 
-            />
-            <input 
-              name="contact_number" 
-              placeholder="Contact Number" 
-              onChange={(e) => setFormData({...formData, contact_number: e.target.value})} 
-              className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
-              required 
-            />
-            <input 
-              type="email"
-              name="email" 
-              placeholder="Email (Optional)" 
-              onChange={(e) => setFormData({...formData, email: e.target.value})} 
-              className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
-            />
-
-            {/* বিভাগ এবং জেলা ড্রপডাউন */}
-            <div className="grid grid-cols-2 gap-2">
-              <select 
-                value={formData.division}
-                onChange={handleDivisionChange} 
-                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm bg-white" 
-                required
-              >
-                <option value="">Select Division</option>
-                {Object.keys(DIVISION_DISTRICTS).map((div) => (
-                  <option key={div} value={div}>{div}</option>
-                ))}
-              </select>
-
-              <select 
-                value={formData.district}
-                onChange={handleDistrictChange} 
-                className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm bg-white" 
-                required
-                disabled={!formData.division}
-              >
-                <option value="">Select District / Area Type</option>
-                {districts.map((dist) => (
-                  <option key={dist} value={dist}>{dist}</option>
-                ))}
-              </select>
-            </div>
-
-            <input 
-              name="thana" 
-              placeholder="Thana / Specific Area (e.g. Savar, Ashulia)" 
-              onChange={(e) => setFormData({...formData, thana: e.target.value})} 
-              className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
-              required 
-            />
-
-            <textarea 
-              name="detailed_address" 
-              placeholder="Detailed Address (House No, Road No, Village, etc.)" 
-              rows={2}
-              onChange={(e) => setFormData({...formData, detailed_address: e.target.value})} 
-              className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm resize-none" 
-              required 
-            />
-
-            <button className="w-full bg-green-600 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-green-700 transition mt-2">
-              Confirm Order (Total: ৳{totalAmount})
-            </button>
-          </form>
+          {/* ডেলিভারি চার্জ চার্ট পেজের নিচের অংশে */}
+          <div className="mt-6 pt-4 border-t border-gray-100">
+            <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <span>🚚</span> Delivery Charge Chart
+            </h3>
+            <ul className="space-y-1 text-xs text-gray-600 bg-orange-50/50 p-3 rounded-xl border border-orange-100">
+              <li className="flex justify-between">
+                <span>Dhaka City Corporation:</span>
+                <span className="font-bold text-gray-800">৳60</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Dhaka Sub Area (Savar, Ashulia, etc.):</span>
+                <span className="font-bold text-gray-800">৳100</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Gazipur & Narayanganj District:</span>
+                <span className="font-bold text-gray-800">৳100</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Outside Dhaka (Other Districts):</span>
+                <span className="font-bold text-gray-800">৳120</span>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* অর্ডার সামারি ও ডেলিভারি চার্জ ডিসপ্লে */}
@@ -253,41 +275,6 @@ export default function CheckoutPage() {
           </div>
         </div>
       </main>
-
-      {/* ডেলিভারি চার্জ চার্ট মডাল (Popup) */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white max-w-md w-full p-6 rounded-2xl shadow-xl relative animate-in fade-in zoom-in duration-200">
-            <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <span>📦</span> Delivery Charge Guidelines
-            </h3>
-            <ul className="space-y-2 text-sm text-gray-600 mb-5 border-t border-b py-3">
-              <li className="flex justify-between">
-                <span>Dhaka City Corporation:</span>
-                <span className="font-bold text-gray-800">৳60</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Dhaka Sub Area (Savar, Ashulia, Keraniganj, Tongi etc.):</span>
-                <span className="font-bold text-gray-800">৳100</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Gazipur & Narayanganj District:</span>
-                <span className="font-bold text-gray-800">৳100</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Outside Dhaka (Other Districts):</span>
-                <span className="font-bold text-gray-800">৳120</span>
-              </li>
-            </ul>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="w-full bg-gray-800 text-white py-2.5 rounded-xl font-semibold hover:bg-black transition text-sm"
-            >
-              Close Chart
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
