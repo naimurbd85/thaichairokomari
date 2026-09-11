@@ -22,6 +22,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [cart, setCart] = useState<any[]>([]);
   const [districts, setDistricts] = useState<string[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false); // ডেলিভারি চার্জ চার্ট মডাল স্টেট
 
   const [formData, setFormData] = useState({
     customer_name: '', contact_number: '', email: '',
@@ -137,8 +138,21 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar showSearchAndCart={false} />
       <main className="max-w-4xl mx-auto w-full p-6 grid md:grid-cols-2 gap-8 flex-1">
+        
+        {/* শিপিং ডিটেইলস ফর্ম */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">Shipping Details</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-gray-800">Shipping Details</h2>
+            {/* ডেলিভারি চার্জ দেখতে পাওয়ার বাটন */}
+            <button 
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="text-xs bg-orange-50 text-orange-600 font-semibold px-3 py-1.5 rounded-lg border border-orange-200 hover:bg-orange-100 transition"
+            >
+              🚚 Delivery Charge Chart
+            </button>
+          </div>
+
           <form onSubmit={handleOrderSubmit} className="space-y-3">
             <input 
               name="customer_name" 
@@ -239,6 +253,41 @@ export default function CheckoutPage() {
           </div>
         </div>
       </main>
+
+      {/* ডেলিভারি চার্জ চার্ট মডাল (Popup) */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white max-w-md w-full p-6 rounded-2xl shadow-xl relative animate-in fade-in zoom-in duration-200">
+            <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <span>📦</span> Delivery Charge Guidelines
+            </h3>
+            <ul className="space-y-2 text-sm text-gray-600 mb-5 border-t border-b py-3">
+              <li className="flex justify-between">
+                <span>Dhaka City Corporation:</span>
+                <span className="font-bold text-gray-800">৳60</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Dhaka Sub Area (Savar, Ashulia, Keraniganj, Tongi etc.):</span>
+                <span className="font-bold text-gray-800">৳100</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Gazipur & Narayanganj District:</span>
+                <span className="font-bold text-gray-800">৳100</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Outside Dhaka (Other Districts):</span>
+                <span className="font-bold text-gray-800">৳120</span>
+              </li>
+            </ul>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="w-full bg-gray-800 text-white py-2.5 rounded-xl font-semibold hover:bg-black transition text-sm"
+            >
+              Close Chart
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
