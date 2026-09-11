@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import emailjs from '@emailjs/browser';
 import Navbar from '../../components/Navbar';
 
-// বাংলাদেশের ৮টি বিভাগ এবং সেগুলোর অধীনে জেলাসমূহের তালিকা
+// বাংলাদেশের ৮টি বিভাগ এবং সেগুলোর অধীনে জেলা ও সাব-এরিয়ার তালিকা
 const DIVISION_DISTRICTS: { [key: string]: string[] } = {
-  Dhaka: ['Dhaka', 'Faridpur', 'Gazipur', 'Gopalganj', 'Kishoreganj', 'Madaripur', 'Manikganj', 'Munshiganj', 'Narayanganj', 'Narsingdi', 'Rajbari', 'Shariatpur', 'Tangail'],
+  Dhaka: ['Dhaka', 'Dhaka Sub Area', 'Faridpur', 'Gazipur', 'Gopalganj', 'Kishoreganj', 'Madaripur', 'Manikganj', 'Munshiganj', 'Narayanganj', 'Narsingdi', 'Rajbari', 'Shariatpur', 'Tangail'],
   Chattogram: ['Bandarban', 'Brahmanbaria', 'Chandpur', 'Chattogram', 'Cox\'s Bazar', 'Cumilla', 'Feni', 'Khagrachhari', 'Lakshmipur', 'Noakhali', 'Rangamati'],
   Rajshahi: ['Bogura', 'Chapainawabganj', 'Joypurhat', 'Naogaon', 'Natore', 'Pabna', 'Rajshahi', 'Sirajganj'],
   Khulna: ['Bagerhat', 'Chuadanga', 'Jashore', 'Jhenaidah', 'Khulna', 'Kushtia', 'Magura', 'Meherpur', 'Narail', 'Satkhira'],
@@ -16,9 +16,6 @@ const DIVISION_DISTRICTS: { [key: string]: string[] } = {
   Rangpur: ['Dinajpur', 'Gaibandha', 'Kurigram', 'Lalmonirhat', 'Nilphamari', 'Panchagarh', 'Rangpur', 'Thakurgaon'],
   Mymensingh: ['Jamalpur', 'Mymensingh', 'Netrokona', 'Sherpur']
 };
-
-// ঢাকা সাব-এরিয়া বা সাব-আবান যেগুলো ১০০ টাকা চার্জের আওতায় পড়বে
-const DHAKA_SUB_AREAS = ['Savar', 'Ashulia', 'Keraniganj', 'Tongi', 'Gazipur', 'Narayanganj'];
 
 export default function CheckoutPage() {
   const supabase = createClient();
@@ -37,31 +34,6 @@ export default function CheckoutPage() {
     if (savedCart) setCart(JSON.parse(savedCart));
   }, []);
 
-  // ডেলিভারি চার্জ ক্যালকুলেট করার ফাংশন
-  const calculateDeliveryCharge = (division: string, district: string, thana: string) => {
-    if (division !== 'Dhaka') {
-      return 120; // ঢাকার বাইরে ১২০ টাকা
-    }
-
-    if (district === 'Dhaka' && thana.trim() !== '') {
-      // যদি ঢাকা জেলার ভেতর হয়, চেক করব সাব-এরিয়ার মধ্যে পড়ে কি না
-      const isSubArea = DHAKA_SUB_AREAS.some(area => 
-        thana.toLowerCase().includes(area.toLowerCase())
-      );
-      if (isSubArea) {
-        return 100; // ঢাকা সাব-এরিয়া ১০০ টাকা
-      }
-      return 60; // ঢাকা সিটি কর্পোরেশন এলাকা ৬০ টাকা
-    }
-
-    // যদি গাজীপুর বা নারায়ণগঞ্জ জেলা সিলেক্ট করা হয় কিন্তু বিভাগ ঢাকা হয়
-    if (district === 'Gazipur' || district === 'Narayanganj') {
-      return 100;
-    }
-
-    return 60; // ডিফল্ট ঢাকা সিটি চার্জ
-  };
-
   // বিভাগ পরিবর্তনের লজিক
   const handleDivisionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedDivision = e.target.value;
@@ -78,18 +50,18 @@ export default function CheckoutPage() {
     setDistricts(selectedDivision ? DIVISION_DISTRICTS[selectedDivision] || [] : []);
   };
 
-  // জেলা পরিবর্তনের লজিক
+  // জেলা বা সাব-এরিয়া পরিবর্তনের লজিক
   const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedDistrict = e.target.value;
-    let charge = 120;
+    let charge = 120; // ডিফল্ট ঢাকার বাইরে ১২০ টাকা
 
     if (formData.division === 'Dhaka') {
       if (selectedDistrict === 'Dhaka') {
-        charge = 60;
-      } else if (selectedDistrict === 'Gazipur' || selectedDistrict === 'Narayanganj') {
-        charge = 100;
+        charge = 60; // ঢাকা সিটি কর্পোরেশন ৬০ টাকা
+      } else if (selectedDistrict === 'Dhaka Sub Area' || selectedDistrict === 'Gazipur' || selectedDistrict === 'Narayanganj') {
+        charge = 100; // ঢাকা সাব-এরিয়া, গাজীপুর বা নারায়ণগঞ্জ ১০০ টাকা
       } else {
-        charge = 120; // ঢাকার অন্যান্য দূরবর্তী জেলা যেমন কিশোরগঞ্জ, টাঙ্গাইল ইত্যাদি
+        charge = 120; // ঢাকার অন্যান্য দূরবর্তী জেলা
       }
     }
 
@@ -98,19 +70,6 @@ export default function CheckoutPage() {
       district: selectedDistrict,
       delivery_charge: charge
     }));
-  };
-
-  // থানা বা এলাকা লেখার সময় চার্জ আপডেট করার লজিক
-  const handleThanaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const thanaValue = e.target.value;
-    setFormData(prev => {
-      const updatedCharge = calculateDeliveryCharge(prev.division, prev.district, thanaValue);
-      return {
-        ...prev,
-        thana: thanaValue,
-        delivery_charge: updatedCharge
-      };
-    });
   };
 
   const subtotal = cart.reduce((sum, item) => sum + (item.regular_price * item.quantity), 0);
@@ -151,7 +110,7 @@ export default function CheckoutPage() {
       order_id: order.id,
       customer_name: formData.customer_name,
       contact_number: formData.contact_number,
-      detailed_address: `${formData.detailed_address}, Thana: ${formData.thana}, District: ${formData.district}, Division: ${formData.division}`,
+      detailed_address: `${formData.detailed_address}, Thana/Area: ${formData.thana}, District/Type: ${formData.district}, Division: ${formData.division}`,
       subtotal: subtotal,
       delivery_charge: formData.delivery_charge,
       total_amount: totalAmount,
@@ -224,7 +183,7 @@ export default function CheckoutPage() {
                 required
                 disabled={!formData.division}
               >
-                <option value="">Select District</option>
+                <option value="">Select District / Area Type</option>
                 {districts.map((dist) => (
                   <option key={dist} value={dist}>{dist}</option>
                 ))}
@@ -233,8 +192,8 @@ export default function CheckoutPage() {
 
             <input 
               name="thana" 
-              placeholder="Thana / Upazila / Area (e.g. Savar, Uttara)" 
-              onChange={handleThanaChange} 
+              placeholder="Thana / Specific Area (e.g. Savar, Ashulia)" 
+              onChange={(e) => setFormData({...formData, thana: e.target.value})} 
               className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
               required 
             />
