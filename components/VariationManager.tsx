@@ -2,8 +2,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/app/utils/supabase'
 
-export default function VariationManager({ onAddVariation, initialData }: { onAddVariation: (variation: any) => void, initialData?: any }) {
-  // ডাইনামিক লিস্টের স্টেট
+interface VariationManagerProps {
+  onAddVariation: (variation: any) => void;
+  initialData?: any;
+  baseSku: string; // মেইন প্রোডাক্টের SKU রিসিভ করার জন্য প্রপস যোগ করা হলো
+}
+
+export default function VariationManager({ onAddVariation, initialData, baseSku }: VariationManagerProps) {
   const [colorOptions, setColorOptions] = useState(['Red', 'Blue', 'Green', 'Black', 'White', 'Yellow', 'Powder Blue', 'Dusty Rose Pink', 'Mint Green', 'Jet Black', 'Hot Pink', 'Peach Nude']);
   const [sizeOptions, setSizeOptions] = useState(['S', 'M', 'L', 'XL', 'XXL', 'Free Size']);
   
@@ -18,6 +23,26 @@ export default function VariationManager({ onAddVariation, initialData }: { onAd
   useEffect(() => {
     if (initialData) setVariation(initialData);
   }, [initialData]);
+
+  // SKU অটো জেনারেট করার ফাংশন (কালার ও সাইজ অনুযায়ী)
+  const updateVariantSKU = (color: string, size: string) => {
+    let parts = [baseSku];
+    if (color && color.trim() !== '') parts.push(color.trim());
+    if (size && size.trim() !== '') parts.push(size.trim());
+    return parts.join('-');
+  };
+
+  // কালার পরিবর্তনের হ্যান্ডলার
+  const handleColorChange = (selectedColor: string) => {
+     const updatedSku = updateVariantSKU(selectedColor, variation.size);
+     setVariation((prev: any) => ({ ...prev, color: selectedColor, sku: updatedSku }));
+   };
+
+   // সাইজ পরিবর্তনের হ্যান্ডলার (যদি সেখানেও একই সমস্যা থাকে)
+   const handleSizeChange = (selectedSize: string) => {
+     const updatedSku = updateVariantSKU(variation.color, selectedSize);
+     setVariation((prev: any) => ({ ...prev, size: selectedSize, sku: updatedSku }));
+   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -49,7 +74,7 @@ export default function VariationManager({ onAddVariation, initialData }: { onAd
               <button className="bg-green-700 px-3 rounded-lg hover:bg-green-600" onClick={() => {if(newColor) {setColorOptions([...colorOptions, newColor]); setNewColor('')}}}>+</button>
             </div>
             <div className="flex gap-2">
-              <select className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" value={variation.color} onChange={e => setVariation({...variation, color: e.target.value})}>
+              <select className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" value={variation.color} onChange={e => handleColorChange(e.target.value)}>
                 <option value="">-- Select Color --</option>
                 {colorOptions.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -65,7 +90,7 @@ export default function VariationManager({ onAddVariation, initialData }: { onAd
               <button className="bg-green-700 px-3 rounded-lg hover:bg-green-600" onClick={() => {if(newSize) {setSizeOptions([...sizeOptions, newSize]); setNewSize('')}}}>+</button>
             </div>
             <div className="flex gap-2">
-              <select className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" value={variation.size} onChange={e => setVariation({...variation, size: e.target.value})}>
+              <select className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" value={variation.size} onChange={e => handleSizeChange(e.target.value)}>
                 <option value="">-- Select Size --</option>
                 {sizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
@@ -74,7 +99,7 @@ export default function VariationManager({ onAddVariation, initialData }: { onAd
           </div>
         </div>
 
-        {/* স্টক এবং প্রাইস সেকশন (আপনার আগের কোড অনুযায়ী) */}
+        {/* স্টক এবং প্রাইস সেকশন */}
         <div className="grid grid-cols-2 gap-4">
           <div><label className="block text-xs font-medium mb-1 text-gray-400">STOCK</label><input type="number" value={variation.stock} className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" onChange={e => setVariation({...variation, stock: parseInt(e.target.value) || 0})} /></div>
           <div><label className="block text-xs font-medium mb-1 text-gray-400">LOW STOCK ALERT</label><input type="number" value={variation.lowStock} className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" onChange={e => setVariation({...variation, lowStock: parseInt(e.target.value) || 0})} /></div>

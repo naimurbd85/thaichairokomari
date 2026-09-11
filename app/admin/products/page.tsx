@@ -497,50 +497,51 @@ export default function AdminProductsPage() {
         </div>
 
         {isVariantModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-xl w-[90%] max-w-lg shadow-2xl">
-              <h2 className="text-lg font-bold mb-4">
-                Add Variant: {selectedProductForVariant?.name}
-              </h2>
-              
-              <VariationManager 
-                key={selectedProductForVariant?.variations?.length || 0} 
-                onAddVariation={async (v) => {
-                  try {
-                    const updatedVariations = [...(selectedProductForVariant.variations || []), v];
-                    
-                    const { error } = await supabase
-                      .from('products')
-                      .update({ variations: updatedVariations })
-                      .eq('id', selectedProductForVariant.id);
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl w-[90%] max-w-lg shadow-2xl">
+            <h2 className="text-lg font-bold mb-4">
+              Add Variant: {selectedProductForVariant?.name}
+            </h2>
+            
+            <VariationManager 
+              key={selectedProductForVariant?.variations?.length || 0} 
+              baseSku={selectedProductForVariant?.sku || ''}
+              onAddVariation={async (v) => {
+                try {
+                  const updatedVariations = [...(selectedProductForVariant.variations || []), v];
+                  
+                  const { error } = await supabase
+                    .from('products')
+                    .update({ variations: updatedVariations })
+                    .eq('id', selectedProductForVariant.id);
 
-                    if (error) throw error;
+                  if (error) throw error;
 
-                    alert("Variant added successfully! 🚀");
-                    
-                    loadData(); 
-                    
-                    setSelectedProductForVariant((prev: any) => ({
-                      ...prev,
-                      variations: updatedVariations
-                    }));
-                    
-                  } catch (err: any) {
-                    console.error("Error saving variant:", err);
-                    alert("Failed to save variant: " + err.message);
-                  }
-                }} 
-              />
-              
-              <button 
-                onClick={() => setIsVariantModalOpen(false)} 
-                className="mt-4 w-full bg-gray-200 hover:bg-gray-300 py-2 rounded-lg text-sm font-bold transition-colors"
-              >
-                Close
-              </button>
-            </div>
+                  alert("Variant added successfully! 🚀");
+                  
+                  loadData(); 
+                  
+                  setSelectedProductForVariant((prev: any) => ({
+                    ...prev,
+                    variations: updatedVariations
+                  }));
+                  
+                } catch (err: any) {
+                  console.error("Error saving variant:", err);
+                  alert("Failed to save variant: " + err.message);
+                }
+              }} 
+            />
+            
+            <button 
+              onClick={() => setIsVariantModalOpen(false)} 
+              className="mt-4 w-full bg-gray-200 hover:bg-gray-300 py-2 rounded-lg text-sm font-bold transition-colors"
+            >
+              Close
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
       </div>
     </SharedAdminLayout>

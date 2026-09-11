@@ -64,11 +64,12 @@ export default function ManageVariationsPage() {
       <h1 className="text-2xl font-bold mb-6">Manage Variations: {product.name}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* বাম পাশে ফর্ম - এডিট মোড হলে initialData পাস হবে */}
+        {/* বাম পাশে ফর্ম - এডিট মোড হলে initialData এবং baseSku পাস হবে */}
         <div className="lg:col-span-1">
           <VariationManager 
             onAddVariation={handleSaveVariation} 
             initialData={editingIndex !== null ? product.variations[editingIndex] : null} 
+            baseSku={product?.sku || ''} 
           />
           {editingIndex !== null && (
             <button 
@@ -91,12 +92,10 @@ export default function ManageVariationsPage() {
                   <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center border">
                       {v.image ? (
                         <img 
-                          // এখানে আপনার প্রজেক্টের সঠিক পাবলিক ইউআরএল ফরম্যাট ব্যবহার করা হয়েছে
                           src={`https://oendgqpzvkllagavtglq.supabase.co/storage/v1/object/public/product-images/${v.image}`} 
                           alt="Variant" 
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            // যদি ইমেজ লোড না হয়, তবে এটি হাইড হয়ে যাবে
                             e.currentTarget.style.display = 'none';
                           }}
                         />
@@ -105,7 +104,10 @@ export default function ManageVariationsPage() {
                       )}
                     </div>
                   <div>
-                    <p className="font-bold">{v.color} - {v.size}</p>
+                    {/* কালার ও সাইজ দেখানোর সময় কন্ডিশনাল রেন্ডারিং */}
+                    <p className="font-bold">
+                      {[v.color, v.size].filter(Boolean).join(' - ')}
+                    </p>
                     <p className="text-xs text-gray-500">SKU: {v.sku} | Cost: ৳{v.purchasePrice} | Sell: ৳{v.sellingPrice}</p>
                   </div>
                 </div>
