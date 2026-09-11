@@ -74,10 +74,6 @@ export default function AdminProductsPage() {
         }
       }
     }
-    
-    let mainCode = 'GEN';
-    let subCode = 'GEN';
-    let subSubCode = 'GEN';
 
     const createCodeFromName = (name: string, limit: number) => {
       return name
@@ -90,15 +86,18 @@ export default function AdminProductsPage() {
         .slice(0, limit);
     };
 
-    // সবগুলোতে ৩ করে লিমিট সেট করা হলো
-    if (mainCatName && subCatName) {
+    let mainCode = '';
+    let subCode = '';
+    let subSubCode = '';
+
+    // Code generation by category
+    if (mainCatName && subCatName && selectedCat.name !== subCatName) {
       mainCode = createCodeFromName(mainCatName, 3);
       subCode = createCodeFromName(subCatName, 3);
       subSubCode = createCodeFromName(subSubName, 3);
     } else if (subCatName) {
       mainCode = createCodeFromName(subCatName, 3);
       subCode = createCodeFromName(subSubName, 3);
-      subSubCode = '';
     } else {
       mainCode = createCodeFromName(subSubName, 3);
     }
@@ -124,6 +123,7 @@ export default function AdminProductsPage() {
 
     const nextSerial = (maxSerial + 1).toString().padStart(3, '0');
 
+    // ফিল্টার করে শুধু যেগুলোর কোড আছে সেগুলো যুক্ত করবে
     const parts = [mainCode, subCode, subSubCode, nextSerial].filter(Boolean);
     const generatedSKU = parts.join('');
 
@@ -133,9 +133,7 @@ export default function AdminProductsPage() {
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
   const [selectedProductForVariant, setSelectedProductForVariant] = useState<any>(null);
 
-
   const [uploaderKey, setUploaderKey] = useState(0);
-
 
   const openVariantModal = (product: any) => {
     setSelectedProductForVariant(product);
