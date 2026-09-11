@@ -17,12 +17,15 @@ const DIVISION_DISTRICTS: { [key: string]: string[] } = {
   Mymensingh: ['Jamalpur', 'Mymensingh', 'Netrokona', 'Sherpur']
 };
 
+// ঢাকা সাব-এরিয়া বা সাব-আবান যেগুলো ১০০ টাকা চার্জের আওতায় পড়বে
+const DHAKA_SUB_AREAS = ['Savar', 'Ashulia', 'Keraniganj', 'Tongi', 'Gazipur', 'Narayanganj'];
+
 export default function CheckoutPage() {
   const supabase = createClient();
   const router = useRouter();
   const [cart, setCart] = useState<any[]>([]);
   const [districts, setDistricts] = useState<string[]>([]);
-  
+
   const [formData, setFormData] = useState({
     customer_name: '', contact_number: '', email: '',
     division: '', district: '', thana: '', detailed_address: '',
@@ -34,28 +37,59 @@ export default function CheckoutPage() {
     if (savedCart) setCart(JSON.parse(savedCart));
   }, []);
 
-  // বিভাগ পরিবর্তনের সাথে সাথে জেলার লিস্ট আপডেট করা
+  // ডেলিভারি চার্জ ক্যালকুলেট করার ফাংশন
+  const calculateDeliveryCharge = (division: string, district: string, thana: string) => {
+    if (division !== 'Dhaka') {
+      return 120; // ঢাকার বাইরে ১২০ টাকা
+    }
+
+    if (district === 'Dhaka' && thana.trim() !== '') {
+      // যদি ঢাকা জেলার ভেতর হয়, চেক করব সাব-এরিয়ার মধ্যে পড়ে কি না
+      const isSubArea = DHAKA_SUB_AREAS.some(area => 
+        thana.toLowerCase().includes(area.toLowerCase())
+      );
+      if (isSubArea) {
+        return 100; // ঢাকা সাব-এরিয়া ১০০ টাকা
+      }
+      return 60; // ঢাকা সিটি কর্পোরেশন এলাকা ৬০ টাকা
+    }
+
+    // যদি গাজীপুর বা নারায়ণগঞ্জ জেলা সিলেক্ট করা হয় কিন্তু বিভাগ ঢাকা হয়
+    if (district === 'Gazipur' || district === 'Narayanganj') {
+      return 100;
+    }
+
+    return 60; // ডিফল্ট ঢাকা সিটি চার্জ
+  };
+
+  // বিভাগ পরিবর্তনের লজিক
   const handleDivisionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedDivision = e.target.value;
-    setFormData(prev => ({ 
-      ...prev, 
-      division: selectedDivision, 
-      district: '',
-      delivery_charge: selectedDivision === 'Dhaka' ? 60 : 120 // বিভাগ ঢাকা হলে প্রাথমিক চার্জ ৬০, অন্যথায় ১২০
-    }));
+    
+    setFormData(prev => {
+      const newCharge = selectedDivision === 'Dhaka' ? 60 : 120;
+      return { 
+        ...prev, 
+        division: selectedDivision, 
+        district: '',
+        delivery_charge: newCharge 
+      };
+    });
     setDistricts(selectedDivision ? DIVISION_DISTRICTS[selectedDivision] || [] : []);
   };
 
   // জেলা পরিবর্তনের লজিক
   const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedDistrict = e.target.value;
-    let charge = 120; // ঢাকার বাইরের জন্য ১২০ টাকা
+    let charge = 120;
 
     if (formData.division === 'Dhaka') {
       if (selectedDistrict === 'Dhaka') {
-        charge = 60; // ঢাকা সিটি
+        charge = 60;
+      } else if (selectedDistrict === 'Gazipur' || selectedDistrict === 'Narayanganj') {
+        charge = 100;
       } else {
-        charge = 100; // ঢাকার সাব-এরিয়া (Gazipur, Narayanganj, etc.)
+        charge = 120; // ঢাকার অন্যান্য দূরবর্তী জেলা যেমন কিশোরগঞ্জ, টাঙ্গাইল ইত্যাদি
       }
     }
 
@@ -64,6 +98,19 @@ export default function CheckoutPage() {
       district: selectedDistrict,
       delivery_charge: charge
     }));
+  };
+
+  // থানা বা এলাকা লেখার সময় চার্জ আপডেট করার লজিক
+  const handleThanaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const thanaValue = e.target.value;
+    setFormData(prev => {
+      const updatedCharge = calculateDeliveryCharge(prev.division, prev.district, thanaValue);
+      return {
+        ...prev,
+        thana: thanaValue,
+        delivery_charge: updatedCharge
+      };
+    });
   };
 
   const subtotal = cart.reduce((sum, item) => sum + (item.regular_price * item.quantity), 0);
@@ -186,8 +233,8 @@ export default function CheckoutPage() {
 
             <input 
               name="thana" 
-              placeholder="Thana / Upazila / Area" 
-              onChange={(e) => setFormData({...formData, thana: e.target.value})} 
+              placeholder="Thana / Upazila / Area (e.g. Savar, Uttara)" 
+              onChange={handleThanaChange} 
               className="w-full p-3 border rounded-xl outline-none focus:border-orange-500 text-sm" 
               required 
             />
@@ -206,7 +253,7 @@ export default function CheckoutPage() {
             </button>
           </form>
         </div>
-        
+
         {/* অর্ডার সামারি ও ডেলিভারি চার্জ ডিসপ্লে */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 self-start">
           <h2 className="text-xl font-bold mb-4 text-gray-800">Order Summary</h2>
@@ -229,7 +276,7 @@ export default function CheckoutPage() {
 
           <div className="flex justify-between mt-4 text-lg font-bold">
             <span>Total:</span>
-            <span className="orange-600 text-orange-600">৳{totalAmount}</span>
+            <span className="text-orange-600">৳{totalAmount}</span>
           </div>
         </div>
       </main>
