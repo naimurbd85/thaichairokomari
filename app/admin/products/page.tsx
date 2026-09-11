@@ -52,69 +52,83 @@ export default function AdminProductsPage() {
   }
 
   // SKU Function
-const generateSKU = async (categoryId: string) => {
-  if (!categoryId) return;
+  const generateSKU = async (categoryId: string) => {
+    if (!categoryId) return;
 
-  const selectedCat = categories.find(c => String(c.id) === String(categoryId));
-  if (!selectedCat) return;
+    const selectedCat = categories.find(c => String(c.id) === String(categoryId));
+    if (!selectedCat) return;
 
-  let subSubName = selectedCat.name;
-  let subCatName = '';
-  let mainCatName = '';
+    let subSubName = selectedCat.name;
+    let subCatName = '';
+    let mainCatName = '';
 
-  if (selectedCat.parent_id) {
-    const parentCat = categories.find(c => String(c.id) === String(selectedCat.parent_id));
-    if (parentCat) {
-      subCatName = parentCat.name;
-      if (parentCat.parent_id) {
-        const mainCat = categories.find(c => String(c.id) === String(parentCat.parent_id));
-        if (mainCat) {
-          mainCatName = mainCat.name;
+    if (selectedCat.parent_id) {
+      const parentCat = categories.find(c => String(c.id) === String(selectedCat.parent_id));
+      if (parentCat) {
+        subCatName = parentCat.name;
+        if (parentCat.parent_id) {
+          const mainCat = categories.find(c => String(c.id) === String(parentCat.parent_id));
+          if (mainCat) {
+            mainCatName = mainCat.name;
+          }
         }
       }
     }
-  }
-  
-  let mainCode = 'GEN';
-  let subCode = 'GEN';
-  let subSubCode = 'GEN';
+    
+    let mainCode = 'GEN';
+    let subCode = 'GEN';
+    let subSubCode = 'GEN';
 
-  const createCodeFromName = (name: string, limit: number) => {
-    return name
-      .split(' ')
-      .map(w => w.replace(/[^a-zA-Z0-9]/g, '')) // & বা অন্য প্রতীক থাকলে তা মুছে ফেলবে
-      .filter(Boolean)
-      .map(w => w[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, limit);
+    const createCodeFromName = (name: string, limit: number) => {
+      return name
+        .split(' ')
+        .map(w => w.replace(/[^a-zA-Z0-9]/g, ''))
+        .filter(Boolean)
+        .map(w => w[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, limit);
+    };
+
+    // সবগুলোতে ৩ করে লিমিট সেট করা হলো
+    if (mainCatName && subCatName) {
+      mainCode = createCodeFromName(mainCatName, 3);
+      subCode = createCodeFromName(subCatName, 3);
+      subSubCode = createCodeFromName(subSubName, 3);
+    } else if (subCatName) {
+      mainCode = createCodeFromName(subCatName, 3);
+      subCode = createCodeFromName(subSubName, 3);
+      subSubCode = '';
+    } else {
+      mainCode = createCodeFromName(subSubName, 3);
+    }
+
+    // সর্বোচ্চ SKU সিরিয়াল বের করার লজিক
+    const { data: existingProducts } = await supabase
+      .from('products')
+      .select('sku')
+      .eq('category_id', categoryId);
+
+    let maxSerial = 0;
+    if (existingProducts && existingProducts.length > 0) {
+      existingProducts.forEach(prod => {
+        if (prod.sku) {
+          const serialPart = prod.sku.slice(-3);
+          const serialNum = parseInt(serialPart, 10);
+          if (!isNaN(serialNum) && serialNum > maxSerial) {
+            maxSerial = serialNum;
+          }
+        }
+      });
+    }
+
+    const nextSerial = (maxSerial + 1).toString().padStart(3, '0');
+
+    const parts = [mainCode, subCode, subSubCode, nextSerial].filter(Boolean);
+    const generatedSKU = parts.join('');
+
+    setFormData(prev => ({ ...prev, sku: generatedSKU }));
   };
-
-  if (mainCatName && subCatName) {
-    mainCode = createCodeFromName(mainCatName, 2);
-    subCode = createCodeFromName(subCatName, 2);
-    subSubCode = createCodeFromName(subSubName, 3);
-  } else if (subCatName) {
-    // ২ স্তর হলে
-    mainCode = createCodeFromName(subCatName, 2);
-    subCode = createCodeFromName(subSubName, 2);
-    subSubCode = '';
-  } else {
-    mainCode = createCodeFromName(subSubName, 2);
-  }
-
-  const { count, error } = await supabase
-    .from('products')
-    .select('*', { count: 'exact', head: true })
-    .eq('category_id', categoryId);
-
-  const nextSerial = ((count || 0) + 1).toString().padStart(3, '0'); // 001, 002 এভাবে তৈরি হবে
-
-  const parts = [mainCode, subCode, subSubCode, nextSerial].filter(Boolean);
-  const generatedSKU = parts.join('');
-
-  setFormData(prev => ({ ...prev, sku: generatedSKU }));
-};
 
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
   const [selectedProductForVariant, setSelectedProductForVariant] = useState<any>(null);
