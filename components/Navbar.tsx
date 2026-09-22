@@ -1,10 +1,11 @@
 'use client';
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image"; // Next.js এর Image কম্পোনেন্ট امপোর্ট করা হলো
 
 interface NavbarProps {
   onSearch?: (term: string) => void;
-  showSearchAndCart?: boolean; // নতুন প্রপ যোগ করা হলো
+  showSearchAndCart?: boolean;
 }
 
 export default function Navbar({ onSearch, showSearchAndCart = true }: NavbarProps) {
@@ -28,12 +29,20 @@ export default function Navbar({ onSearch, showSearchAndCart = true }: NavbarPro
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
         <Link href="/">
-          <h1 className="text-2xl font-extrabold tracking-tighter">
-            <span className="text-orange-600">Thaichi</span> <span className="text-blue-600">Rokomari</span>
-          </h1>
+          {/* টেক্সট হেডিং সরিয়ে এখানে লোগো ইমেজ বসানো হলো */}
+          <div className="flex items-center">
+            <Image 
+              src="/logo.png" // public ফোল্ডারে রাখা লোগোর পাথ (আপনার ফাইলের নাম অনুযায়ী পরিবর্তন করে নিতে পারেন)
+              alt="ThaiChi Rokomari Logo" 
+              width={160} 
+              height={45} 
+              className="h-10 w-auto object-contain" 
+              priority
+            />
+          </div>
         </Link>
         
-        {/* যদি showSearchAndCart true হয় তবেই সার্চ বার ও কার্ট দেখাবে */}
+        {/* যদি showSearchAndCart true হয় তবেই সার্চ বার ও কার্ট দেখাবে */}
         {showSearchAndCart ? (
           <>
             <div className="flex-1 max-w-lg">
@@ -51,7 +60,6 @@ export default function Navbar({ onSearch, showSearchAndCart = true }: NavbarPro
             </div>
           </>
         ) : (
-          // চেকআউট বা কার্ট পেজের জন্য শুধু একটি সিম্পল ব্যাক টু শপ বাটন বা খালি রাখতে পারেন
           <Link href="/" className="text-sm font-semibold text-gray-600 hover:text-orange-600 transition">
             ← Back to Shop
           </Link>
