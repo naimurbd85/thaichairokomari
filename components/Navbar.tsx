@@ -32,11 +32,11 @@ export default function Navbar({ onSearch, showSearchAndCart = true }: NavbarPro
           {/* টেক্সট হেডিং সরিয়ে এখানে লোগো ইমেজ বসানো হলো */}
           <div className="flex items-center">
             <Image 
-              src="/logo.png" // public ফোল্ডারে রাখা লোগোর পাথ (আপনার ফাইলের নাম অনুযায়ী পরিবর্তন করে নিতে পারেন)
+              src="/logo.png" 
               alt="ThaiChi Rokomari Logo" 
-              width={160} 
-              height={45} 
-              className="h-10 w-auto object-contain" 
+              width={220} 
+              height={65} 
+              className="h-14 w-auto object-contain py-1" 
               priority
             />
           </div>

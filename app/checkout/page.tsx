@@ -264,7 +264,6 @@ export default function CheckoutPage() {
                 <span className="font-bold text-gray-800">৳100</span>
               </li>
               <li className="flex justify-between py-1 border-b border-gray-100">
-                <span>Gazipur & Narayanganj District:</span>
                 <span className="font-bold text-gray-800">৳100</span>
               </li>
               <li className="flex justify-between py-1">
