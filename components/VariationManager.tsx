@@ -25,23 +25,31 @@ export default function VariationManager({ onAddVariation, initialData, baseSku 
   }, [initialData]);
 
   // SKU অটো জেনারেট করার ফাংশন (কালার ও সাইজ অনুযায়ী)
-  const updateVariantSKU = (color: string, size: string) => {
+  // SKU অটো জেনারেট করার ফাংশন (কালার, সাইজ ও টাইপ অনুযায়ী)
+  const updateVariantSKU = (color: string, size: string, type: string) => {
     let parts = [baseSku];
     if (color && color.trim() !== '') parts.push(color.trim());
     if (size && size.trim() !== '') parts.push(size.trim());
+    if (type && type.trim() !== '') parts.push(type.trim());
     return parts.join('-');
   };
 
   // কালার পরিবর্তনের হ্যান্ডলার
   const handleColorChange = (selectedColor: string) => {
-     const updatedSku = updateVariantSKU(selectedColor, variation.size);
+     const updatedSku = updateVariantSKU(selectedColor, variation.size, variation.type);
      setVariation((prev: any) => ({ ...prev, color: selectedColor, sku: updatedSku }));
    };
 
-   // সাইজ পরিবর্তনের হ্যান্ডলার (যদি সেখানেও একই সমস্যা থাকে)
+   // সাইজ পরিবর্তনের হ্যান্ডলার
    const handleSizeChange = (selectedSize: string) => {
-     const updatedSku = updateVariantSKU(variation.color, selectedSize);
+     const updatedSku = updateVariantSKU(variation.color, selectedSize, variation.type);
      setVariation((prev: any) => ({ ...prev, size: selectedSize, sku: updatedSku }));
+   };
+
+   // টাইপ পরিবর্তনের হ্যান্ডলার (নতুন যুক্ত করা হলো)
+   const handleTypeChange = (selectedType: string) => {
+     const updatedSku = updateVariantSKU(variation.color, variation.size, selectedType);
+     setVariation((prev: any) => ({ ...prev, type: selectedType, sku: updatedSku }));
    };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -111,9 +119,9 @@ export default function VariationManager({ onAddVariation, initialData, baseSku 
           <div><label className="block text-xs font-medium mb-1 text-gray-400">Regular Price</label><input type="number" value={variation.sellingPrice} className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm text-green-500" onChange={e => setVariation({...variation, sellingPrice: parseInt(e.target.value) || 0})} /></div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div><label className="block text-xs font-medium mb-1 text-gray-400">TYPE</label><input type="text" value={variation.type} className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" onChange={e => setVariation({...variation, type: e.target.value})} /></div>
-          <div><label className="block text-xs font-medium mb-1 text-gray-400">SKU *</label><input type="text" required value={variation.sku} className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm uppercase" onChange={e => setVariation({...variation, sku: e.target.value})} /></div>
+        <div>
+          <label className="block text-xs font-medium mb-1 text-gray-400">TYPE</label>
+          <input type="text" value={variation.type} className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm" onChange={e => handleTypeChange(e.target.value)} />
         </div>
 
         {/* ইমেজ আপলোড */}

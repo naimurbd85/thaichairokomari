@@ -106,7 +106,7 @@ export default function ManageVariationsPage() {
                   <div>
                     {/* কালার ও সাইজ দেখানোর সময় কন্ডিশনাল রেন্ডারিং */}
                     <p className="font-bold">
-                      {[v.color, v.size].filter(Boolean).join(' - ')}
+                      {[v.color, v.size, v.type].filter(Boolean).join(' - ')}
                     </p>
                     <p className="text-xs text-gray-500">SKU: {v.sku} | Cost: ৳{v.purchasePrice || v.costPrice || 0} | Sell: ৳{v.sellingPrice || v.regularPrice || 0}
                     </p>
