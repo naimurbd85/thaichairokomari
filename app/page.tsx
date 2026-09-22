@@ -334,7 +334,7 @@ export default function Home() {
           
           {/* Column 1: Company Profile */}
           <div className="space-y-4">
-            <h2 className="text-white text-xl font-black tracking-wider">THAI-CHIN ROKOMARI</h2>
+            <h2 className="text-white text-xl font-black tracking-wider">THAI-CHI ROKOMARI</h2>
             <p className="text-sm text-gray-400 leading-relaxed">
               Your trusted online shop. We bring you the finest quality and attractive products from China and Thailand at affordable prices.
             </p>
@@ -380,7 +380,7 @@ export default function Home() {
 
         {/* Footer Bottom Copyright and Payment Section */}
         <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-          <p>© {new Date().getFullYear()} Thai-Chin Rokomari. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Thai-Chi Rokomari. All rights reserved.</p>
           <div className="flex gap-4 font-medium">
             <span>Secure Checkout</span>
             <span>• Cash on Delivery</span>
