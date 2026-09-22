@@ -51,7 +51,7 @@ export default function Home() {
     const activeCategoryId = level3 || level2 || level1;
     if (activeCategoryId && catData) {
         const getChildIds = (id: string): string[] => {
-            const children = catData.filter(c => c.parent_id == id) || [];
+            const children = catData.filter(c => c.parent_id === id) || [];
             return [id, ...children.flatMap(child => getChildIds(child.id.toString()))];
         };
         const allRelevantIds = getChildIds(activeCategoryId);
@@ -67,19 +67,18 @@ export default function Home() {
 
   // হেল্পার ফাংশন: নির্দিষ্ট ক্যাটাগরি বা তার সাব-ক্যাটাগরিতে প্রোডাক্ট আছে কিনা চেক করার জন্য
   const hasProductsInCategory = (catId: string) => {
-    // অরিজিন (selectedAudience) ফিল্টার বিবেচনা করে প্রোডাক্ট লিস্ট তৈরি
-    let baseProducts = allActiveProducts;
-    if (selectedAudience !== 'all') {
-      baseProducts = baseProducts.filter(p => p.target_audience === selectedAudience);
-    }
+      let baseProducts = allActiveProducts;
+      if (selectedAudience !== 'all') {
+        baseProducts = baseProducts.filter(p => p.target_audience === selectedAudience);
+      }
 
-    const getChildIds = (id: string): string[] => {
-      const children = categories.filter(c => c.parent_id == id) || [];
-      return [id, ...children.flatMap(child => getChildIds(child.id.toString()))];
-    };
+      const getChildIds = (id: string): string[] => {
+        const children = categories.filter(c => String(c.parent_id) === String(id)) || []; // ✅ ঠিক করা হয়েছে
+        return [String(id), ...children.flatMap(child => getChildIds(String(child.id)))];
+      };
 
-    const relevantCatIds = getChildIds(catId);
-    return baseProducts.some(p => relevantCatIds.includes(String(p.category_id)));
+      const relevantCatIds = getChildIds(catId);
+      return baseProducts.some(p => relevantCatIds.includes(String(p.category_id))); // ✅ ঠিক করা হয়েছে
   };
 
   // মোডাল ওপেন করার সময় প্রথম ছবিটি ডিফল্ট সিলেক্ট করা
@@ -176,18 +175,18 @@ export default function Home() {
             </select>
 
             {/* Sub Category */}
-            <select className="w-full p-3 border rounded-lg text-sm" value={level2} onChange={(e) => {setLevel2(e.target.value); setLevel3('');}} disabled={!level1}>
+            <select className="w-full p-2.5 border rounded-lg text-sm" value={level2} onChange={(e) => {setLevel2(e.target.value); setLevel3('');}} disabled={!level1}>
               <option value="">Sub Category</option>
               {categories
-                .filter(c => c.parent_id == level1 && hasProductsInCategory(c.id))
+                .filter(c => String(c.parent_id) === String(level1) && hasProductsInCategory(c.id)) // ✅ ঠিক করা হয়েছে
                 .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
 
             {/* Sub Sub Category */}
-            <select className="w-full p-3 border rounded-lg text-sm" value={level3} onChange={(e) => setLevel3(e.target.value)} disabled={!level2}>
+            <select className="w-full p-2.5 border rounded-lg text-sm" value={level3} onChange={(e) => setLevel3(e.target.value)} disabled={!level2}>
               <option value="">Sub Sub Category</option>
               {categories
-                .filter(c => c.parent_id == level2 && hasProductsInCategory(c.id))
+                .filter(c => String(c.parent_id) === String(level2) && hasProductsInCategory(c.id)) // ✅ ঠিক করা হয়েছে
                 .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
