@@ -34,9 +34,9 @@ export default function Navbar({ onSearch, showSearchAndCart = true }: NavbarPro
             <Image 
               src="/logo.png" 
               alt="ThaiChi Rokomari Logo" 
-              width={220} 
-              height={65} 
-              className="h-14 w-auto object-contain py-1" 
+              width={280} 
+              height={85} 
+              className="h-20 w-auto object-contain py-1" 
               priority
             />
           </div>
