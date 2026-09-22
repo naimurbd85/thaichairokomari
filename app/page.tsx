@@ -12,7 +12,7 @@ export default function Home() {
   const [selectedAudience, setSelectedAudience] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   
-  // পপ-আপ বা মোডালের জন্য স্টেট এবং সিলেক্টেড ইমেজ স্টেট
+  // State for pop-up or modal and selected image state
   const [activeModalProduct, setActiveModalProduct] = useState<any | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>('');
 
@@ -22,7 +22,7 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // প্রথমবার সব ক্যাটাগরি এবং অরিজিন অনুযায়ী ফিল্টার ছাড়া বা বেস প্রোডাক্টগুলো এনে রাখা
+  // Fetch initial categories and base products without filters on mount
   useEffect(() => {
     fetchInitialData();
   }, []);
@@ -65,7 +65,7 @@ export default function Home() {
     setLoading(false);
   };
 
-  // হেল্পার ফাংশন: নির্দিষ্ট ক্যাটাগরি বা তার সাব-ক্যাটাগরিতে প্রোডাক্ট আছে কিনা চেক করার জন্য
+  // Helper function: Check if a category or its sub-categories contain products
   const hasProductsInCategory = (catId: string) => {
       let baseProducts = allActiveProducts;
       if (selectedAudience !== 'all') {
@@ -73,33 +73,30 @@ export default function Home() {
       }
 
       const getChildIds = (id: string): string[] => {
-        const children = categories.filter(c => String(c.parent_id) === String(id)) || []; // ✅ ঠিক করা হয়েছে
+        const children = categories.filter(c => String(c.parent_id) === String(id)) || [];
         return [String(id), ...children.flatMap(child => getChildIds(String(child.id)))];
       };
 
       const relevantCatIds = getChildIds(catId);
-      return baseProducts.some(p => relevantCatIds.includes(String(p.category_id))); // ✅ ঠিক করা হয়েছে
+      return baseProducts.some(p => relevantCatIds.includes(String(p.category_id)));
   };
 
-  // মোডাল ওপেন করার সময় প্রথম ছবিটি ডিফল্ট সিলেক্ট করা
+  // Set default selected image when opening modal
   const openModal = (product: any) => {
     setActiveModalProduct(product);
     setSelectedImage(product.images?.[0] || '/placeholder.png');
   };
 
-  // কার্ট ফাংশন
+  // Cart functions
   const handleAddToCart = (product: any) => {
-    // প্রোডাক্টের ভেরিয়েশন আছে কিনা চেক করা
     const hasVariations = Array.isArray(product.variations) && product.variations.length > 0;
 
     if (hasVariations) {
-      // ইউজারকে মেসেজ দেখানো এবং তারপর ডিটেইলস পেজে রিডাইরেক্ট করা
       alert("Please select a variant first!");
       window.location.href = `/product/${product.id}`;
       return;
     }
 
-    // ভেরিয়েশন না থাকলে স্বাভাবিক নিয়মে কার্টে যোগ হবে
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     const existingItem = cart.find((item: any) => item.id === product.id);
     
@@ -110,22 +107,19 @@ export default function Home() {
     }
     
     localStorage.setItem('cart', JSON.stringify(cart));
-    window.dispatchEvent(new Event('storage')); // কার্ট কাউন্ট রিফ্রেশ করার জন্য
+    window.dispatchEvent(new Event('storage'));
     alert("Product added to cart!");
   };
 
   const handleBuyNow = (product: any) => {
-    // প্রোডাক্টের ভেরিয়েশন আছে কিনা চেক করা
     const hasVariations = Array.isArray(product.variations) && product.variations.length > 0;
 
     if (hasVariations) {
-      // ইউজারকে মেসেজ দেখানো এবং তারপর ডিটেইলস পেজে রিডাইরেক্ট করা
       alert("Please select a variant first!");
       window.location.href = `/product/${product.id}`;
       return;
     }
 
-    // ভেরিয়েশন না থাকলে কার্টে যোগ করে চেকআউটে যাবে
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     const existingItem = cart.find((item: any) => item.id === product.id);
     
@@ -148,7 +142,7 @@ export default function Home() {
         Filter 🔍
       </button>
 
-      {/* মোবাইলের জন্য ফিল্টার মোডাল */}
+      {/* Mobile Filter Modal */}
       {isFilterOpen && (
         <div className="md:hidden fixed inset-0 z-[60] bg-white p-6 overflow-y-auto">
           <div className="flex justify-between items-center mb-6">
@@ -166,7 +160,6 @@ export default function Home() {
 
             <h3 className="font-bold text-gray-800 text-sm border-b pb-2">Categories</h3>
             
-            {/* Main Category */}
             <select className="w-full p-3 border rounded-lg text-sm" value={level1} onChange={(e) => {setLevel1(e.target.value); setLevel2(''); setLevel3('');}}>
               <option value="">Main Category</option>
               {categories
@@ -174,19 +167,17 @@ export default function Home() {
                 .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
 
-            {/* Sub Category */}
             <select className="w-full p-2.5 border rounded-lg text-sm" value={level2} onChange={(e) => {setLevel2(e.target.value); setLevel3('');}} disabled={!level1}>
               <option value="">Sub Category</option>
               {categories
-                .filter(c => String(c.parent_id) === String(level1) && hasProductsInCategory(c.id)) // ✅ ঠিক করা হয়েছে
+                .filter(c => String(c.parent_id) === String(level1) && hasProductsInCategory(c.id))
                 .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
 
-            {/* Sub Sub Category */}
             <select className="w-full p-2.5 border rounded-lg text-sm" value={level3} onChange={(e) => setLevel3(e.target.value)} disabled={!level2}>
               <option value="">Sub Sub Category</option>
               {categories
-                .filter(c => String(c.parent_id) === String(level2) && hasProductsInCategory(c.id)) // ✅ ঠিক করা হয়েছে
+                .filter(c => String(c.parent_id) === String(level2) && hasProductsInCategory(c.id))
                 .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
@@ -194,10 +185,10 @@ export default function Home() {
         </div>
       )}
 
-      {/* প্রোডাক্ট ডিটেইলস ও মাল্টিপল ইমেজ গ্যালারি পপ-আপ (Modal) */}
+      {/* Product Details and Multiple Image Gallery Modal */}
       {activeModalProduct && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 relative shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 relative shadow-2xl">
             <button 
               onClick={() => setActiveModalProduct(null)} 
               className="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 w-10 h-10 rounded-full flex items-center justify-center font-bold text-gray-700 transition"
@@ -206,16 +197,10 @@ export default function Home() {
             </button>
             
             <div className="flex flex-col md:flex-row gap-6">
-              {/* ইমেজ গ্যালারি সেকশন */}
               <div className="w-full md:w-1/2 flex flex-col gap-3">
                 <div className="w-full h-72 bg-gray-50 rounded-2xl overflow-hidden p-2 flex items-center justify-center border">
-                  <img 
-                    src={selectedImage} 
-                    alt={activeModalProduct.name} 
-                    className="w-full h-full object-contain transition-all duration-300" 
-                  />
+                  <img src={selectedImage} alt={activeModalProduct.name} className="w-full h-full object-contain" />
                 </div>
-                {/* থাম্বনেইল লিস্ট */}
                 {activeModalProduct.images && activeModalProduct.images.length > 1 && (
                   <div className="flex gap-2 overflow-x-auto pb-2">
                     {activeModalProduct.images.map((img: string, idx: number) => (
@@ -231,7 +216,6 @@ export default function Home() {
                 )}
               </div>
 
-              {/* পণ্যের বিবরণ */}
               <div className="w-full md:w-1/2 flex flex-col">
                 <div className="flex gap-2 mb-2">
                   <span className="text-[10px] font-bold uppercase bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{activeModalProduct.target_audience || 'General'}</span>
@@ -256,16 +240,10 @@ export default function Home() {
             </div>
 
             <div className="flex gap-3 mt-6 pt-4 border-t">
-              <button 
-                onClick={() => handleAddToCart(activeModalProduct)}
-                className="flex-1 bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition text-sm"
-              >
+              <button onClick={() => handleAddToCart(activeModalProduct)} className="flex-1 bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition text-sm">
                 Add to Cart
               </button>
-              <button 
-                onClick={() => handleBuyNow(activeModalProduct)}
-                className="flex-1 bg-orange-600 text-white py-3 rounded-xl font-bold hover:bg-orange-700 transition text-sm"
-              >
+              <button onClick={() => handleBuyNow(activeModalProduct)} className="flex-1 bg-orange-600 text-white py-3 rounded-xl font-bold hover:bg-orange-700 transition text-sm">
                 Buy Now
               </button>
             </div>
@@ -273,8 +251,8 @@ export default function Home() {
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto w-full px-4 md:px-6 flex flex-col md:flex-row gap-8 py-8">
-        {/* ডেস্কটপ সাইডবার */}
+      <main className="max-w-7xl mx-auto w-full px-4 md:px-6 flex flex-col md:flex-row gap-8 py-8 flex-grow">
+        {/* Desktop Sidebar */}
         <aside className="hidden md:block w-64 space-y-6 self-start sticky top-24">
           <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <h3 className="font-bold mb-4 text-gray-800 text-lg border-b pb-2">Filter Products</h3>
@@ -286,34 +264,25 @@ export default function Home() {
             </select>
             <h3 className="font-bold mb-4 text-gray-800 text-sm border-b pb-2">Categories</h3>
             <div className="space-y-3">
-              {/* Main Category */}
               <select className="w-full p-2.5 border rounded-lg text-sm" value={level1} onChange={(e) => {setLevel1(e.target.value); setLevel2(''); setLevel3('');}}>
                 <option value="">Main Category</option>
-                {categories
-                  .filter(c => !c.parent_id && hasProductsInCategory(c.id))
-                  .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.filter(c => !c.parent_id && hasProductsInCategory(c.id)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
 
-              {/* Sub Category */}
               <select className="w-full p-2.5 border rounded-lg text-sm" value={level2} onChange={(e) => {setLevel2(e.target.value); setLevel3('');}} disabled={!level1}>
                 <option value="">Sub Category</option>
-                {categories
-                  .filter(c => c.parent_id == level1 && hasProductsInCategory(c.id))
-                  .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.filter(c => c.parent_id == level1 && hasProductsInCategory(c.id)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
 
-              {/* Sub Sub Category */}
               <select className="w-full p-2.5 border rounded-lg text-sm" value={level3} onChange={(e) => setLevel3(e.target.value)} disabled={!level2}>
                 <option value="">Sub Sub Category</option>
-                {categories
-                  .filter(c => c.parent_id == level2 && hasProductsInCategory(c.id))
-                  .map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.filter(c => c.parent_id == level2 && hasProductsInCategory(c.id)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
           </div>
         </aside>
 
-        {/* প্রোডাক্ট গ্রিড */}
+        {/* Product Grid */}
         <div className="flex-1">
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
@@ -324,11 +293,7 @@ export default function Home() {
                 {products.map((product) => (
                   <div key={product.id} className="bg-white p-4 border rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full">
                     <Link href={`/product/${product.id}`} className="w-full h-56 bg-gray-50 rounded-2xl mb-4 overflow-hidden block p-2 group">
-                      <img 
-                        src={product.images?.[0] || '/placeholder.png'} 
-                        alt={product.name} 
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" 
-                      />
+                      <img src={product.images?.[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" />
                     </Link>
                     
                     <div className="flex gap-2 mb-2">
@@ -342,25 +307,15 @@ export default function Home() {
                     
                     <p className="text-orange-600 font-black text-xl mb-3">Tk {Number(product.regular_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     
-                    {/* পপ-আপ ওপেন করার বাটন */}
-                    <button 
-                      onClick={() => openModal(product)} 
-                      className="text-xs font-semibold text-blue-600 underline mb-3 self-start hover:text-blue-800"
-                    >
+                    <button onClick={() => openModal(product)} className="text-xs font-semibold text-blue-600 underline mb-3 self-start hover:text-blue-800">
                       View Details
                     </button>
                     
                     <div className="flex gap-2 mt-auto">
-                      <button 
-                        onClick={() => handleAddToCart(product)}
-                        className="flex-1 bg-gray-900 text-white py-2.5 rounded-xl font-bold hover:bg-gray-800 transition text-sm"
-                      >
+                      <button onClick={() => handleAddToCart(product)} className="flex-1 bg-gray-900 text-white py-2.5 rounded-xl font-bold hover:bg-gray-800 transition text-sm">
                         Add to Cart
                       </button>
-                      <button 
-                        onClick={() => handleBuyNow(product)}
-                        className="flex-1 bg-orange-600 text-white py-2.5 rounded-xl font-bold hover:bg-orange-700 transition text-sm"
-                      >
+                      <button onClick={() => handleBuyNow(product)} className="flex-1 bg-orange-600 text-white py-2.5 rounded-xl font-bold hover:bg-orange-700 transition text-sm">
                         Buy Now
                       </button>
                     </div>
@@ -372,6 +327,67 @@ export default function Home() {
             )}
         </div>
       </main>
+
+      {/* Modern Footer Section */}
+      <footer className="bg-gray-900 text-gray-300 pt-16 pb-8 border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+          
+          {/* Column 1: Company Profile */}
+          <div className="space-y-4">
+            <h2 className="text-white text-xl font-black tracking-wider">THAI-CHINA KOMARI</h2>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Your trusted online shop. We bring you the finest quality and attractive products from China and Thailand at affordable prices.
+            </p>
+            <div className="text-sm space-y-1">
+              <p><span className="text-white font-semibold">Hotline:</span> +880 1234-567890</p>
+              <p><span className="text-white font-semibold">Email:</span> support@example.com</p>
+            </div>
+          </div>
+
+          {/* Column 2: Customer Care / Services */}
+          <div>
+            <h3 className="text-white font-bold text-base mb-4 border-b border-gray-800 pb-2">Customer Care</h3>
+            <ul className="space-y-2.5 text-sm">
+              <li><Link href="/help" className="hover:text-orange-500 transition">Help Center</Link></li>
+              <li><Link href="/track-order" className="hover:text-orange-500 transition">Track Order</Link></li>
+              <li><Link href="/return-policy" className="hover:text-orange-500 transition">Returns & Exchanges</Link></li>
+              <li><Link href="/faq" className="hover:text-orange-500 transition">FAQ</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 3: Quick Links */}
+          <div>
+            <h3 className="text-white font-bold text-base mb-4 border-b border-gray-800 pb-2">Quick Links</h3>
+            <ul className="space-y-2.5 text-sm">
+              <li><Link href="/about" className="hover:text-orange-500 transition">About Us</Link></li>
+              <li><Link href="/contact" className="hover:text-orange-500 transition">Contact Us</Link></li>
+              <li><Link href="/cart" className="hover:text-orange-500 transition">Shopping Cart</Link></li>
+              <li><Link href="/checkout" className="hover:text-orange-500 transition">Checkout</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 4: Policies and Terms */}
+          <div>
+            <h3 className="text-white font-bold text-base mb-4 border-b border-gray-800 pb-2">Policies</h3>
+            <ul className="space-y-2.5 text-sm">
+              <li><Link href="/privacy-policy" className="hover:text-orange-500 transition">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-orange-500 transition">Terms & Conditions</Link></li>
+              <li><Link href="/refund-policy" className="hover:text-orange-500 transition">Refund Policy</Link></li>
+            </ul>
+          </div>
+
+        </div>
+
+        {/* Footer Bottom Copyright and Payment Section */}
+        <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+          <p>© {new Date().getFullYear()} Thai-China Komari. All rights reserved.</p>
+          <div className="flex gap-4 font-medium">
+            <span>Secure Checkout</span>
+            <span>• Cash on Delivery</span>
+            <span>• bKash / Nagad</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
