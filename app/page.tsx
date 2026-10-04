@@ -266,17 +266,17 @@ export default function Home() {
             <div className="space-y-3">
               <select className="w-full p-2.5 border rounded-lg text-sm" value={level1} onChange={(e) => {setLevel1(e.target.value); setLevel2(''); setLevel3('');}}>
                 <option value="">Main Category</option>
-                {categories.filter(c => !c.parent_id && hasProductsInCategory(c.id)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.filter(c => !c.parent_id && hasProductsInCategory(String(c.id))).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
 
               <select className="w-full p-2.5 border rounded-lg text-sm" value={level2} onChange={(e) => {setLevel2(e.target.value); setLevel3('');}} disabled={!level1}>
                 <option value="">Sub Category</option>
-                {categories.filter(c => c.parent_id == level1 && hasProductsInCategory(c.id)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.filter(c => String(c.parent_id) === String(level1) && hasProductsInCategory(String(c.id))).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
 
               <select className="w-full p-2.5 border rounded-lg text-sm" value={level3} onChange={(e) => setLevel3(e.target.value)} disabled={!level2}>
                 <option value="">Sub Sub Category</option>
-                {categories.filter(c => c.parent_id == level2 && hasProductsInCategory(c.id)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.filter(c => String(c.parent_id) === String(level2) && hasProductsInCategory(String(c.id))).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
           </div>
