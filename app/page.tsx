@@ -12,7 +12,6 @@ export default function Home() {
   const [selectedAudience, setSelectedAudience] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   
-  // State for pop-up or modal and selected image state
   const [activeModalProduct, setActiveModalProduct] = useState<any | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>('');
 
@@ -22,7 +21,6 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Fetch initial categories and base products without filters on mount
   useEffect(() => {
     fetchInitialData();
   }, []);
@@ -46,13 +44,16 @@ export default function Home() {
 
     let query = supabase.from('products').select('*').eq('is_active', true);
 
-    if (selectedAudience !== 'all') query = query.eq('target_audience', selectedAudience);
+    // অডিয়েন্স ফিল্টার (কেস-সেন্সিটিভিটি সমস্যা এড়াতে ilike ব্যবহার করা হয়েছে)
+    if (selectedAudience !== 'all') {
+      query = query.ilike('target_audience', selectedAudience);
+    }
 
     const activeCategoryId = level3 || level2 || level1;
     if (activeCategoryId && catData) {
-        const getChildIds = (id: string): string[] => {
-            const children = catData.filter(c => c.parent_id === id) || [];
-            return [id, ...children.flatMap(child => getChildIds(child.id.toString()))];
+        const getChildIds = (id: any): string[] => {
+            const children = catData.filter(c => String(c.parent_id) === String(id)) || [];
+            return [String(id), ...children.flatMap(child => getChildIds(child.id))];
         };
         const allRelevantIds = getChildIds(activeCategoryId);
         query = query.in('category_id', allRelevantIds);
@@ -65,29 +66,28 @@ export default function Home() {
     setLoading(false);
   };
 
-  // Helper function: Check if a category or its sub-categories contain products
-  const hasProductsInCategory = (catId: string) => {
+  const hasProductsInCategory = (catId: any) => {
       let baseProducts = allActiveProducts;
       if (selectedAudience !== 'all') {
-        baseProducts = baseProducts.filter(p => p.target_audience === selectedAudience);
+        baseProducts = baseProducts.filter(p => 
+          p.target_audience && p.target_audience.toLowerCase() === selectedAudience.toLowerCase()
+        );
       }
 
-      const getChildIds = (id: string): string[] => {
+      const getChildIds = (id: any): string[] => {
         const children = categories.filter(c => String(c.parent_id) === String(id)) || [];
-        return [String(id), ...children.flatMap(child => getChildIds(String(child.id)))];
+        return [String(id), ...children.flatMap(child => getChildIds(child.id))];
       };
 
       const relevantCatIds = getChildIds(catId);
       return baseProducts.some(p => relevantCatIds.includes(String(p.category_id)));
   };
 
-  // Set default selected image when opening modal
   const openModal = (product: any) => {
     setActiveModalProduct(product);
     setSelectedImage(product.images?.[0] || '/placeholder.png');
   };
 
-  // Cart functions
   const handleAddToCart = (product: any) => {
     const hasVariations = Array.isArray(product.variations) && product.variations.length > 0;
 
@@ -103,7 +103,7 @@ export default function Home() {
     if (existingItem) { 
       existingItem.quantity += 1; 
     } else { 
-      cart.push({ ...product, quantity: 1, selectedImage: typeof selectedImage !== 'undefined' ? selectedImage : (product.images?.[0] || '') }); 
+      cart.push({ ...product, quantity: 1, selectedImage: selectedImage || (product.images?.[0] || '') }); 
     }
     
     localStorage.setItem('cart', JSON.stringify(cart));
@@ -124,7 +124,7 @@ export default function Home() {
     const existingItem = cart.find((item: any) => item.id === product.id);
     
     if (!existingItem) { 
-      cart.push({ ...product, quantity: 1, selectedImage: typeof selectedImage !== 'undefined' ? selectedImage : (product.images?.[0] || '') }); 
+      cart.push({ ...product, quantity: 1, selectedImage: selectedImage || (product.images?.[0] || '') }); 
       localStorage.setItem('cart', JSON.stringify(cart)); 
     }
     
@@ -142,7 +142,6 @@ export default function Home() {
         Filter 🔍
       </button>
 
-      {/* Mobile Filter Modal */}
       {isFilterOpen && (
         <div className="md:hidden fixed inset-0 z-[60] bg-white p-6 overflow-y-auto">
           <div className="flex justify-between items-center mb-6">
@@ -185,7 +184,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Product Details and Multiple Image Gallery Modal */}
+      {/* Product Details Modal */}
       {activeModalProduct && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 relative shadow-2xl">
@@ -219,7 +218,7 @@ export default function Home() {
               <div className="w-full md:w-1/2 flex flex-col">
                 <div className="flex gap-2 mb-2">
                   <span className="text-[10px] font-bold uppercase bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{activeModalProduct.target_audience || 'General'}</span>
-                  <span className="text-[10px] font-bold uppercase bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{categories.find(c => c.id === activeModalProduct.category_id)?.name || 'Uncategorized'}</span>
+                  <span className="text-[10px] font-bold uppercase bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{categories.find(c => Number(c.id) === Number(activeModalProduct.category_id))?.name || 'Uncategorized'}</span>
                 </div>
                 <h2 className="font-bold text-xl mb-2 text-gray-800">{activeModalProduct.name}</h2>
                 <p className="text-orange-600 font-black text-2xl mb-4">
@@ -266,17 +265,17 @@ export default function Home() {
             <div className="space-y-3">
               <select className="w-full p-2.5 border rounded-lg text-sm" value={level1} onChange={(e) => {setLevel1(e.target.value); setLevel2(''); setLevel3('');}}>
                 <option value="">Main Category</option>
-                {categories.filter(c => !c.parent_id && hasProductsInCategory(String(c.id))).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.filter(c => !c.parent_id && hasProductsInCategory(c.id)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
 
               <select className="w-full p-2.5 border rounded-lg text-sm" value={level2} onChange={(e) => {setLevel2(e.target.value); setLevel3('');}} disabled={!level1}>
                 <option value="">Sub Category</option>
-                {categories.filter(c => String(c.parent_id) === String(level1) && hasProductsInCategory(String(c.id))).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.filter(c => String(c.parent_id) === String(level1) && hasProductsInCategory(c.id)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
 
               <select className="w-full p-2.5 border rounded-lg text-sm" value={level3} onChange={(e) => setLevel3(e.target.value)} disabled={!level2}>
                 <option value="">Sub Sub Category</option>
-                {categories.filter(c => String(c.parent_id) === String(level2) && hasProductsInCategory(String(c.id))).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.filter(c => String(c.parent_id) === String(level2) && hasProductsInCategory(c.id)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
           </div>
@@ -298,7 +297,7 @@ export default function Home() {
                     
                     <div className="flex gap-2 mb-2">
                       <span className="text-[10px] font-bold uppercase bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{product.target_audience || 'General'}</span>
-                      <span className="text-[10px] font-bold uppercase bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{categories.find(c => c.id === product.category_id)?.name || 'Uncategorized'}</span>
+                      <span className="text-[10px] font-bold uppercase bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{categories.find(c => Number(c.id) === Number(product.category_id))?.name || 'Uncategorized'}</span>
                     </div>
 
                     <Link href={`/product/${product.id}`}>
@@ -328,11 +327,9 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Modern Footer Section */}
       <footer className="bg-gray-900 text-gray-300 pt-16 pb-8 border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 md:px-6 grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
           
-          {/* Column 1: Company Profile */}
           <div className="space-y-4">
             <h2 className="text-white text-xl font-black tracking-wider">THAI-CHI ROKOMARI</h2>
             <p className="text-sm text-gray-400 leading-relaxed">
@@ -344,7 +341,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Column 2: Customer Care / Services */}
           <div>
             <h3 className="text-white font-bold text-base mb-4 border-b border-gray-800 pb-2">Customer Care</h3>
             <ul className="space-y-2.5 text-sm">
@@ -355,7 +351,6 @@ export default function Home() {
             </ul>
           </div>
 
-          {/* Column 3: Quick Links */}
           <div>
             <h3 className="text-white font-bold text-base mb-4 border-b border-gray-800 pb-2">Quick Links</h3>
             <ul className="space-y-2.5 text-sm">
@@ -366,7 +361,6 @@ export default function Home() {
             </ul>
           </div>
 
-          {/* Column 4: Policies and Terms */}
           <div>
             <h3 className="text-white font-bold text-base mb-4 border-b border-gray-800 pb-2">Policies</h3>
             <ul className="space-y-2.5 text-sm">
@@ -378,7 +372,6 @@ export default function Home() {
 
         </div>
 
-        {/* Footer Bottom Copyright and Payment Section */}
         <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
           <p>© {new Date().getFullYear()} Thai-Chi Rokomari. All rights reserved.</p>
           <div className="flex gap-4 font-medium">
