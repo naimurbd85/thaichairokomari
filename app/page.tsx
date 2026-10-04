@@ -44,9 +44,9 @@ export default function Home() {
 
     let query = supabase.from('products').select('*').eq('is_active', true);
 
-    // অডিয়েন্স ফিল্টার (কেস-সেন্সিটিভিটি সমস্যা এড়াতে ilike ব্যবহার করা হয়েছে)
+    // অডিয়েন্স ফিল্টার (এখানে exact match বা eq ব্যবহার করা নিরাপদ)
     if (selectedAudience !== 'all') {
-      query = query.ilike('target_audience', selectedAudience);
+      query = query.eq('target_audience', selectedAudience);
     }
 
     const activeCategoryId = level3 || level2 || level1;
